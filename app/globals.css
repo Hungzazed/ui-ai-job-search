@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/*
+  Design Tokens (Tailwind v4 CSS-first config)
+  - Primary: Violet/Purple (AI branding)
+  - Surface/Background: Slate-50
+*/
+@theme {
+  --color-primary-50: #f5f3ff;
+  --color-primary-100: #ede9fe;
+  --color-primary-200: #ddd6fe;
+  --color-primary-300: #c4b5fd;
+  --color-primary-400: #a78bfa;
+  --color-primary-500: #8b5cf6;
+  --color-primary-600: #7c3aed;
+  --color-primary-700: #6d28d9;
+  --color-primary-800: #5b21b6;
+  --color-primary-900: #4c1d95;
+  --color-primary-950: #2e1065;
+
+  --color-surface: #f8fafc;
+  --color-surface-card: #ffffff;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+
+  --radius: 0.75rem;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  @apply bg-surface text-ink antialiased;
+}
+
+::selection {
+  @apply bg-primary-200 text-primary-900;
+}
+
+/* Thin scrollbar for sidebar / overflow areas */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-slate-300) transparent;
+}

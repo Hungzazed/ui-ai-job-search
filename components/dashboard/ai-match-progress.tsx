@@ -11,17 +11,17 @@ interface AIMatchProgressProps {
 
 export function AIMatchProgress({
   value,
-  size = 160,
-  strokeWidth = 12,
+  size = 140,
+  strokeWidth = 10,
   label = "Độ phù hợp AI",
   className,
 }: AIMatchProgressProps) {
   const tone =
     value >= 80
-      ? { stroke: "stroke-emerald-500", text: "text-emerald-600" }
+      ? { stroke: "stroke-emerald-500", text: "text-emerald-700" }
       : value >= 60
-        ? { stroke: "stroke-amber-500", text: "text-amber-600" }
-        : { stroke: "stroke-rose-500", text: "text-rose-600" };
+        ? { stroke: "stroke-amber-500", text: "text-amber-700" }
+        : { stroke: "stroke-rose-500", text: "text-rose-700" };
 
   return (
     <div className={cn("flex flex-col items-center gap-2", className)}>
@@ -31,12 +31,12 @@ export function AIMatchProgress({
         strokeWidth={strokeWidth}
         strokeClassName={tone.stroke}
       >
-        <span className={cn("text-4xl font-bold tracking-tight", tone.text)}>{value}%</span>
+        <span className={cn("text-3xl sm:text-4xl font-mono font-bold tracking-tight", tone.text)}>{value}%</span>
       </ProgressCircle>
       <div className="text-center">
-        <p className="text-sm font-medium text-slate-700">{label}</p>
-        <p className="text-xs text-slate-400">
-          {value >= 80 ? "Rất phù hợp — nên ứng tuyển sớm" : value >= 60 ? "Khá phù hợp — xem gợi ý cải thiện" : "Ít phù hợp — xem kỹ năng cần bổ sung"}
+        <p className="text-xs sm:text-sm font-semibold text-slate-800">{label}</p>
+        <p className="mt-0.5 text-xs text-slate-500">
+          {value >= 80 ? "Rất phù hợp — đề xuất ứng tuyển ngay" : value >= 60 ? "Khá phù hợp — cần tinh chỉnh CV" : "Ít phù hợp — xem bổ sung kỹ năng"}
         </p>
       </div>
     </div>

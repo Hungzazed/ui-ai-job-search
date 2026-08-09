@@ -1,42 +1,76 @@
 @import "tailwindcss";
 
 /*
-  Design Tokens (Tailwind v4 CSS-first config)
-  - Primary: Violet/Purple (AI branding)
-  - Surface/Background: Slate-50
+  Hallmark Design System · AI Career Agent
+  - Genre: modern-minimal
+  - Theme: OKLCH Slate & AI Violet
+  - Macrostructure: Workbench
 */
 @theme {
-  --color-primary-50: #f5f3ff;
-  --color-primary-100: #ede9fe;
-  --color-primary-200: #ddd6fe;
-  --color-primary-300: #c4b5fd;
-  --color-primary-400: #a78bfa;
-  --color-primary-500: #8b5cf6;
-  --color-primary-600: #7c3aed;
-  --color-primary-700: #6d28d9;
-  --color-primary-800: #5b21b6;
-  --color-primary-900: #4c1d95;
-  --color-primary-950: #2e1065;
+  --color-paper: oklch(0.985 0.005 250);
+  --color-paper-2: oklch(0.965 0.008 250);
+  --color-paper-card: #ffffff;
+  --color-ink: oklch(0.14 0.02 260);
+  --color-ink-muted: oklch(0.42 0.02 260);
+  --color-rule: oklch(0.91 0.01 250);
+  --color-accent: oklch(0.58 0.24 280);
+  --color-accent-hover: oklch(0.52 0.24 280);
+  --color-accent-light: oklch(0.96 0.03 280);
+  --color-accent-ink: #ffffff;
+  --color-focus: oklch(0.58 0.24 280);
+  --color-success: oklch(0.65 0.19 150);
+  --color-success-light: oklch(0.96 0.04 150);
 
-  --color-surface: #f8fafc;
+  /* Primary color mapping for backwards compatibility */
+  --color-primary-50: oklch(0.97 0.02 280);
+  --color-primary-100: oklch(0.93 0.04 280);
+  --color-primary-200: oklch(0.85 0.08 280);
+  --color-primary-300: oklch(0.75 0.14 280);
+  --color-primary-400: oklch(0.66 0.20 280);
+  --color-primary-500: oklch(0.58 0.24 280);
+  --color-primary-600: oklch(0.52 0.25 280);
+  --color-primary-700: oklch(0.44 0.24 280);
+  --color-primary-800: oklch(0.36 0.21 280);
+  --color-primary-900: oklch(0.28 0.17 280);
+
+  --color-surface: oklch(0.985 0.005 250);
   --color-surface-card: #ffffff;
-  --color-ink: #0f172a;
-  --color-muted: #64748b;
 
-  --radius: 0.75rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-body {
-  @apply bg-surface text-ink antialiased;
+/* Hallmark responsive non-negotiable gate 34: no horizontal scroll */
+html, body {
+  overflow-x: clip;
+  background-color: var(--color-surface, #f8fafc);
+  color: var(--color-ink, #0f172a);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  @apply bg-primary-200 text-primary-900;
+  background-color: oklch(0.92 0.06 280);
+  color: oklch(0.28 0.17 280);
+}
+
+/* Hairline border utility */
+.border-hairline {
+  border-width: 1px;
+  border-color: var(--color-rule, oklch(0.91 0.01 250));
+}
+
+/* Hallmark 8-state interactive helper classes */
+.btn-hallmark:focus-visible {
+  outline: 2px solid var(--color-focus, oklch(0.58 0.24 280));
+  outline-offset: 2px;
+}
+.btn-hallmark:active {
+  transform: translateY(1px);
 }
 
 /* Thin scrollbar for sidebar / overflow areas */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-slate-300) transparent;
+  scrollbar-color: oklch(0.85 0.01 250) transparent;
 }

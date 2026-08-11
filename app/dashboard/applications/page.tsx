@@ -1,15 +1,26 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Send } from "lucide-react";
-import { applications, applicationStatusLabels } from "@/lib/mock-data";
-import type { ApplicationStatus } from "@/types";
+import type { ApplicationGroup, ApplicationList } from "@/types";
+import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { applicationsService } from "@/services";
+import {
+  APPLICATION_STATUS_LABELS,
+  APPLICATION_STATUS_VARIANTS,
+  APPLICATION_TABS,
+} from "@/lib/application-status";
+import { companyColor, companyInitials, formatDate } from "@/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { CompanyLogo } from "@/components/dashboard/company-logo";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CompanyLogo } from "@/components/dashboard/company-logo";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CountTabs } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -18,47 +29,46 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDate } from "@/lib/format";
 
-type Filter = "all" | ApplicationStatus;
-
-const filterTabs: { value: Filter; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "submitted", label: "Đã nộp" },
-  { value: "reviewing", label: "Đang xem xét" },
-  { value: "interview", label: "Đã phỏng vấn" },
-  { value: "rejected", label: "Từ chối" },
-];
-
-const statusVariant: Record<ApplicationStatus, "info" | "warning" | "primary" | "danger" | "success"> = {
-  submitted: "info",
-  reviewing: "warning",
-  interview: "primary",
-  rejected: "danger",
-  offered: "success",
-};
+type Filter = "all" | ApplicationGroup;
 
 export default function ApplicationsPage() {
+  const router = useRouter();
   const [filter, setFilter] = useState<Filter>("all");
+  const [data, setData] = useState<ApplicationList | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = useMemo(
-    () => (filter === "all" ? applications : applications.filter((app) => app.status === filter)),
-    [filter],
-  );
+  // Lọc ở phía backend chứ không lọc mảng đã tải: `counts` phải là tổng thật
+  // trên toàn bộ đơn, không phải đếm lại sau khi đã lọc theo chính tab đang mở.
+  useEffect(() => {
+    let cancelled = false;
 
-  const counts = useMemo(() => {
-    const result = { all: applications.length } as Record<Filter, number>;
-    for (const status of Object.keys(applicationStatusLabels) as ApplicationStatus[]) {
-      result[status] = applications.filter((app) => app.status === status).length;
-    }
-    return result;
-  }, []);
+    void (async () => {
+      try {
+        const response = await applicationsService.list(
+          filter === "all" ? undefined : filter,
+        );
+        if (!cancelled) setData(response);
+      } catch (err) {
+        if (cancelled) return;
+        if (apiErrorStatus(err) === 401) {
+          router.replace("/login?next=/dashboard/applications");
+          return;
+        }
+        setError(apiErrorMessage(err, "Không tải được danh sách đơn"));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filter, router]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="Lịch sử ứng tuyển"
-        subtitle="Theo dõi trạng thái đơn ứng tuyển của bạn — AI cập nhật tự động"
+        subtitle="Theo dõi trạng thái từng đơn ứng tuyển của bạn"
         actions={
           <Link href="/dashboard/applications/apply">
             <Button>
@@ -69,91 +79,79 @@ export default function ApplicationsPage() {
         }
       />
 
-      <div className="flex flex-wrap gap-1.5">
-        {filterTabs.map((tab) => {
-          const active = filter === tab.value;
-          return (
-            <button
-              key={tab.value}
-              type="button"
-              onClick={() => setFilter(tab.value)}
-              className={
-                active
-                  ? "inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-primary-600 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm"
-                  : "inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
-              }
-            >
-              {tab.label}
-              <span
-                className={
-                  active
-                    ? "rounded-full bg-white/20 px-1.5 text-xs"
-                    : "rounded-full bg-slate-100 px-1.5 text-xs text-slate-500"
-                }
-              >
-                {counts[tab.value]}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <CountTabs
+        tabs={APPLICATION_TABS}
+        value={filter}
+        onChange={setFilter}
+        counts={data?.counts}
+      />
 
-      <Card className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>Vị trí / Công ty</TableHead>
-              <TableHead className="hidden md:table-cell">Ngày nộp</TableHead>
-              <TableHead className="hidden lg:table-cell">AI Match</TableHead>
-              <TableHead>Trạng thái</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((app) => (
-              <TableRow key={app.id}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <CompanyLogo initials={app.companyInitials} color={app.companyColor} size="sm" />
-                    <div className="min-w-0">
-                      <p className="truncate font-medium text-slate-900">{app.jobTitle}</p>
-                      <p className="text-xs text-slate-400">
-                        {app.company}
-                        {app.note && <span className="text-primary-600"> · {app.note}</span>}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden whitespace-nowrap text-slate-500 md:table-cell">
-                  {formatDate(app.appliedAt)}
-                </TableCell>
-                <TableCell className="hidden lg:table-cell">
-                  <span
-                    className={
-                      app.matchScore >= 80
-                        ? "font-semibold text-emerald-600"
-                        : app.matchScore >= 60
-                          ? "font-semibold text-amber-600"
-                          : "font-semibold text-rose-600"
-                    }
-                  >
-                    {app.matchScore}%
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={statusVariant[app.status]}>
-                    {applicationStatusLabels[app.status]}
-                  </Badge>
-                </TableCell>
+      {error ? (
+        <Alert tone="danger">{error}</Alert>
+      ) : !data ? (
+        <Skeleton className="h-64 animate-pulse" />
+      ) : (
+        <Card className="overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Vị trí / Công ty</TableHead>
+                <TableHead className="hidden md:table-cell">Ngày nộp</TableHead>
+                <TableHead className="hidden lg:table-cell">Địa điểm</TableHead>
+                <TableHead>Trạng thái</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {filtered.length === 0 && (
-          <div className="p-12 text-center text-sm text-slate-400">
-            Không có đơn ứng tuyển nào ở trạng thái này.
-          </div>
-        )}
-      </Card>
+            </TableHeader>
+            <TableBody>
+              {data.items.map((application) => (
+                <TableRow key={application.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <CompanyLogo
+                        initials={companyInitials(application.job.company)}
+                        color={companyColor(application.job.company)}
+                        src={application.job.companyLogo}
+                        size="sm"
+                      />
+                      <div className="min-w-0">
+                        <Link
+                          href={`/dashboard/jobs/${application.jobId}`}
+                          className="hover:text-primary-600 block truncate font-medium text-slate-900"
+                        >
+                          {application.job.title}
+                        </Link>
+                        <p className="text-xs text-slate-400">
+                          {application.job.company}
+                        </p>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden whitespace-nowrap text-slate-500 md:table-cell">
+                    {/* Đơn ở trạng thái RANKED thì chưa nộp, nên chưa có ngày. */}
+                    {application.appliedAt
+                      ? formatDate(application.appliedAt)
+                      : "Chưa nộp"}
+                  </TableCell>
+                  <TableCell className="hidden text-slate-500 lg:table-cell">
+                    {application.job.location ?? "Không rõ"}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={APPLICATION_STATUS_VARIANTS[application.status]}
+                    >
+                      {APPLICATION_STATUS_LABELS[application.status]}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {data.items.length === 0 && (
+            <div className="p-12 text-center text-sm text-slate-400">
+              Không có đơn ứng tuyển nào ở trạng thái này.
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

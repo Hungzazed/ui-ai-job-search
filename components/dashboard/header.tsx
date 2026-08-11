@@ -1,14 +1,17 @@
 "use client";
 
 import { Bell, Menu, Search, Sparkles } from "lucide-react";
-import { currentUser } from "@/lib/mock-data";
+import { useSession } from "@/components/dashboard/session";
 import { Badge } from "@/components/ui/badge";
+import { personInitials } from "@/utils";
 
 interface HeaderProps {
   onMenuClick: () => void;
 }
 
 export function Header({ onMenuClick }: HeaderProps) {
+  const { user, loading } = useSession();
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md sm:px-6">
       <button
@@ -47,12 +50,18 @@ export function Header({ onMenuClick }: HeaderProps) {
         </button>
 
         <div className="hidden items-center gap-2.5 border-l border-slate-200/80 pl-3 sm:flex">
-          <div className="flex size-8.5 items-center justify-center rounded-lg bg-primary-600 text-xs font-bold text-white shadow-xs">
-            {currentUser.initials}
+          <div className="bg-primary-600 flex size-8.5 items-center justify-center rounded-lg text-xs font-bold text-white shadow-xs">
+            {loading ? "…" : personInitials(user?.name)}
           </div>
           <div className="leading-tight">
-            <p className="text-xs font-semibold text-slate-900">{currentUser.name}</p>
-            <p className="text-[11px] font-mono text-slate-400">Basic Tier</p>
+            <p className="text-xs font-semibold text-slate-900">
+              {loading ? "Đang tải…" : (user?.name ?? "Chưa đăng nhập")}
+            </p>
+            {/* Vai trò thật từ backend, thay cho nhãn "Basic Tier" bịa ra:
+                hệ thống chỉ có hai vai trò USER và ADMIN, không có gói dịch vụ. */}
+            <p className="font-mono text-[11px] text-slate-400">
+              {user?.role === "ADMIN" ? "Quản trị viên" : "Người dùng"}
+            </p>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 
 export interface Step {
   label: string;
@@ -30,7 +30,7 @@ export function Stepper({ steps, current, onStepClick, className }: StepperProps
                   "z-10 flex size-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors",
                   state === "done" && "border-primary-600 bg-primary-600 text-white",
                   state === "active" &&
-                    "border-primary-600 bg-white text-primary-700 ring-4 ring-primary-100",
+                  "border-primary-600 bg-white text-primary-700 ring-4 ring-primary-100",
                   state === "todo" && "border-slate-300 bg-white text-slate-400",
                   onStepClick && index <= current && "cursor-pointer",
                 )}

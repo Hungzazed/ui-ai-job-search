@@ -1,5 +1,12 @@
 import { ProgressCircle } from "@/components/ui/progress-circle";
-import { cn } from "@/lib/utils";
+import { cn, matchTone, matchToneClasses } from "@/utils";
+
+/** Một câu kết luận đi kèm con số — con số trần không nói người dùng nên làm gì. */
+const VERDICTS = {
+  good: "Rất phù hợp — đề xuất ứng tuyển ngay",
+  mid: "Khá phù hợp — cần tinh chỉnh CV",
+  low: "Ít phù hợp — xem bổ sung kỹ năng",
+} as const;
 
 interface AIMatchProgressProps {
   value: number;
@@ -16,12 +23,8 @@ export function AIMatchProgress({
   label = "Độ phù hợp AI",
   className,
 }: AIMatchProgressProps) {
-  const tone =
-    value >= 80
-      ? { stroke: "stroke-emerald-500", text: "text-emerald-700" }
-      : value >= 60
-        ? { stroke: "stroke-amber-500", text: "text-amber-700" }
-        : { stroke: "stroke-rose-500", text: "text-rose-700" };
+  const tone = matchTone(value);
+  const classes = matchToneClasses(value);
 
   return (
     <div className={cn("flex flex-col items-center gap-2", className)}>
@@ -29,15 +32,20 @@ export function AIMatchProgress({
         value={value}
         size={size}
         strokeWidth={strokeWidth}
-        strokeClassName={tone.stroke}
+        strokeClassName={classes.stroke}
       >
-        <span className={cn("text-3xl sm:text-4xl font-mono font-bold tracking-tight", tone.text)}>{value}%</span>
+        <span
+          className={cn(
+            "text-3xl sm:text-4xl font-mono font-bold tracking-tight",
+            classes.strokeText,
+          )}
+        >
+          {value}%
+        </span>
       </ProgressCircle>
       <div className="text-center">
         <p className="text-xs sm:text-sm font-semibold text-slate-800">{label}</p>
-        <p className="mt-0.5 text-xs text-slate-500">
-          {value >= 80 ? "Rất phù hợp — đề xuất ứng tuyển ngay" : value >= 60 ? "Khá phù hợp — cần tinh chỉnh CV" : "Ít phù hợp — xem bổ sung kỹ năng"}
-        </p>
+        <p className="mt-0.5 text-xs text-slate-500">{VERDICTS[tone]}</p>
       </div>
     </div>
   );

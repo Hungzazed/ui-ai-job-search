@@ -3,7 +3,7 @@ import { ArrowRight, FileText, Handshake, Lightbulb, Sparkles, TrendingUp } from
 import type { AiSuggestion } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 
 const typeMeta: Record<
   AiSuggestion["type"],

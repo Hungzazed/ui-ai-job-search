@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { ProgressCircle } from "@/components/ui/progress-circle";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 
 interface StatCardProps {
   title: string;

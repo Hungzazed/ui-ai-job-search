@@ -2,23 +2,52 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Bookmark, Calendar, MapPin, Sparkles } from "lucide-react";
+import { Bookmark, MapPin, Sparkles } from "lucide-react";
 import type { Job } from "@/types";
-import { formatSalary, matchToneClasses } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CompanyLogo } from "@/components/dashboard/company-logo";
-import { cn } from "@/lib/utils";
+import { JobTime } from "@/components/dashboard/job-time";
+import { cn, formatJobSalary, matchToneClasses } from "@/utils";
 
 interface JobCardProps {
   job: Job;
   onSavedChange?: (jobId: string, saved: boolean) => void;
 }
 
+/**
+ * Tin chưa chấm KHÔNG mang huy hiệu màu.
+ *
+ * Màu ở đây là kết luận đánh giá; tô xanh hay đỏ cho một tin hệ thống chưa hề
+ * đọc là nói thay nó một điều nó chưa nói.
+ */
+export function MatchBadge({ score }: { score: number | null }) {
+  if (score === null) {
+    return (
+      <Badge variant="neutral" className="shrink-0 text-[11px]">
+        Chưa chấm điểm
+      </Badge>
+    );
+  }
+
+  const tone = matchToneClasses(score);
+  return (
+    <Badge
+      className={cn(
+        "shrink-0 font-mono text-[11px] font-bold",
+        tone.bg,
+        tone.text,
+      )}
+    >
+      <Sparkles className="size-3 mr-0.5" />
+      {score}% Match
+    </Badge>
+  );
+}
+
 export function JobCard({ job, onSavedChange }: JobCardProps) {
   const [saved, setSaved] = useState(job.saved);
-  const tone = matchToneClasses(job.aiMatch);
 
   const toggleSave = () => {
     const next = !saved;
@@ -30,7 +59,12 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
     <Card className="group transition-all duration-150 hover:border-slate-300 hover:shadow-xs">
       <CardContent className="p-4.5">
         <div className="flex items-start gap-3.5">
-          <CompanyLogo initials={job.companyInitials} color={job.companyColor} size="lg" />
+          <CompanyLogo
+            initials={job.companyInitials}
+            color={job.companyColor}
+            src={job.companyLogo}
+            size="lg"
+          />
 
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
@@ -43,22 +77,16 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
                   {job.title}
                 </Link>
               </div>
-              <Badge className={cn("shrink-0 font-mono text-[11px] font-bold", tone.bg, tone.text)}>
-                <Sparkles className="size-3 mr-0.5" />
-                {job.aiMatch}% Match
-              </Badge>
+              <MatchBadge score={job.aiMatch} />
             </div>
 
             <div className="mt-2.5 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-slate-500">
-              <span className="font-mono font-semibold text-slate-800">{formatSalary(job.salary)}</span>
+              <span className="font-mono font-semibold text-slate-800">{formatJobSalary(job)}</span>
               <span className="inline-flex items-center gap-1">
                 <MapPin className="size-3.5 text-slate-400" />
                 {job.location}
               </span>
-              <span className="inline-flex items-center gap-1">
-                <Calendar className="size-3.5 text-slate-400" />
-                {job.postedAt}
-              </span>
+              <JobTime time={job.postedAt} />
             </div>
 
             <div className="mt-3 flex flex-wrap gap-1.5">

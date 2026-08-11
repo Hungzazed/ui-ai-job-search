@@ -1,179 +1,59 @@
 /* =========================================================
    AI Career Agent — Data Models
+
+   File này chỉ TÁI XUẤT, không định nghĩa gì. Nhờ vậy `import ... from
+   "@/types"` ở khắp nơi vẫn chạy nguyên như cũ, còn khi cần sửa một kiểu thì
+   biết ngay phải mở file nào.
+
+   Cách chia soi gương theo `lib/services/`: thêm kiểu cho module x ở backend
+   thì sửa `types/x.ts` và `lib/services/x.ts`.
+
+   Một lưu ý xuyên suốt: có hai họ kiểu ở đây và đừng lẫn chúng.
+   - Kiểu GIAO DIỆN (`Job`, `UserProfile`) là hình dạng component cần.
+   - Kiểu BACKEND (`JobMatchWithJob`, `DashboardOverview`, `Application`) là
+     hình dạng thật server trả về.
+   `lib/adapters.ts` là chỗ chuyển từ họ sau sang họ trước.
    ========================================================= */
 
-export type ConnectionStatus = "connected" | "not_connected";
+export type { AuthUser } from "./auth";
 
-export type ConnectionSourceType = "cv" | "github" | "linkedin" | "manual";
+export type {
+  ActivityItem,
+  CertificateItem,
+  ConnectionSource,
+  ConnectionSourceType,
+  ConnectionStatus,
+  EducationItem,
+  ExperienceItem,
+  ProjectItem,
+  Skill,
+  SkillLevel,
+  UserProfile,
+} from "./profile";
 
-export interface ConnectionSource {
-  id: string;
-  type: ConnectionSourceType;
-  label: string;
-  status: ConnectionStatus;
-  detail: string;
-}
+export type {
+  AiMatchDetail,
+  Job,
+  JobMatchWithJob,
+  JobTimestamp,
+  SalaryCurrency,
+  SalaryPeriod,
+  SalaryRange,
+} from "./job";
 
-export type SkillLevel = "beginner" | "intermediate" | "advanced" | "expert";
+export type {
+  Application,
+  ApplicationGroup,
+  ApplicationList,
+  ApplicationStatus,
+} from "./application";
 
-export interface Skill {
-  name: string;
-  level: SkillLevel;
-}
+export type {
+  AiSuggestion,
+  AiSuggestionType,
+  DashboardOverview,
+  TodayScore,
+} from "./dashboard";
 
-export interface ExperienceItem {
-  id: string;
-  company: string;
-  position: string;
-  period: string;
-  location: string;
-  highlights: string[];
-}
-
-export interface ProjectItem {
-  id: string;
-  name: string;
-  description: string;
-  technologies: string[];
-  period: string;
-}
-
-export interface EducationItem {
-  id: string;
-  school: string;
-  degree: string;
-  field: string;
-  period: string;
-  gpa?: string;
-}
-
-export interface CertificateItem {
-  id: string;
-  name: string;
-  issuer: string;
-  year: string;
-}
-
-export interface ActivityItem {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-}
-
-export interface UserProfile {
-  id: string;
-  name: string;
-  title: string;
-  email: string;
-  location: string;
-  phone: string;
-  initials: string;
-  summary: string;
-  profileCompletion: number;
-  skills: Skill[];
-  experiences: ExperienceItem[];
-  projects: ProjectItem[];
-  educations: EducationItem[];
-  certificates: CertificateItem[];
-  activities: ActivityItem[];
-  connections: ConnectionSource[];
-}
-
-export type SalaryCurrency = "VND" | "USD";
-export type SalaryPeriod = "month" | "year";
-
-export interface SalaryRange {
-  min: number;
-  max: number;
-  currency: SalaryCurrency;
-  period: SalaryPeriod;
-}
-
-export interface Job {
-  id: string;
-  company: string;
-  companyInitials: string;
-  companyColor: string;
-  title: string;
-  location: string;
-  salary: SalaryRange;
-  tags: string[];
-  postedAt: string;
-  aiMatch: number;
-  saved: boolean;
-}
-
-export interface AiMatchDetail {
-  overall: number;
-  criteria: {
-    skills: number;
-    experience: number;
-    projects: number;
-    level: number;
-    salaryLocation: number;
-  };
-  strengths: string[];
-  improvements: string[];
-  jdSummary: {
-    about: string;
-    responsibilities: string[];
-    requirements: string[];
-  };
-}
-
-export type ApplicationStatus =
-  | "submitted"
-  | "reviewing"
-  | "interview"
-  | "rejected"
-  | "offered";
-
-export interface Application {
-  id: string;
-  jobTitle: string;
-  company: string;
-  companyInitials: string;
-  companyColor: string;
-  appliedAt: string;
-  status: ApplicationStatus;
-  matchScore: number;
-  note?: string;
-}
-
-export type AiSuggestionType = "cv" | "apply" | "network" | "skill";
-
-export interface AiSuggestion {
-  id: string;
-  type: AiSuggestionType;
-  title: string;
-  description: string;
-}
-
-export interface StatSummary {
-  profileCompletion: number;
-  matchingJobsCount: number;
-  applicationsCount: number;
-  avgMatchRate: number;
-  weeklyApplications: number;
-}
-
-export interface KpiMetric {
-  label: string;
-  value: string;
-  change: string;
-  trend: "up" | "down";
-}
-
-export interface ActivityPoint {
-  date: string;
-  users: number;
-  applications: number;
-  aiRequests: number;
-}
-
-export interface JobSourceSlice {
-  name: string;
-  value: number;
-  color: string;
-}
+// types/admin.ts cố ý trống - kiểu của màn hình Quản trị nằm ở
+// lib/services/admin.ts, cạnh chính lời gọi API sinh ra chúng.

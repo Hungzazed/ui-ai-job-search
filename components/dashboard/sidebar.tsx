@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import {
   Briefcase,
   FileText,
   History,
+  Layers,
   LayoutDashboard,
+  LogOut,
   Mail,
   Send,
   Settings,
@@ -14,8 +17,8 @@ import {
   User,
   Zap,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { currentUser } from "@/lib/mock-data";
+import { cn, personInitials } from "@/utils";
+import { useSession } from "@/components/dashboard/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -23,6 +26,7 @@ const navItems = [
   { label: "Tổng quan", href: "/dashboard", icon: LayoutDashboard, exact: true },
   { label: "Hồ sơ của tôi", href: "/dashboard/profile", icon: User },
   { label: "Việc làm phù hợp", href: "/dashboard/jobs", icon: Briefcase },
+  { label: "Tất cả việc làm", href: "/dashboard/jobs/all", icon: Layers },
   { label: "CV Optimizer", href: "/dashboard/cv-optimizer", icon: FileText },
   { label: "Cover Letter", href: "/dashboard/cover-letter", icon: Mail },
   { label: "Ứng tuyển", href: "/dashboard/applications/apply", icon: Send },
@@ -32,9 +36,23 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, loading, logout } = useSession();
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname.startsWith(href);
+  /**
+   * Mục khớp DÀI NHẤT thắng, chỉ một mục sáng tại một thời điểm.
+   *
+   * `startsWith` trần không đủ vì các đường dẫn lồng nhau: ở
+   * /dashboard/applications/apply thì cả "Ứng tuyển" lẫn "Lịch sử ứng tuyển"
+   * cùng khớp, và /dashboard/jobs/all làm sáng luôn "Việc làm phù hợp".
+   */
+  const activeHref = useMemo(() => {
+    const matched = navItems.filter((item) =>
+      item.exact
+        ? pathname === item.href
+        : pathname === item.href || pathname.startsWith(`${item.href}/`),
+    );
+    return matched.sort((a, b) => b.href.length - a.href.length)[0]?.href;
+  }, [pathname]);
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white">
@@ -51,8 +69,8 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="scrollbar-thin flex-1 space-y-1 overflow-y-auto px-3 py-3">
-        {navItems.map(({ label, href, icon: Icon, exact }) => {
-          const active = isActive(href, exact);
+        {navItems.map(({ label, href, icon: Icon }) => {
+          const active = href === activeHref;
           return (
             <Link
               key={href}
@@ -109,14 +127,27 @@ export function Sidebar() {
       </div>
 
       {/* Profile card */}
-      <div className="flex items-center gap-3 border-t border-slate-100 px-4 py-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-800 border border-slate-200/80">
-          {currentUser.initials}
+      <div className="flex items-center gap-2.5 border-t border-slate-100 px-4 py-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200/80 bg-slate-100 text-xs font-bold text-slate-800">
+          {loading ? "…" : personInitials(user?.name)}
         </div>
-        <div className="min-w-0 leading-tight">
-          <p className="truncate text-xs font-semibold text-slate-900">{currentUser.name}</p>
-          <p className="truncate text-[11px] font-mono text-slate-400">{currentUser.email}</p>
+        <div className="min-w-0 flex-1 leading-tight">
+          <p className="truncate text-xs font-semibold text-slate-900">
+            {loading ? "Đang tải…" : (user?.name ?? "Chưa đăng nhập")}
+          </p>
+          <p className="truncate font-mono text-[11px] text-slate-400">
+            {user?.email ?? ""}
+          </p>
         </div>
+        <button
+          type="button"
+          onClick={() => void logout()}
+          title="Đăng xuất"
+          aria-label="Đăng xuất"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-900"
+        >
+          <LogOut className="size-4" />
+        </button>
       </div>
     </aside>
   );

@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Briefcase, Search } from "lucide-react";
-import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
-import { jobsService, matchesService, type JobRecord } from "@/services";
+import { apiErrorStatus } from "@/lib/axios";
+import { useAsyncData } from "@/hooks/use-async-data";
+import { jobsService, matchesService } from "@/services";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -32,14 +33,21 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 export function AllJobsView() {
   const router = useRouter();
-  const [jobs, setJobs] = useState<JobRecord[] | null>(null);
-  const [total, setTotal] = useState(0);
   const [query, setQuery] = useState("");
   /** Từ khoá đã chốt sau khi ngừng gõ — đây mới là thứ đi vào request. */
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Sửa tại chỗ những gì người dùng vừa đổi (bấm Lưu), trên nền dữ liệu đã tải.
+   *
+   * Không copy cả danh sách vào state riêng: làm vậy là dựng bản thứ hai của cùng
+   * một danh sách, và bản đó sẽ đứng im khi lật trang. Ở đây chỉ giữ **những ô đã
+   * đổi**, khoá theo id, rồi đắp lên lúc render.
+   */
+  const [savedOverrides, setSavedOverrides] = useState<Map<string, boolean>>(
+    new Map(),
+  );
 
   const [scoring, setScoring] = useState<string | null>(null);
   const [scoreRequests, setScoreRequests] = useState<
@@ -56,37 +64,34 @@ export function AllJobsView() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
+  // Định danh của request là chính hàm này: `useCallback` đổi khi `search` hay
+  // `offset` đổi, và `useAsyncData` tải lại đúng lúc đó.
+  const load = useCallback(
+    () =>
+      jobsService.list({
+        limit: PAGE_SIZE,
+        offset,
+        q: search || undefined,
+      }),
+    [search, offset],
+  );
 
-    void (async () => {
-      try {
-        const page = await jobsService.list({
-          limit: PAGE_SIZE,
-          offset,
-          q: search || undefined,
-        });
-        if (cancelled) return;
-        setJobs(page.items);
-        setTotal(page.total);
-        setError(null);
-      } catch (err) {
-        if (cancelled) return;
-        if (apiErrorStatus(err) === 401) {
-          router.replace(LOGIN_NEXT);
-          return;
-        }
-        setError(apiErrorMessage(err, "Không tải được danh sách việc làm"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+  const page = useAsyncData(load, {
+    loginNext: LOGIN_NEXT,
+    errorMessage: "Không tải được danh sách việc làm",
+  });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [search, offset, router]);
+  const { error, loading } = page;
+  const total = page.data?.total ?? 0;
+  const jobs = useMemo(() => {
+    if (!page.data) return null;
+    if (savedOverrides.size === 0) return page.data.items;
+    return page.data.items.map((job) =>
+      savedOverrides.has(job.id)
+        ? { ...job, saved: savedOverrides.get(job.id)! }
+        : job,
+    );
+  }, [page.data, savedOverrides]);
 
   /**
    * Đổi trạng thái nút trước rồi mới gọi API, và hoàn lại nếu hỏng — cùng kỷ
@@ -94,13 +99,7 @@ export function AllJobsView() {
    */
   const handleToggleSave = useCallback((jobId: string, saved: boolean) => {
     const apply = (value: boolean) =>
-      setJobs((current) =>
-        current
-          ? current.map((job) =>
-              job.id === jobId ? { ...job, saved: value } : job,
-            )
-          : current,
-      );
+      setSavedOverrides((current) => new Map(current).set(jobId, value));
 
     apply(saved);
     void (saved ? jobsService.save(jobId) : jobsService.unsave(jobId)).catch(
@@ -205,9 +204,14 @@ export function AllJobsView() {
       ) : (
         // Mờ đi trong lúc tải trang kế thay vì thay bằng khung xám: hàng cũ vẫn
         // đọc được, và bảng không nhảy chiều cao mỗi lần lật trang.
+        // `@container` để `AllJobsTable` quyết định cột theo chỗ thật nó có, chứ
+        // không theo bề ngang cửa sổ — sidebar ăn 256px và bảng từng tràn ra
+        // ngoài màn hình vì chênh lệch đó.
         <Card
           className={
-            loading ? "overflow-hidden opacity-60" : "overflow-hidden"
+            loading
+              ? "@container overflow-hidden opacity-60"
+              : "@container overflow-hidden"
           }
         >
           <AllJobsTable

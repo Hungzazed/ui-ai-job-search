@@ -21,29 +21,27 @@ const config = [
   {
     rules: {
       /**
-       * Hạ từ error xuống warn, CÓ CHỦ ĐÍCH và có thời hạn.
+       * Đã ở mức `error` — và đó là mức mặc định của `eslint-config-next`, nên
+       * dòng này chỉ còn để giữ lại lời giải thích.
        *
-       * Rule này không bắt những lỗi lẻ mà bắt **kiến trúc tải dữ liệu** của cả
-       * ứng dụng: mọi màn hình tự viết `useEffect` + `useState` để gọi API, không
-       * dùng thư viện data-fetching nào. Vì vậy mỗi màn hình mới có tải dữ liệu
-       * đều cộng thêm đúng một cảnh báo — đó là kỳ vọng, không phải hồi quy.
-       * (Đã thử tách cờ loading ra khỏi thân effect ở `scrape-panel.tsx`: không
-       * đủ, rule bắt cả lời gọi hàm async dẫn tới setState.)
+       * Nó từng bị hạ xuống `warn` với 7 chỗ vi phạm, vì rule này không bắt lỗi lẻ
+       * mà bắt **kiến trúc tải dữ liệu**: mọi màn hình tự viết `useEffect` +
+       * `useState` để gọi API, nên mỗi màn mới lại cộng thêm một cảnh báo.
        *
-       * Vì thế KHÔNG liệt kê danh sách tệp ở đây: nó sẽ lạc hậu sau mỗi màn hình
-       * mới, và một danh sách sai còn tệ hơn không có danh sách. Chạy
-       * `pnpm lint` để xem hiện trạng.
+       * Cách sửa KHÔNG phải vá từng chỗ mà là bỏ hẳn ba mẫu hỏng:
        *
-       * Sửa đúng nghĩa là đổi cách tải dữ liệu, không phải vá từng chỗ: hoặc dùng
-       * một thư viện data-fetching, hoặc suy state ra từ dữ liệu thay vì lưu song
-       * song (ví dụ `phase` trong `use-document-job.ts` suy được từ
-       * `document.status`). Việc đó cần test cho hook polling trước, vì sửa mù ở
-       * đó là cách nhanh nhất tạo ra một màn hình treo ở "đang sinh...".
+       * 1. Cờ `loading` **suy ra** thay vì lưu — `hooks/use-async-data.ts`. Kết
+       *    quả được đóng dấu bằng chính hàm `load` sinh ra nó, nên "đang tải"
+       *    không thể nói khác với "có request đang chạy".
+       * 2. Không chép dữ liệu sang state thứ hai để đồng bộ bằng effect. Danh sách
+       *    tài liệu ở màn CV/Thư xin việc nay được ghép lúc render (`useMemo`).
+       * 3. Dọn state khi đổi đối tượng thì dùng `key` để React dựng lại component,
+       *    không dùng effect đặt lại từng ô — xem `DocumentSource`.
        *
-       * Giữ ở mức warn để lint vẫn xanh và vẫn chặn được các lỗi khác. Đưa về
-       * `error` sau khi đổi xong cách tải dữ liệu.
+       * Giữ `error` để ba mẫu đó không quay lại: cái giá của chúng không phải một
+       * vòng render dư, mà là hai nguồn sự thật có thể lệch nhau.
        */
-      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/set-state-in-effect": "error",
     },
   },
 ];

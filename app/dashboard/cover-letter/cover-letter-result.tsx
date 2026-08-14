@@ -102,7 +102,13 @@ export function CoverLetterResult({
         </p>
       </SectionCard>
 
-      <DocumentSource documentId={record.id} loginNext={loginNext} />
+      {/* `key` là BẮT BUỘC: nó buộc React dựng lại component khi đổi tài
+          liệu, thay cho một effect tự dọn state bên trong. */}
+      <DocumentSource
+        key={record.id}
+        documentId={record.id}
+        loginNext={loginNext}
+      />
     </div>
   );
 }

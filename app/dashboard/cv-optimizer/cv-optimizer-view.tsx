@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
-import type { JobMatchWithJob } from "@/types";
-import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { useAsyncData } from "@/hooks/use-async-data";
 import {
   documentsService,
   matchesService,
@@ -38,50 +36,33 @@ const MATCH_LIMIT = 50;
 const NO_JOB = "";
 
 export function CvOptimizerView() {
-  const router = useRouter();
-  const [matches, setMatches] = useState<JobMatchWithJob[] | null>(null);
-  const [documents, setDocuments] = useState<DocumentRecord[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string>(NO_JOB);
 
   const job = useDocumentJob(LOGIN_NEXT);
 
-  useEffect(() => {
-    let cancelled = false;
+  const load = useCallback(async () => {
+    const [page, records] = await Promise.all([
+      matchesService.list({ limit: MATCH_LIMIT }),
+      documentsService.list("CV"),
+    ]);
+    return { matches: page.items, documents: records };
+  }, []);
 
-    void (async () => {
-      try {
-        const [page, records] = await Promise.all([
-          matchesService.list({ limit: MATCH_LIMIT }),
-          documentsService.list("CV"),
-        ]);
-        if (cancelled) return;
-        setMatches(page.items);
-        setDocuments(records);
-      } catch (err) {
-        if (cancelled) return;
-        if (apiErrorStatus(err) === 401) {
-          router.replace(`/login?next=${LOGIN_NEXT}`);
-          return;
-        }
-        setError(apiErrorMessage(err, "Không tải được dữ liệu trang tối ưu CV"));
-      }
-    })();
+  const page = useAsyncData(load, {
+    loginNext: LOGIN_NEXT,
+    errorMessage: "Không tải được dữ liệu trang tối ưu CV",
+  });
 
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
+  const error = page.error;
+  const matches = page.data?.matches ?? null;
 
-  // Bản ghi đang bám theo cũng là một dòng trong lịch sử; đồng bộ tại chỗ để
-  // trạng thái ở hai nơi không mâu thuẫn nhau.
-  useEffect(() => {
-    const record = job.document;
-    if (!record) return;
-    setDocuments((current) =>
-      current ? upsertDocument(current, record) : current,
-    );
-  }, [job.document]);
+  // Suy ra lúc render, không chép vào state bằng effect — xem giải thích ở
+  // `cover-letter-view.tsx`, hai màn dùng cùng một cách.
+  const documents: DocumentRecord[] | null = useMemo(() => {
+    const list = page.data?.documents ?? null;
+    if (!list) return null;
+    return job.document ? upsertDocument(list, job.document) : list;
+  }, [page.data, job.document]);
 
   const handleGenerate = () => {
     job.start(() =>
@@ -153,7 +134,13 @@ function CvResult({ record }: { record: DocumentRecord }) {
         <CvContentView cv={cv} />
       </SectionCard>
 
-      <DocumentSource documentId={record.id} loginNext={LOGIN_NEXT} />
+      {/* `key` là BẮT BUỘC: nó buộc React dựng lại component khi đổi tài
+          liệu, thay cho một effect tự dọn state bên trong. */}
+      <DocumentSource
+        key={record.id}
+        documentId={record.id}
+        loginNext={LOGIN_NEXT}
+      />
     </div>
   );
 }

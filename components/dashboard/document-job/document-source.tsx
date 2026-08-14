@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Code2, FileDown } from "lucide-react";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { useAsyncData } from "@/hooks/use-async-data";
 import { documentsService } from "@/services";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 /**
  * Mã `.tex` thô. Chỉ tải khi người dùng bấm mở — phần lớn người dùng không bao
  * giờ cần tới nó, và nó là một request riêng.
+ *
+ * NGƯỜI GỌI PHẢI TRUYỀN `key={documentId}`. Trước đây component tự dọn state
+ * bằng một effect chạy theo `documentId` (đóng khối mã, xoá nội dung cũ) — nhưng
+ * mở tài liệu khác thật ra là **một component khác**, không phải cùng một
+ * component với dữ liệu mới. Đặt `key` để React tháo và dựng lại là cách React
+ * khuyến nghị, và nó xoá luôn cả effect kia: không còn khoảng thời gian nào mà
+ * `documentId` mới đứng cạnh `source` cũ.
  */
 export function DocumentSource({
   documentId,
@@ -22,40 +30,22 @@ export function DocumentSource({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [source, setSource] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  // Đổi sang tài liệu khác thì đóng lại, kẻo người dùng thấy mã của tài liệu cũ.
-  useEffect(() => {
-    setOpen(false);
-    setSource(null);
-    setError(null);
-  }, [documentId]);
+  // `null` khi khối mã đang đóng: chưa ai cần thì chưa gọi request nào.
+  const load = useMemo(
+    () => (open ? () => documentsService.source(documentId) : null),
+    [open, documentId],
+  );
 
-  useEffect(() => {
-    if (!open) return;
+  const tex = useAsyncData(load, {
+    loginNext,
+    errorMessage: "Không đọc được mã .tex",
+  });
 
-    let cancelled = false;
-    void (async () => {
-      try {
-        const tex = await documentsService.source(documentId);
-        if (cancelled) return;
-        setSource(tex);
-      } catch (err) {
-        if (cancelled) return;
-        if (apiErrorStatus(err) === 401) {
-          router.replace(`/login?next=${loginNext}`);
-          return;
-        }
-        setError(apiErrorMessage(err, "Không đọc được mã .tex"));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open, documentId, router, loginNext]);
+  const source = tex.data;
+  const error = pdfError ?? tex.error;
 
   /**
    * Tải PDF rồi MỞ TRONG TAB MỚI.
@@ -70,7 +60,7 @@ export function DocumentSource({
    */
   const openPdf = async () => {
     setPdfLoading(true);
-    setError(null);
+    setPdfError(null);
     try {
       const blob = await documentsService.pdf(documentId);
       const url = URL.createObjectURL(blob);
@@ -81,7 +71,7 @@ export function DocumentSource({
         router.replace(`/login?next=${loginNext}`);
         return;
       }
-      setError(apiErrorMessage(err, "Không tạo được PDF"));
+      setPdfError(apiErrorMessage(err, "Không tạo được PDF"));
     } finally {
       setPdfLoading(false);
     }
@@ -105,11 +95,10 @@ export function DocumentSource({
         </Button>
       </div>
 
-      {/* Lỗi của PDF hiện kể cả khi khối .tex đang đóng: nó không liên quan tới
-          việc mở/đóng mã nguồn. */}
-      {!open && error && <Alert tone="danger">{error}</Alert>}
-
-      {open && error && <Alert tone="danger">{error}</Alert>}
+      {/* Lỗi hiện kể cả khi khối .tex đang đóng: lỗi PDF không liên quan tới
+          việc mở/đóng mã nguồn. Trước đây chỗ này là hai nhánh `!open &&` và
+          `open &&` cùng vẽ đúng một thứ. */}
+      {error && <Alert tone="danger">{error}</Alert>}
 
       {open && !error && source === null && (
         <div className="animate-pulse">

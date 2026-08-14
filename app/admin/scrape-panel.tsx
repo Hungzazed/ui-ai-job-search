@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Play, RefreshCw, Radar } from "lucide-react";
-import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { apiErrorMessage } from "@/lib/axios";
+import { useAsyncData } from "@/hooks/use-async-data";
 import { adminService, scraperService, type ScrapeRunRecord } from "@/services";
 import { formatDateTime, formatDuration } from "@/utils";
 import { Alert } from "@/components/ui/alert";
@@ -55,49 +56,35 @@ function runDuration(run: ScrapeRunRecord): string {
  * chạy quét**. Cách duy nhất là đợi cron 23:00 hoặc gọi API bằng tay.
  */
 export function ScrapePanel() {
-  const [runs, setRuns] = useState<ScrapeRunRecord[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
+
+  const load = useCallback(
+    async () => (await scraperService.history()).slice(0, VISIBLE_RUNS),
+    [],
+  );
+
+  const history = useAsyncData(load, {
+    loginNext: "/admin",
+    errorMessage: "Không tải được lịch sử quét",
+  });
+
+  const runs = history.data;
 
   /**
-   * Đọc lịch sử. KHÔNG chạm vào cờ `refreshing`.
+   * Nút Tải lại quay vòng theo `history.loading`.
    *
-   * Lần tải đầu đã có skeleton lo (`runs === null`), nên bật thêm cờ ở đó chỉ
-   * làm nút Tải lại quay vòng trong khi chưa ai bấm nó. Cờ chỉ dành cho lần bấm
-   * tay, khi người dùng cần biết nút đã ăn.
+   * Trước đây có một cờ `refreshing` riêng vì `loading` khi đó dùng chung cho cả
+   * lần tải đầu, mà lần đầu đã có khung xám lo rồi. Nay không cần: `runs === null`
+   * phân biệt được lần đầu với những lần sau, nên một cờ là đủ và không thể lệch
+   * với việc có request đang chạy hay không.
    */
-  const fetchRuns = useCallback(async () => {
-    try {
-      const history = await scraperService.history();
-      setRuns(history.slice(0, VISIBLE_RUNS));
-      setError(null);
-    } catch (err) {
-      // 403 ở đây nghĩa là màn admin đã chặn sai chỗ khác; để nguyên thông báo
-      // của máy chủ thay vì đoán.
-      if (apiErrorStatus(err) !== 401) {
-        setError(apiErrorMessage(err, "Không tải được lịch sử quét"));
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchRuns();
-  }, [fetchRuns]);
-
-  const refresh = async () => {
-    setRefreshing(true);
-    try {
-      await fetchRuns();
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  const refreshing = runs !== null && history.loading;
 
   const runNow = async () => {
     setStarting(true);
-    setError(null);
+    setStartError(null);
     setReceipt(null);
     try {
       const result = await adminService.scrapeNow();
@@ -108,13 +95,17 @@ export function ScrapePanel() {
               .join(", ")}.`
           : result.note,
       );
-      await fetchRuns();
+      history.reload();
     } catch (err) {
-      setError(apiErrorMessage(err, "Không chạy được lượt quét"));
+      setStartError(apiErrorMessage(err, "Không chạy được lượt quét"));
     } finally {
       setStarting(false);
     }
   };
+
+  // Lỗi của lượt tải và lỗi của nút Quét ngay là hai chuyện khác nhau, nhưng chỉ
+  // một chỗ hiện được — cái mới hơn quan trọng hơn.
+  const error = startError ?? history.error;
 
   return (
     <SectionCard
@@ -126,7 +117,7 @@ export function ScrapePanel() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => void refresh()}
+            onClick={history.reload}
             loading={refreshing}
             aria-label="Tải lại lịch sử quét"
           >

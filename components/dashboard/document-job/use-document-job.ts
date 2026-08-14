@@ -43,20 +43,50 @@ export interface DocumentJob {
 }
 
 /**
+ * Một LƯỢT theo dõi. Định danh của nó là chính object này, không phải nội dung:
+ * bấm lại đúng tài liệu đang xem cũng là một lượt mới (nó có thể vừa đổi trạng
+ * thái ở phía worker), nên `open` luôn tạo object mới thay vì so sánh id.
+ */
+type Watch =
+  | { kind: "starting" }
+  | { kind: "watching"; documentId: string };
+
+/** Những gì đọc được, có ĐÓNG DẤU lượt mà chúng thuộc về. */
+interface Progress {
+  of: Watch | null;
+  document: DocumentRecord | null;
+  error: string | null;
+  timedOut: boolean;
+}
+
+const NOTHING: Progress = {
+  of: null,
+  document: null,
+  error: null,
+  timedOut: false,
+};
+
+/**
  * Bám theo một tài liệu chạy nền: gọi đường GHI, nhận `documentId`, rồi hỏi
  * lại đường ĐỌC cho tới khi bản ghi rời khỏi PENDING/RUNNING.
+ *
+ * `phase` KHÔNG được lưu, nó được **suy ra** từ lượt đang chạy và bản ghi đọc
+ * được. Trước đây nó là state riêng, và mỗi lần bắt đầu một lượt phải tự đặt lại
+ * `phase = "generating"` cùng `error = null` ngay trong thân effect — tức là
+ * `phase` có thể nói khác với `document.status`, và đã có đúng một đường để nó
+ * nói sai: `recheck()` trên một tài liệu FAILED chỉ tăng số lượt mà không đặt lại
+ * `phase`. Suy ra thì không còn hai nguồn để lệch nhau.
+ *
+ * `Progress` mang theo dấu của lượt sinh ra nó, nên dữ liệu của lượt trước không
+ * bao giờ hiện dưới lượt sau. Đó cũng là cách `useAsyncData` làm.
  *
  * `loginNext` là đường dẫn để quay lại sau khi đăng nhập — cookie hết hạn giữa
  * lúc đang chờ 90 giây là chuyện hoàn toàn có thật.
  */
 export function useDocumentJob(loginNext: string): DocumentJob {
   const router = useRouter();
-  const [documentId, setDocumentId] = useState<string | null>(null);
-  /** Tăng lên để buộc vòng hỏi chạy lại trên cùng một `documentId`. */
-  const [round, setRound] = useState(0);
-  const [document, setDocument] = useState<DocumentRecord | null>(null);
-  const [phase, setPhase] = useState<DocumentJobPhase>("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [watch, setWatch] = useState<Watch | null>(null);
+  const [progress, setProgress] = useState<Progress>(NOTHING);
 
   // `start` chạy ngoài useEffect nên không có hàm dọn dẹp nào chặn nó; cờ này
   // là chỗ duy nhất để nó biết component đã tháo mà thôi ghi state.
@@ -68,9 +98,12 @@ export function useDocumentJob(loginNext: string): DocumentJob {
     };
   }, []);
 
-  useEffect(() => {
-    if (!documentId) return;
+  const current = progress.of === watch ? progress : NOTHING;
 
+  useEffect(() => {
+    if (watch?.kind !== "watching") return;
+
+    const { documentId } = watch;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
     let polls = 0;
@@ -79,25 +112,35 @@ export function useDocumentJob(loginNext: string): DocumentJob {
       try {
         const record = await documentsService.get(documentId);
         if (cancelled) return;
-        setDocument(record);
 
         if (record.status === "DONE") {
-          setPhase("done");
+          setProgress({ ...NOTHING, of: watch, document: record });
           return;
         }
         if (record.status === "FAILED") {
-          setPhase("failed");
-          // Gateway AI hỏng thường xuyên, nên lý do thật của worker đáng giá
-          // hơn bất kỳ câu chữ chung chung nào ta tự nghĩ ra.
-          setError(record.error ?? "Worker báo thất bại nhưng không kèm lý do");
+          setProgress({
+            ...NOTHING,
+            of: watch,
+            document: record,
+            // Gateway AI hỏng thường xuyên, nên lý do thật của worker đáng giá
+            // hơn bất kỳ câu chữ chung chung nào ta tự nghĩ ra.
+            error: record.error ?? "Worker báo thất bại nhưng không kèm lý do",
+          });
           return;
         }
 
         polls += 1;
         if (polls >= MAX_POLLS) {
-          setPhase("timeout");
+          setProgress({
+            ...NOTHING,
+            of: watch,
+            document: record,
+            timedOut: true,
+          });
           return;
         }
+
+        setProgress({ ...NOTHING, of: watch, document: record });
         // Hẹn giờ theo chuỗi chứ không dùng setInterval: nếu một lần đọc chậm
         // hơn 4 giây, setInterval sẽ chồng nhiều request lên nhau.
         timer = setTimeout(() => {
@@ -109,13 +152,14 @@ export function useDocumentJob(loginNext: string): DocumentJob {
           router.replace(`/login?next=${loginNext}`);
           return;
         }
-        setPhase("failed");
-        setError(apiErrorMessage(err, "Không đọc được trạng thái tài liệu"));
+        setProgress({
+          ...NOTHING,
+          of: watch,
+          error: apiErrorMessage(err, "Không đọc được trạng thái tài liệu"),
+        });
       }
     };
 
-    setPhase("generating");
-    setError(null);
     void read();
 
     // Rời trang giữa chừng thì hẹn giờ đang chờ phải bị huỷ, nếu không nó vẫn
@@ -125,45 +169,65 @@ export function useDocumentJob(loginNext: string): DocumentJob {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [documentId, round, router, loginNext]);
+  }, [watch, router, loginNext]);
 
   const start = useCallback(
     (create: () => Promise<QueuedDocument>) => {
-      setPhase("generating");
-      setError(null);
-      setDocument(null);
-      setDocumentId(null);
+      // Giữ đúng object này để đóng dấu lỗi vào chính lượt vừa mở.
+      const opened: Watch = { kind: "starting" };
+      setWatch(opened);
 
       void (async () => {
         try {
           const receipt = await create();
           if (!mounted.current) return;
-          setDocumentId(receipt.documentId);
+          setWatch({ kind: "watching", documentId: receipt.documentId });
         } catch (err) {
           if (!mounted.current) return;
           if (apiErrorStatus(err) === 401) {
             router.replace(`/login?next=${loginNext}`);
             return;
           }
-          setPhase("failed");
-          setError(apiErrorMessage(err, "Không gửi được yêu cầu tạo tài liệu"));
+          setProgress({
+            ...NOTHING,
+            of: opened,
+            error: apiErrorMessage(err, "Không gửi được yêu cầu tạo tài liệu"),
+          });
         }
       })();
     },
     [router, loginNext],
   );
 
-  const open = useCallback((id: string) => {
-    setDocument(null);
-    setDocumentId(id);
-    // Bấm lại đúng tài liệu đang xem vẫn phải đọc lại: nó có thể vừa đổi
-    // trạng thái ở phía worker.
-    setRound((current) => current + 1);
+  const open = useCallback((documentId: string) => {
+    setWatch({ kind: "watching", documentId });
   }, []);
 
-  const recheck = useCallback(() => setRound((current) => current + 1), []);
+  const recheck = useCallback(() => {
+    // Object MỚI cho cùng một documentId: đó là cách nói "đọc lại lượt này".
+    setWatch((now) =>
+      now?.kind === "watching" ? { ...now } : now,
+    );
+  }, []);
 
-  return { phase, document, error, start, open, recheck };
+  const phase: DocumentJobPhase = !watch
+    ? "idle"
+    : current.error
+      ? "failed"
+      : current.timedOut
+        ? "timeout"
+        : current.document?.status === "DONE"
+          ? "done"
+          : "generating";
+
+  return {
+    phase,
+    document: current.document,
+    error: current.error,
+    start,
+    open,
+    recheck,
+  };
 }
 
 /**

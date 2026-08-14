@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeft, Bot } from "lucide-react";
 import type { AuthUser } from "@/types";
 import type { AiFailureRecord, AiHealth } from "@/services";
-import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { useAsyncData } from "@/hooks/use-async-data";
 import { adminService, authService } from "@/services";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert, PageError } from "@/components/ui/alert";
@@ -19,90 +18,61 @@ import { AccessDenied, AdminSkeleton, HealthSkeleton } from "./admin-states";
 import { HealthReport } from "./health-report";
 import { ScrapePanel } from "./scrape-panel";
 
+const LOGIN_NEXT = "/admin";
+
 export function AdminView() {
-  const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [authError, setAuthError] = useState<string | null>(null);
-  const [forbidden, setForbidden] = useState(false);
   const [days, setDays] = useState(7);
-  const [health, setHealth] = useState<AiHealth | null>(null);
-  const [failures, setFailures] = useState<AiFailureRecord[] | null>(null);
-  const [dataError, setDataError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const loadMe = useCallback(() => authService.me(), []);
+  const me = useAsyncData(loadMe, {
+    loginNext: LOGIN_NEXT,
+    errorMessage: "Không xác định được tài khoản",
+  });
 
-    void (async () => {
-      try {
-        const me = await authService.me();
-        if (!cancelled) setUser(me);
-      } catch (err) {
-        if (cancelled) return;
-        if (apiErrorStatus(err) === 401) {
-          router.replace("/login?next=/admin");
-          return;
-        }
-        setAuthError(apiErrorMessage(err, "Không xác định được tài khoản"));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
-
+  const user: AuthUser | null = me.data;
   const role = user?.role;
 
-  useEffect(() => {
-    if (role !== "ADMIN") return;
+  /**
+   * Chỉ đọc số liệu SAU KHI biết tài khoản là ADMIN — `null` nghĩa là chưa tới lúc.
+   *
+   * Gộp hai request vào một `load` là có chủ đích: màn hình chỉ hiện báo cáo khi có
+   * cả hai (`!health || !failures` cho ra khung xám), nên tách thành hai lượt tải
+   * riêng chỉ tạo ra một trạng thái nửa vời mà không màn nào dùng.
+   */
+  const loadHealth = useMemo(
+    () =>
+      role === "ADMIN"
+        ? async (): Promise<{
+            health: AiHealth;
+            failures: AiFailureRecord[];
+          }> => {
+            const [health, failures] = await Promise.all([
+              adminService.aiHealth(days),
+              adminService.aiFailures(FAILURE_LIMIT),
+            ]);
+            return { health, failures };
+          }
+        : null,
+    [role, days],
+  );
 
-    let cancelled = false;
-    // Xoá dữ liệu cũ để khung xám hiện lại khi đổi khoảng thời gian — giữ số cũ
-    // dưới nhãn mới thì người đọc tin vào một con số không thuộc về nhãn đó.
-    setHealth(null);
-    setFailures(null);
-    setDataError(null);
+  const report = useAsyncData(loadHealth, {
+    loginNext: LOGIN_NEXT,
+    errorMessage: "Không tải được số liệu AI gateway",
+  });
 
-    void (async () => {
-      try {
-        const [nextHealth, nextFailures] = await Promise.all([
-          adminService.aiHealth(days),
-          adminService.aiFailures(FAILURE_LIMIT),
-        ]);
-        if (cancelled) return;
-        setHealth(nextHealth);
-        setFailures(nextFailures);
-      } catch (err) {
-        if (cancelled) return;
-        const status = apiErrorStatus(err);
-        if (status === 401) {
-          router.replace("/login?next=/admin");
-          return;
-        }
-        // Vai trò đọc tươi từ database mỗi request, nên một tài khoản có thể bị
-        // hạ quyền ngay giữa phiên. Đó không phải hỏng hóc — đừng báo như lỗi.
-        if (status === 403) {
-          setForbidden(true);
-          return;
-        }
-        setDataError(apiErrorMessage(err, "Không tải được số liệu AI gateway"));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [role, days, router]);
-
-  if (authError) {
+  if (me.error) {
     return (
-      <PageError title="Không tải được trang quản trị" message={authError} />
+      <PageError title="Không tải được trang quản trị" message={me.error} />
     );
   }
 
   if (!user) return <AdminSkeleton />;
 
-  if (user.role !== "ADMIN" || forbidden) return <AccessDenied />;
+  // 403 nghĩa là tài khoản vừa bị hạ quyền giữa phiên — không phải hỏng hóc.
+  if (user.role !== "ADMIN" || report.errorStatus === 403) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="space-y-6">
@@ -130,11 +100,14 @@ export function AdminView() {
         className="max-w-sm"
       />
 
-      {dataError ? (
-        <Alert tone="danger">{dataError}</Alert>
-      ) : !health || !failures ? (
+      {report.error ? (
+        <Alert tone="danger">{report.error}</Alert>
+      ) : !report.data ? (
+        // Khung xám theo "chưa có dữ liệu cho khoảng thời gian đang chọn". Trước
+        // đây phải tự `setHealth(null)` đầu mỗi lượt tải để được điều này; nay
+        // `useAsyncData` bỏ dữ liệu cũ khi `load` đổi nên nó tự đúng.
         <HealthSkeleton />
-      ) : health.total === 0 ? (
+      ) : report.data.health.total === 0 ? (
         <Card>
           <CardContent>
             <EmptyState
@@ -145,7 +118,10 @@ export function AdminView() {
           </CardContent>
         </Card>
       ) : (
-        <HealthReport health={health} failures={failures} />
+        <HealthReport
+          health={report.data.health}
+          failures={report.data.failures}
+        />
       )}
     </div>
   );

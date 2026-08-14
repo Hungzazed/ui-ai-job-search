@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, LogIn, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,19 @@ function LoginForm() {
             Đăng nhập
           </Button>
         </form>
+
+        {/* Thiếu đường này thì người dùng mới vào /login không có lối nào tạo
+            tài khoản — trước đây tài khoản chỉ tạo được bằng lệnh SQL. Giữ
+            nguyên `next` để sau khi đăng ký xong họ về đúng chỗ định tới. */}
+        <p className="text-center text-xs text-slate-500">
+          Chưa có tài khoản?{" "}
+          <Link
+            href={`/register?next=${encodeURIComponent(next)}`}
+            className="font-semibold text-slate-900 underline underline-offset-2"
+          >
+            Tạo tài khoản
+          </Link>
+        </p>
       </div>
     </div>
   );

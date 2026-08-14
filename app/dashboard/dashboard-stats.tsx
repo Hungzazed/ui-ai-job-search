@@ -14,7 +14,7 @@ export function DashboardStats({ data }: { data: DashboardOverview }) {
         icon={User}
         value={`${data.profileCompletion}%`}
         subtitle="Hoàn thiện hồ sơ để tăng độ chính xác khi chấm điểm"
-        actionLabel="Cập nhật thông tin"
+        action={{ label: "Cập nhật thông tin", href: "/dashboard/profile" }}
         progress={data.profileCompletion}
       />
       <StatCard
@@ -26,7 +26,7 @@ export function DashboardStats({ data }: { data: DashboardOverview }) {
             ? `+${matchingJobs.newThisWeek} việc làm mới tuần này`
             : "Chưa có việc mới trong tuần"
         }
-        actionLabel="Xem việc phù hợp"
+        action={{ label: "Xem việc phù hợp", href: "/dashboard/jobs" }}
       />
       <StatCard
         title="Đơn ứng tuyển"
@@ -37,7 +37,7 @@ export function DashboardStats({ data }: { data: DashboardOverview }) {
             ? `${applications.active} đơn đang chờ kết quả`
             : "Chưa có đơn nào đang mở"
         }
-        actionLabel="Lịch sử ứng tuyển"
+        action={{ label: "Lịch sử ứng tuyển", href: "/dashboard/applications" }}
       />
       <StatCard
         title="Tỷ lệ match TB"
@@ -52,7 +52,10 @@ export function DashboardStats({ data }: { data: DashboardOverview }) {
             ? `Tính trên ${matchingJobs.total} việc đã chấm`
             : "Chưa có dữ liệu chấm điểm"
         }
-        actionLabel="Chi tiết phân tích"
+        // CỐ Ý không có `action`. Ô này từng ghi "Chi tiết phân tích" — nhưng
+        // không có trang phân tích nào để đi tới, nên nó chỉ là một dòng chữ bấm
+        // không ăn. Khi nào có trang đó thật thì thêm `action` vào đây; đặt tạm
+        // href sang một trang khác chỉ là đổi lời hứa suông thành lừa hướng.
       />
     </div>
   );

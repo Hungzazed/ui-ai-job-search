@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, MapPin, Search, ShieldAlert, Wallet } from "lucide-react";
+import { LocationText } from "@/components/dashboard/location-text";
 import type { ApplicationStatus, JobMatchWithJob } from "@/types";
 import { toJobCard } from "@/lib/adapters";
 import { APPLICATION_STATUS_LABELS } from "@/lib/application-status";
@@ -108,7 +109,7 @@ function JobOption({
               <Wallet className="size-3.5" /> {formatJobSalary(job)}
             </span>
             <span className="inline-flex items-center gap-1">
-              <MapPin className="size-3.5" /> {job.location}
+              <MapPin className="size-3.5" /> <LocationText location={job.location} />
             </span>
           </div>
         </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Bookmark, MapPin, Sparkles } from "lucide-react";
+import { LocationText } from "@/components/dashboard/location-text";
 import type { Job } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,18 +56,29 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
     onSavedChange?.(job.id, next);
   };
 
+  /*
+   * `h-full flex flex-col` ở Card, `flex-1` xuống tới cột nội dung, `mt-auto` ở
+   * hàng nút — cả chuỗi này chỉ để hàng nút của các thẻ CẠNH NHAU nằm cùng một
+   * độ cao.
+   *
+   * Lưới kéo mọi thẻ cao bằng nhau, nhưng nội dung thì không đều: tên công ty dài
+   * ngắn khác nhau, tiêu đề một hoặc hai dòng, thẻ tag có thể không có. Không đẩy
+   * hàng nút xuống đáy thì ba nút "Tối ưu & Ứng tuyển" cạnh nhau lệch nhau vài
+   * chục pixel. Lỗi này vốn đã có ở cỡ 2xl từ trước, chỉ chưa ai xem tới.
+   */
   return (
-    <Card className="group transition-all duration-150 hover:border-slate-300 hover:shadow-xs">
-      <CardContent className="p-4.5">
-        <div className="flex items-start gap-3.5">
+    <Card className="group flex h-full flex-col transition-all duration-150 hover:border-slate-300 hover:shadow-xs">
+      <CardContent className="flex flex-1 flex-col p-4.5">
+        <div className="flex flex-1 gap-3.5">
           <CompanyLogo
             initials={job.companyInitials}
             color={job.companyColor}
             src={job.companyLogo}
             size="lg"
+            className="self-start"
           />
 
-          <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-400">{job.company}</p>
@@ -84,12 +96,12 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
               <span className="font-mono font-semibold text-slate-800">{formatJobSalary(job)}</span>
               <span className="inline-flex items-center gap-1">
                 <MapPin className="size-3.5 text-slate-400" />
-                {job.location}
+                <LocationText location={job.location} />
               </span>
               <JobTime time={job.postedAt} />
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-3 mb-4 flex flex-wrap gap-1.5">
               {job.tags.map((tag) => (
                 <Badge key={tag} variant="outline" className="text-[11px] text-slate-600 border-slate-200">
                   {tag}
@@ -97,7 +109,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
               ))}
             </div>
 
-            <div className="mt-4 flex items-center justify-between border-t border-slate-100/90 pt-3">
+            <div className="mt-auto flex items-center justify-between border-t border-slate-100/90 pt-3">
               <Button size="sm" variant="outline" onClick={toggleSave} aria-label="Lưu việc làm">
                 <Bookmark className={cn("size-3.5", saved && "fill-primary-600 text-primary-600")} />
                 {saved ? "Đã lưu" : "Lưu"}

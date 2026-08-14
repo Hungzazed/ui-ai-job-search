@@ -31,7 +31,17 @@ export function ScoreBreakdown({
 }: {
   todayScore: DashboardOverview["todayScore"];
 }) {
-  const hasScores = todayScore.sampleSize > 0;
+  /*
+   * MỘT vị từ cho "đã có điểm hay chưa", và nó là `overall !== null` chứ không
+   * phải `sampleSize > 0`.
+   *
+   * Hai lý do. Thứ nhất, dùng hai vị từ khác nhau cho cùng một sự thật trong cùng
+   * một thẻ là chỗ để chúng lệch nhau về sau. Thứ hai, chỉ `overall !== null` mới
+   * thu hẹp được kiểu để `AIMatchProgress` nhận `number` — `sampleSize > 0` không
+   * nói gì với TypeScript về `overall`, và chính khoảng trống đó đã sinh ra
+   * `?? 0` cùng cái vòng 0% bịa.
+   */
+  const overall = todayScore.overall;
 
   return (
     <Card className="border-slate-200/90 bg-white">
@@ -43,35 +53,63 @@ export function ScoreBreakdown({
           Điểm phù hợp gần đây
         </CardTitle>
         <CardDescription className="text-xs">
-          {hasScores
-            ? `Trung bình ${todayScore.sampleSize} lần chấm gần nhất`
-            : "Chưa có lần chấm nào"}
+          {overall === null
+            ? "Chưa có lần chấm nào"
+            : `Trung bình ${todayScore.sampleSize} lần chấm gần nhất`}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4 pt-4">
-        <AIMatchProgress
-          value={todayScore.overall ?? 0}
-          size={130}
-          strokeWidth={9}
-        />
+        {/*
+          Chưa có lần chấm nào thì KHÔNG vẽ vòng tròn.
 
-        <div className="w-full space-y-2 border-t border-slate-100 pt-3">
-          {SCORE_ROWS.map((row) => (
-            <ScoreLine
-              key={row.key}
-              label={row.label}
-              weight={row.weight}
-              value={todayScore[row.key]}
+          Trước đây chỗ này là `value={todayScore.overall ?? 0}`, nên khi chưa có
+          dữ liệu thẻ vừa ghi "Chưa có lần chấm nào" vừa vẽ một vòng 0% màu đỏ kèm
+          câu kết luận "Ít phù hợp — xem bổ sung kỹ năng". Đó không phải thiếu dữ
+          liệu, đó là một phán xét bịa về hồ sơ người dùng. Ô "Tỷ lệ match TB" ngay
+          trên đã tránh đúng cái bẫy này bằng cách hiện dấu gạch ngang.
+        */}
+        {overall === null ? (
+          <div className="w-full py-6 text-center">
+            <p className="text-sm font-semibold text-slate-700">
+              Chưa đủ dữ liệu để chấm
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Hoàn thiện hồ sơ và quét tin tuyển dụng, hệ thống sẽ chấm độ phù hợp
+              rồi hiện phân tích tại đây.
+            </p>
+          </div>
+        ) : (
+          <>
+            <AIMatchProgress
+              value={overall}
+              size={130}
+              strokeWidth={9}
             />
-          ))}
-        </div>
 
-        <Link href="/dashboard/cv-optimizer" className="mt-1 w-full">
-          <Button variant="secondary" className="w-full">
-            <FileText className="size-4" />
-            Tối ưu CV cho JD này
-          </Button>
-        </Link>
+            <div className="w-full space-y-2 border-t border-slate-100 pt-3">
+              {SCORE_ROWS.map((row) => (
+                <ScoreLine
+                  key={row.key}
+                  label={row.label}
+                  weight={row.weight}
+                  value={todayScore[row.key]}
+                />
+              ))}
+            </div>
+
+            {/*
+              Nhãn cũ là "Tối ưu CV cho JD này" — sai cả khi CÓ dữ liệu: thẻ này là
+              trung bình của `sampleSize` lần chấm gần nhất, không phải một JD, và
+              link đi tới CV Optimizer chung chứ không mang theo việc nào.
+            */}
+            <Link href="/dashboard/cv-optimizer" className="mt-1 w-full">
+              <Button variant="secondary" className="w-full">
+                <FileText className="size-4" />
+                Mở CV Optimizer
+              </Button>
+            </Link>
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -6,11 +6,13 @@ import { usePathname } from "next/navigation";
 import {
   Briefcase,
   FileText,
+  GraduationCap,
   History,
   Layers,
   LayoutDashboard,
   LogOut,
   Mail,
+  MessageSquare,
   Send,
   Settings,
   Sparkles,
@@ -19,8 +21,6 @@ import {
 } from "lucide-react";
 import { cn, personInitials } from "@/utils";
 import { useSession } from "@/components/dashboard/session";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 const navItems = [
   { label: "Tổng quan", href: "/dashboard", icon: LayoutDashboard, exact: true },
@@ -31,7 +31,12 @@ const navItems = [
   { label: "Cover Letter", href: "/dashboard/cover-letter", icon: Mail },
   { label: "Ứng tuyển", href: "/dashboard/applications/apply", icon: Send },
   { label: "Lịch sử ứng tuyển", href: "/dashboard/applications", icon: History },
-  { label: "Thiết lập", href: "/dashboard/settings", icon: Settings },
+  { label: "Chuẩn bị phỏng vấn", href: "/dashboard/interview", icon: MessageSquare },
+  { label: "Lộ trình học", href: "/dashboard/upskill", icon: GraduationCap },
+  // Nhãn phải khớp tiêu đề trang ("Tài khoản"). Trước đây sidebar ghi "Thiết
+  // lập" trong khi trang hiện "Tài khoản" — người dùng bấm một chữ rồi đọc thấy
+  // chữ khác, và đó là kiểu lệch chỉ lộ ra khi xem màn hình thật.
+  { label: "Tài khoản", href: "/dashboard/settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -83,12 +88,10 @@ export function Sidebar() {
               )}
             >
               <Icon className={cn("size-4 shrink-0", active ? "text-primary-600" : "text-slate-400")} />
+              {/* Trước đây có một Badge "24" viết cứng cạnh "Việc làm phù hợp",
+                  hiện đúng con số đó cho mọi tài khoản bất kể thực tế có bao
+                  nhiêu. Số thật đã có ở màn Tổng quan, lấy từ backend. */}
               <span className="truncate">{label}</span>
-              {label === "Việc làm phù hợp" && (
-                <Badge variant="primary" className="ml-auto font-mono text-[10px] px-1.5 py-0">
-                  24
-                </Badge>
-              )}
             </Link>
           );
         })}
@@ -109,22 +112,10 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* Upgrade Pro card — Crisp anti-slop styling */}
-      <div className="mx-3 mb-3 rounded-xl border border-slate-200 bg-slate-900 p-3.5 text-white shadow-xs">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-amber-400" />
-          <p className="text-xs font-semibold tracking-wide text-slate-100">Nâng cấp Pro Agent</p>
-        </div>
-        <p className="mt-1.5 text-[11px] leading-relaxed text-slate-300">
-          Mở khóa CV tối ưu không giới hạn & RPA tự động ứng tuyển.
-        </p>
-        <Button
-          size="sm"
-          className="mt-3 w-full bg-white text-slate-900 hover:bg-slate-100 font-semibold text-xs border-0"
-        >
-          Nâng cấp ngay
-        </Button>
-      </div>
+      {/* Ở đây từng có thẻ "Nâng cấp Pro Agent" hứa "CV tối ưu không giới hạn &
+          RPA tự động ứng tuyển", với một nút không có onClick. Hệ thống không có
+          gói dịch vụ, không có thanh toán, và RPA tự động ứng tuyển thì chưa tồn
+          tại — quảng cáo cả ba thứ đó là hứa suông. */}
 
       {/* Profile card */}
       <div className="flex items-center gap-2.5 border-t border-slate-100 px-4 py-3">

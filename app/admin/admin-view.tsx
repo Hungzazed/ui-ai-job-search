@@ -17,6 +17,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { FAILURE_LIMIT, RANGE_TABS } from "./admin-constants";
 import { AccessDenied, AdminSkeleton, HealthSkeleton } from "./admin-states";
 import { HealthReport } from "./health-report";
+import { ScrapePanel } from "./scrape-panel";
 
 export function AdminView() {
   const router = useRouter();
@@ -106,8 +107,8 @@ export function AdminView() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Sức khoẻ AI Gateway"
-        subtitle="Tỷ lệ thành công, độ trễ p50/p95 và phân loại nguyên nhân hỏng của các lời gọi model"
+        title="Bảng điều khiển vận hành"
+        subtitle="Sức khoẻ AI Gateway và điều khiển việc quét tin tuyển dụng"
         actions={
           <Link href="/dashboard">
             <Button variant="outline">
@@ -118,6 +119,10 @@ export function AdminView() {
         }
       />
 
+      <ScrapePanel />
+
+      {/* Từ đây xuống là phần đo sức khoẻ gateway; khoảng thời gian chỉ áp cho
+          phần này, không liên quan tới bảng quét ở trên. */}
       <Tabs
         tabs={RANGE_TABS}
         value={String(days)}

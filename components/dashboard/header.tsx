@@ -1,8 +1,7 @@
 "use client";
 
-import { Bell, Menu, Search, Sparkles } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useSession } from "@/components/dashboard/session";
-import { Badge } from "@/components/ui/badge";
 import { personInitials } from "@/utils";
 
 interface HeaderProps {
@@ -23,32 +22,18 @@ export function Header({ onMenuClick }: HeaderProps) {
         <Menu className="size-5" />
       </button>
 
-      {/* Search Input */}
-      <div className="relative hidden max-w-md flex-1 sm:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-        <input
-          type="search"
-          placeholder="Tìm việc làm, kỹ năng, công ty... (bấm / để tìm nhanh)"
-          className="h-9.5 w-full rounded-lg border border-slate-200/90 bg-slate-50/70 pl-9.5 pr-4 text-xs sm:text-sm text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-primary-500 focus:bg-white focus:ring-2 focus:ring-primary-500/20"
-        />
-      </div>
+      {/*
+        Ba thứ đã bị gỡ khỏi đây, tất cả đều là giao diện không nối vào gì:
 
-      {/* Status indicator & User menu */}
+        - **Ô tìm kiếm**: không có handler, không có state, và placeholder còn
+          quảng cáo phím tắt "/" mà không chỗ nào trong ứng dụng lắng nghe. Tìm
+          kiếm thật đã có ở màn Tất cả việc làm, nơi backend hỗ trợ `?q=`.
+        - **Chuông thông báo**: chấm đỏ "chưa đọc" hiện vĩnh viễn trong khi không
+          có hệ thống thông báo nào tồn tại.
+        - **Nhãn "Agent Engine: Active"**: chữ cứng, không bao giờ phản ánh trạng
+          thái thật. Sức khoẻ gateway đo được thật thì nằm ở màn Admin.
+      */}
       <div className="ml-auto flex items-center gap-3">
-        {/* AI Status Badge */}
-        <Badge variant="success" dot className="hidden md:inline-flex bg-emerald-50 text-emerald-800 font-mono text-[11px]">
-          Agent Engine: Active
-        </Badge>
-
-        <button
-          type="button"
-          className="relative flex size-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200/80 bg-white text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:translate-y-[1px]"
-          aria-label="Thông báo"
-        >
-          <Bell className="size-4" />
-          <span className="absolute right-2 top-2 size-2 rounded-full bg-rose-500 ring-2 ring-white" />
-        </button>
-
         <div className="hidden items-center gap-2.5 border-l border-slate-200/80 pl-3 sm:flex">
           <div className="bg-primary-600 flex size-8.5 items-center justify-center rounded-lg text-xs font-bold text-white shadow-xs">
             {loading ? "…" : personInitials(user?.name)}

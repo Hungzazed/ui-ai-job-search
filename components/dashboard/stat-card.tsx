@@ -1,8 +1,25 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { ProgressCircle } from "@/components/ui/progress-circle";
 import { cn } from "@/utils";
+
+/**
+ * Chỗ cần đi tới khi bấm dòng chữ dưới ô số liệu.
+ *
+ * Gộp nhãn và đích vào MỘT object là có chủ ý. Trước đây là hai prop rời
+ * `actionLabel?: string` và `onAction?: () => void`, và cả bốn ô trên Dashboard
+ * đều truyền nhãn mà quên handler — ra một `<button onClick={undefined}>`: có con
+ * trỏ bàn tay, có mũi tên chạy khi hover, bấm vào thì không có gì xảy ra. Kiểu cũ
+ * cho phép chuyện đó nên TypeScript không nói gì.
+ *
+ * Với hình dạng này, có nhãn thì buộc có đích. Không biểu diễn được cái sai nữa.
+ */
+interface StatCardAction {
+  label: string;
+  href: string;
+}
 
 interface StatCardProps {
   title: string;
@@ -10,8 +27,8 @@ interface StatCardProps {
   iconClassName?: string;
   value: string;
   subtitle?: string;
-  actionLabel?: string;
-  onAction?: () => void;
+  /** Bỏ trống khi chưa có trang nào để đi tới — ô sẽ không hiện chữ bấm được. */
+  action?: StatCardAction;
   progress?: number;
   className?: string;
 }
@@ -22,8 +39,7 @@ export function StatCard({
   iconClassName,
   value,
   subtitle,
-  actionLabel,
-  onAction,
+  action,
   progress,
   className,
 }: StatCardProps) {
@@ -49,15 +65,17 @@ export function StatCard({
 
       {subtitle && <p className="mt-1 text-xs text-slate-500 font-normal leading-normal">{subtitle}</p>}
 
-      {actionLabel && (
-        <button
-          type="button"
-          onClick={onAction}
-          className="mt-3 inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-primary-600 transition-colors hover:text-primary-700 group"
+      {action && (
+        // `Link` chứ không `button`: đây là điều hướng, nên nó phải mở được ở tab
+        // mới, hiện đích ở thanh trạng thái, và điều hướng được cả khi JS chưa kịp
+        // chạy — ba thứ một `<button onClick>` không cho.
+        <Link
+          href={action.href}
+          className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary-600 transition-colors hover:text-primary-700 group"
         >
-          {actionLabel}
+          {action.label}
           <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-        </button>
+        </Link>
       )}
     </Card>
   );

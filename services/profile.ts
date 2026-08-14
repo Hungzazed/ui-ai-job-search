@@ -40,7 +40,13 @@ export interface ProfileRecord {
 export const profileService = {
   get: () => api.get<ProfileRecord>("/profile").then((r) => r.data),
 
-  /** PATCH: chỉ gửi những trường muốn đổi, phần còn lại giữ nguyên. */
+  /**
+   * Chỉ gửi những trường muốn đổi, phần còn lại giữ nguyên.
+   *
+   * Động từ là PUT nhưng thân request là một PHẦN hồ sơ — lệch với nghĩa thông
+   * thường của PUT, và đó là chủ đích: gửi cả hồ sơ mỗi lần lưu sẽ khiến một tab
+   * mở lâu ghi đè mất thay đổi mà tab kia vừa lưu.
+   */
   update: (input: Partial<Omit<ProfileRecord, "id" | "userId" | "completion" | "createdAt" | "updatedAt">>) =>
-    api.patch<ProfileRecord>("/profile", input).then((r) => r.data),
+    api.put<ProfileRecord>("/profile", input).then((r) => r.data),
 };

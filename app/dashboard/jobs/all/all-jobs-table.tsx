@@ -17,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn, companyColor, companyInitials, formatJobSalary } from "@/utils";
+import { LocationText } from "@/components/dashboard/location-text";
 
 /** Kết quả của một lần bấm "Chấm điểm" trên một dòng. */
 export type ScoreRequest = "queued" | "failed";
@@ -107,7 +108,7 @@ function JobRow({
               <span className="font-mono">{salary}</span>
               <span className="inline-flex items-center gap-1">
                 <MapPin className="size-3" />
-                {job.location ?? "Không rõ"}
+                <LocationText location={job.location} />
               </span>
             </p>
             <JobTime
@@ -123,7 +124,7 @@ function JobRow({
       </TableCell>
 
       <TableCell className="hidden text-slate-500 lg:table-cell">
-        {job.location ?? "Không rõ"}
+        <LocationText location={job.location} />
       </TableCell>
 
       <TableCell className="hidden xl:table-cell">

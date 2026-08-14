@@ -35,6 +35,6 @@ export const applicationsService = {
    */
   updateStatus: (id: string, status: ApplicationStatus, note?: string) =>
     api
-      .patch<Application>(`/applications/${id}/status`, { status, note })
+      .put<Application>(`/applications/${id}/status`, { status, note })
       .then((r) => r.data),
 };

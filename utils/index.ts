@@ -10,6 +10,11 @@ export { cn } from "./cn";
 export { companyColor, companyInitials, personInitials } from "./company";
 export { formatDate, formatDateTime, relativeDay, relativeTime } from "./date";
 export { formatCount, formatDuration } from "./duration";
+export {
+  displayLocation,
+  LOCATION_UNKNOWN,
+  type DisplayLocation,
+} from "./location";
 export { formatJobSalary, formatSalary } from "./salary";
 export {
   matchTone,

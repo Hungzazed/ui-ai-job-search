@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Save } from "lucide-react";
+import { Save, Upload } from "lucide-react";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { profileService } from "@/services";
 import type { ProfileRecord } from "@/services";
@@ -135,6 +136,14 @@ export function ProfileView() {
                 Có thay đổi chưa lưu
               </span>
             )}
+            {/* Lối vào Agent 1. Đặt cạnh nút Lưu vì đây là hai cách điền cùng một
+                hồ sơ: gõ tay, hoặc để AI đọc CV rồi tự chọn nhận phần nào. */}
+            <Link href="/dashboard/profile/upload">
+              <Button variant="outline">
+                <Upload className="size-4" />
+                Đọc từ CV
+              </Button>
+            </Link>
             <Button
               loading={saving}
               disabled={!dirty}

@@ -47,3 +47,36 @@ export const APPLICATION_TABS: Array<{
   { value: "offer", label: "Có offer" },
   { value: "closed", label: "Đã đóng" },
 ];
+
+/**
+ * Những bước tiếp theo hay gặp từ mỗi trạng thái.
+ *
+ * ĐÂY KHÔNG PHẢI MÁY TRẠNG THÁI, và cũng không phải nguồn thẩm quyền. Backend
+ * cố ý cho đổi trạng thái khá tự do vì đời thật lộn xộn — nhà tuyển dụng gọi lại
+ * sau khi đã từ chối, ứng viên rút rồi quay lại — và nó chỉ chặn đúng ba thứ
+ * thật sự sai (xem `transitions.ts` phía máy chủ). Bảng này chỉ rút gọn 10 lựa
+ * chọn xuống còn vài cái đáng bấm, để người dùng không phải đọc cả danh sách.
+ *
+ * Hệ quả cần nhớ: **một lựa chọn có trong bảng vẫn có thể bị máy chủ từ chối.**
+ * Rõ nhất là `HIRED` và `OFFER_DECLINED` — máy chủ đòi đơn phải TỪNG ở `OFFER`,
+ * mà dữ liệu client không có nhật ký sự kiện nên không tự biết điều đó. Giao diện
+ * hiện nguyên văn lý do máy chủ trả về thay vì đoán trước.
+ *
+ * Mỗi trạng thái kết thúc đều có ít nhất một đường quay lại: đánh dấu nhầm là
+ * chuyện thường, và một giao diện không cho sửa sẽ đẩy người dùng sang việc tự
+ * tạo đơn mới cho cùng một công việc — thứ mà ràng buộc trùng đơn sẽ chặn.
+ */
+export const NEXT_STATUSES: Record<ApplicationStatus, ApplicationStatus[]> = {
+  RANKED: ["APPLIED", "WITHDRAWN", "EXPIRED"],
+  APPLIED: ["INTERVIEW", "REJECTED", "NO_RESPONSE", "WITHDRAWN"],
+  INTERVIEW: ["OFFER", "REJECTED", "NO_RESPONSE", "WITHDRAWN"],
+  // Thêm một vòng phỏng vấn sau khi đã có offer là chuyện có thật, nên giữ
+  // INTERVIEW ở đây.
+  OFFER: ["HIRED", "OFFER_DECLINED", "INTERVIEW", "REJECTED"],
+  HIRED: ["OFFER"],
+  REJECTED: ["INTERVIEW", "APPLIED"],
+  NO_RESPONSE: ["INTERVIEW", "APPLIED"],
+  OFFER_DECLINED: ["OFFER"],
+  WITHDRAWN: ["APPLIED"],
+  EXPIRED: ["APPLIED"],
+};

@@ -9,28 +9,12 @@
  * Vì vậy ở đây KHÔNG ép kiểu (`as CvContent`). Mỗi trường được kiểm tra riêng,
  * thiếu hoặc sai kiểu thì bỏ qua đúng khối đó — giao diện mất một mục còn hơn
  * cả trang trắng vì `undefined.map`.
+ *
+ * Các hàm đọc cơ bản nằm ở `parse-json.ts` vì `interview-content.ts` cũng dùng
+ * đúng bộ đó.
  */
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/** Chuỗi rỗng coi như thiếu: in một dòng trống chỉ làm rối bố cục. */
-function text(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function textList(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.map(text).filter((item): item is string => item !== null);
-}
-
-function objectList<T>(value: unknown, parse: (item: unknown) => T | null): T[] {
-  if (!Array.isArray(value)) return [];
-  return value.map(parse).filter((item): item is T => item !== null);
-}
+import { isRecord, objectList, text, textList } from "./parse-json";
 
 /* =========================================================
    CV

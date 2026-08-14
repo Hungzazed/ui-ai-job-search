@@ -15,6 +15,7 @@ export interface ProfileDraft {
   headline: string;
   summary: string;
   location: string;
+  phone: string;
   country: string;
   citizenship: string;
   workPermit: string;
@@ -72,6 +73,7 @@ const TEXT_FIELDS = [
   "headline",
   "summary",
   "location",
+  "phone",
   "country",
   "citizenship",
   "workPermit",
@@ -115,6 +117,7 @@ export const toDraft = (profile: ProfileRecord): ProfileDraft => ({
   headline: profile.headline ?? "",
   summary: profile.summary ?? "",
   location: profile.location ?? "",
+  phone: profile.phone ?? "",
   country: profile.country ?? "",
   citizenship: profile.citizenship ?? "",
   workPermit: profile.workPermit ?? "",

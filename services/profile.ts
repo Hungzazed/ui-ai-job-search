@@ -12,6 +12,8 @@ export interface ProfileRecord {
   headline: string | null;
   summary: string | null;
   location: string | null;
+  /// Người dùng tự điền — AI không đề xuất trường này từ CV. Xem `identity-section.tsx`.
+  phone: string | null;
   country: string | null;
   citizenship: string | null;
   workPermit: string | null;

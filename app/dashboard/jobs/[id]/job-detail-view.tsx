@@ -17,6 +17,7 @@ import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
 import { JobDetailHeader } from "./job-detail-header";
 import { InsightList } from "./match-insights";
+import { AssistedApplyCard } from "@/components/dashboard/assisted-apply-card";
 import { MatchPanel } from "./match-panel";
 
 interface JobDetailViewProps {
@@ -161,6 +162,10 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
               items={match.gaps}
             />
           )}
+
+          {/* Chỉ hiện khi tin có link: không có link thì không có gì để mở, và một
+              nút bấm vào rồi báo lỗi tệ hơn là không có nút. */}
+          {job.url && <AssistedApplyCard jobId={job.id} jobUrl={job.url} />}
         </div>
 
         <MatchPanel match={match} />

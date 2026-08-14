@@ -1,6 +1,7 @@
 export { authService } from "./auth";
 export { dashboardService } from "./dashboard";
 export { applicationsService } from "./applications";
+export { applyAttemptsService } from "./apply-attempts";
 export { jobsService } from "./jobs";
 export { matchesService } from "./matches";
 export { documentsService } from "./documents";
@@ -22,6 +23,11 @@ export type {
   WorkStatus,
 } from "./types";
 
+export type {
+  ApplyAttemptRecord,
+  ApplyOutcome,
+  FilledField,
+} from "./apply-attempts";
 export type { CreateJobInput, JobRecord } from "./jobs";
 export type { DocumentKind, DocumentRecord } from "./documents";
 export type { InterviewPrepRecord } from "./interview";

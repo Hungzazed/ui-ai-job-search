@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import { waitForImages } from "./support";
 
 /**
  * Chụp ảnh từng màn hình để xem BỐ CỤC.
@@ -82,6 +83,7 @@ test("chụp các trang công khai", async ({ page }) => {
   ]) {
     await page.goto(path);
     await expect(page.locator("form")).toBeVisible();
+    await waitForImages(page);
     await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true });
   }
 });
@@ -122,6 +124,7 @@ test("chụp các màn sau khi đăng nhập", async ({ page }) => {
     for (const broken of BROKEN) expect(body).not.toContain(broken);
     for (const mock of REMOVED_MOCKS) expect(body).not.toContain(mock);
 
+    await waitForImages(page);
     await page.screenshot({ path: `${SHOTS}/${name}.png`, fullPage: true });
   }
 

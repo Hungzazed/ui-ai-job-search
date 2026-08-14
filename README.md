@@ -47,10 +47,29 @@ Lưu ý: `pnpm build` ghi đè `.next` và làm dev server đang chạy trả 50
 
 ## Nợ đã ghi, không phải bỏ sót
 
-- **7 cảnh báo `react-hooks/set-state-in-effect`** trên 7 tệp. Đó là một triệu chứng chứ không phải bảy lỗi lẻ: toàn bộ ứng dụng tự viết `useEffect` + `useState` để tải dữ liệu, không dùng thư viện data-fetching nào. Lý do giữ ở mức `warn` và điều kiện để đưa về `error` ghi trong `eslint.config.mjs`.
-- **Chưa có test cho component và hook.** Hook đáng test nhất là `use-document-job.ts` — máy trạng thái polling `idle → generating → done/failed/timeout`; nó cần jsdom.
+- **Chưa có test đơn vị cho component và hook** — chưa cài `jsdom` lẫn `@testing-library/react`. Bộ đơn vị (vitest) cố ý chỉ kiểm hàm thuần; hành vi được kiểm bằng Playwright trên trình duyệt thật, và hai thứ dễ vỡ nhất đã có test riêng ở đó: `test/visual/document-job.spec.ts` (máy trạng thái tài liệu) và `test/visual/admin-refetch.spec.ts` (đếm request để bắt vòng lặp tải).
 - **Thẻ số liệu "Tỷ lệ match TB" không có link.** Nhãn cũ là "Chi tiết phân tích" nhưng không có trang phân tích nào; nay bỏ hẳn nhãn thay vì trỏ tạm sang trang khác. Khi có trang đó thật thì thêm `action` vào `dashboard-stats.tsx`.
 - **`GET /api/upskill` trả 404 khi chưa có báo cáo**, nên console có một dòng 404 mỗi lần mở màn Lộ trình học lúc chưa có dữ liệu. Đúng REST cho một tài nguyên đơn, nhưng giao diện không phân biệt được "chưa có" với "route đã bị đổi tên" — `server/test/upskill.e2e-spec.ts` ghim đường dẫn lại để bịt khe đó.
+
+## Tải dữ liệu: `hooks/use-async-data.ts`
+
+Mọi màn hình tải dữ liệu đều đi qua hook này. **Không tự viết `useEffect` + `useState` để gọi API nữa** — `react-hooks/set-state-in-effect` đang ở mức `error` nên lint sẽ chặn.
+
+Điều đáng nhớ nhất: **`loading` được suy ra, không được lưu.** Kết quả trả về mang theo chính hàm `load` đã sinh ra nó, nên "đang tải" không thể nói khác với "có request đang chạy". Đi cùng nó là hai quy tắc:
+
+- **Hàm `load` phải được bọc `useCallback`/`useMemo`** — định danh của nó chính là định nghĩa của "request này". Một closure mới mỗi lần render sẽ tải vô tận.
+- **`load = null` nghĩa là chưa tới lúc tải**, dùng cho request phụ thuộc request khác (màn Admin chỉ đọc số liệu sau khi biết tài khoản là ADMIN).
+
+Hai mẫu khác cũng đã bị bỏ, vì cùng một lý do — hai nguồn sự thật có thể lệch nhau:
+
+- **Không chép dữ liệu sang state thứ hai rồi đồng bộ bằng effect.** Danh sách tài liệu ở màn CV/Thư xin việc được ghép lúc render (`useMemo`).
+- **Dọn state khi đổi đối tượng thì dùng `key`**, không dùng effect đặt lại từng ô. `DocumentSource` bắt buộc người gọi truyền `key={documentId}`.
+
+## Bảng rộng: đo bằng container query, không bằng breakpoint cửa sổ
+
+`md:`/`lg:`/`xl:` đo bề ngang **cửa sổ**, nhưng bảng nằm trong khung hẹp hơn 256px vì sidebar. Đã trả giá đúng một lần: bảng "Tất cả việc làm" rộng 1593px trong khung 1118px, và cột Thao tác — nút Chấm điểm, Lưu, Mở tin gốc — nằm ở 1882px, ngoài màn hình 1440px. Trang không cuộn ngang nên ảnh chụp trông vẫn bình thường.
+
+Nay `AllJobsTable` dùng `@2xl:`/`@4xl:`/`@6xl:` với `@container` trên thẻ bọc, và ô đầu dùng `w-full max-w-0` để `truncate` có chỗ cắt (`white-space: nowrap` khiến min-content bằng cả câu). `test/visual/jobs-table-width.spec.ts` đo lại ở bốn cỡ.
 
 ## Vì sao mọi trang đều là client component
 

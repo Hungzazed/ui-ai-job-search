@@ -15,7 +15,6 @@ export interface ScrapeRunRecord {
 }
 
 export const scraperService = {
-  /** Portal đã đăng ký. Giao diện dùng để dựng menu chọn. */
   portals: () =>
     api.get<{ portals: string[] }>("/scrape/portals").then((r) => r.data),
 
@@ -24,10 +23,6 @@ export const scraperService = {
   get: (id: string) =>
     api.get<ScrapeRunRecord>(`/scrape/runs/${id}`).then((r) => r.data),
 
-  /**
-   * Một lần quét mất vài PHÚT vì phải tôn trọng nhịp request tới portal. Trả
-   * về runId ngay; giao diện đọc lại `get(runId)` để theo dõi tiến độ.
-   */
   start: (portal = "itviec") =>
     api.post<QueuedScrapeRun>("/scrape", { portal }).then((r) => r.data),
 };

@@ -1,12 +1,19 @@
 import type { JobMatchWithJob } from "@/types";
 import { api } from "@/lib/axios";
-import type { Paginated, QueuedResult } from "./types";
+import type { Paginated, QueuedResult, WorkStatus } from "./types";
 
-/** Tin tuyển dụng thô, chưa kèm kết quả chấm điểm. */
+export interface JobMatchState {
+  status: WorkStatus;
+  overallScore: number | null;
+  verdict: JobMatchWithJob["verdict"];
+}
+
+/** Tin tuyển dụng kèm trạng thái chấm điểm, KHÔNG kèm kết quả chi tiết. */
 export type JobRecord = JobMatchWithJob["job"] & {
   source: string;
   workMode: string | null;
   description: string;
+  match: JobMatchState | null;
 };
 
 export interface CreateJobInput {
@@ -41,7 +48,6 @@ export const jobsService = {
   unsave: (id: string) =>
     api.delete<{ saved: false }>(`/jobs/${id}/save`).then((r) => r.data),
 
-  /** Nạp một tin dán tay, rồi tự đưa vào hàng đợi chấm điểm luôn. */
   create: (input: CreateJobInput) =>
     api
       .post<{ job: JobRecord } & QueuedResult>("/jobs", input)

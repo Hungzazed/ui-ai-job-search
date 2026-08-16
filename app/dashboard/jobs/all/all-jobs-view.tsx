@@ -31,6 +31,14 @@ const PAGE_SIZE = 20;
  */
 const SEARCH_DEBOUNCE_MS = 350;
 
+/**
+ * Nhịp hỏi lại khi còn tin đang chấm. Chỉ chạy lúc thật sự có việc chờ.
+ *
+ * p50 của một lượt chấm đo được là 33 giây, nên 10 giây thường chỉ tốn 3–4
+ * lượt hỏi cho mỗi tin — đủ nhanh để thấy kết quả, đủ thưa để không nện DB.
+ */
+const POLL_INTERVAL_MS = 10_000;
+
 export function AllJobsView() {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -53,6 +61,13 @@ export function AllJobsView() {
   const [scoreRequests, setScoreRequests] = useState<
     Map<string, ScoreRequest>
   >(new Map());
+
+  /** Tin vừa bấm chấm điểm. `score` khác null nghĩa là nó đã có điểm từ trước. */
+  const [notice, setNotice] = useState<{
+    jobId: string;
+    title: string;
+    score: number | null;
+  } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -81,7 +96,7 @@ export function AllJobsView() {
     errorMessage: "Không tải được danh sách việc làm",
   });
 
-  const { error, loading } = page;
+  const { error, loading, reload } = page;
   const total = page.data?.total ?? 0;
   const jobs = useMemo(() => {
     if (!page.data) return null;
@@ -110,18 +125,23 @@ export function AllJobsView() {
   /**
    * `POST /matches/evaluate` là ĐƯỜNG GHI: nó trả biên nhận chứ không trả điểm.
    *
-   * Nên ở đây chỉ báo "đã xếp hàng" và nói rõ chỗ xem kết quả — hứa rằng điểm
-   * đã có ngay là hứa sai, worker còn mất 30–90 giây nữa.
+   * Backend phân biệt hai trường hợp, và giao diện phải phân biệt theo: tin đã
+   * có điểm thì không xếp hàng gì cả, báo "đã xếp hàng" lúc đó là hứa một cập
+   * nhật không bao giờ tới.
    */
   const handleScore = useCallback(
-    (jobId: string) => {
+    (jobId: string, title: string) => {
       setScoring(jobId);
       void (async () => {
         try {
-          await matchesService.evaluate(jobId);
-          setScoreRequests((current) =>
-            new Map(current).set(jobId, "queued"),
-          );
+          const result = await matchesService.evaluate(jobId);
+          if (result.alreadyScored) {
+            setNotice({ jobId, title, score: result.overallScore });
+            return;
+          }
+          setNotice({ jobId, title, score: null });
+          // Backend đã ghi PENDING, nên tải lại là thấy ngay "Đang chấm…".
+          reload();
         } catch (err) {
           if (apiErrorStatus(err) === 401) {
             router.replace(LOGIN_NEXT);
@@ -133,12 +153,24 @@ export function AllJobsView() {
         }
       })();
     },
-    [router],
+    [router, reload],
   );
 
-  const queued = [...scoreRequests.values()].filter(
-    (value) => value === "queued",
-  ).length;
+  /**
+   * Hỏi lại CHỈ khi còn tin đang chấm, và tự dừng khi hết.
+   *
+   * Không có nó thì dòng "Đang chấm…" đứng im vĩnh viễn cho tới khi người dùng
+   * tự F5 — cùng loại bế tắc với việc nút chấm điểm không biết mình đã chấm.
+   */
+  const waiting = (jobs ?? []).some(
+    (job) => job.match?.status === "PENDING" || job.match?.status === "RUNNING",
+  );
+
+  useEffect(() => {
+    if (!waiting) return;
+    const timer = setInterval(reload, POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [waiting, reload]);
 
   return (
     <div className="space-y-6">
@@ -170,14 +202,24 @@ export function AllJobsView() {
         )}
       </div>
 
-      {queued > 0 && (
-        <Alert tone="info" title={`Đã xếp hàng chấm điểm ${queued} tin`}>
-          Việc chấm chạy ở nền, mất khoảng 30–90 giây mỗi tin và có thể thất
-          bại. Điểm phù hợp sẽ xuất hiện ở{" "}
-          <Link href="/dashboard/jobs" className="font-semibold underline">
-            Việc làm phù hợp
-          </Link>{" "}
-          khi worker chạy xong.
+      {notice && (
+        <Alert
+          tone="info"
+          title={
+            notice.score === null
+              ? `Đã xếp hàng chấm điểm “${notice.title}”`
+              : `“${notice.title}” đã có điểm từ trước: ${notice.score}`
+          }
+        >
+          {notice.score === null
+            ? "Việc chấm chạy ở nền, mất khoảng 30–90 giây và có thể thất bại. Dòng này sẽ tự cập nhật khi xong. "
+            : "Không xếp hàng lại vì kết quả đã được lưu. Muốn chấm lại thì vào trang chi tiết. "}
+          <Link
+            href={`/dashboard/jobs/${notice.jobId}`}
+            className="font-semibold underline"
+          >
+            Xem chi tiết tin này
+          </Link>
         </Alert>
       )}
 

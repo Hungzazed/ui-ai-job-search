@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, ExternalLink, MapPin, Sparkles } from "lucide-react";
+import { Bookmark, ExternalLink, MapPin, RotateCw, Sparkles } from "lucide-react";
 import type { JobRecord } from "@/services";
 import { toJobTimestamp, toSalaryRange } from "@/lib/adapters";
 import { CompanyLogo } from "@/components/dashboard/company-logo";
@@ -19,22 +19,70 @@ import {
 import { cn, companyColor, companyInitials, formatJobSalary } from "@/utils";
 import { LocationText } from "@/components/dashboard/location-text";
 
-/**
- * Cột nào hiện được đo bằng CONTAINER QUERY (`@2xl:`, `@4xl:`, `@6xl:`), không
- * bằng breakpoint theo cửa sổ (`md:`, `lg:`, `xl:`).
- *
- * Vì sao: bảng này không chiếm cả cửa sổ. Sidebar ăn 256px, nên ở cửa sổ 1440px
- * bảng chỉ có 1118px. Breakpoint theo cửa sổ thì `xl:` (1280px) bật cột "Nguồn"
- * trong khi chỗ thật chỉ có 1118px — đo được bảng rộng 1593px, và cột "Thao tác"
- * (nút Chấm điểm, Lưu, Mở tin gốc) nằm ở 1882px, tức là NGOÀI màn hình. Người
- * dùng phải cuộn ngang bên trong bảng mới bấm được, mà thanh cuộn đó rất dễ
- * không nhìn ra.
- *
- * Người gọi phải đặt `@container` lên phần tử bọc bảng — xem `all-jobs-view.tsx`.
- */
-
-/** Kết quả của một lần bấm "Chấm điểm" trên một dòng. */
 export type ScoreRequest = "queued" | "failed";
+
+/**
+ * Ô thao tác chấm điểm, vẽ theo trạng thái match có sẵn trong database.
+ *
+ * Trước đây ô này chỉ biết lần bấm trong phiên hiện tại, nên một tin đã có
+ * điểm từ hôm trước vẫn hiện nút mời chấm lại từ đầu.
+ */
+function ScoreCell({
+  job,
+  scoring,
+  onScore,
+}: {
+  job: JobRecord;
+  scoring: boolean;
+  onScore: (jobId: string, title: string) => void;
+}) {
+  const status = job.match?.status;
+
+  if (status === "DONE") {
+    return (
+      <Link href={`/dashboard/jobs/${job.id}`} aria-label="Xem kết quả chấm điểm">
+        <Badge variant="success" className="font-mono whitespace-nowrap">
+          {job.match?.overallScore ?? "—"} điểm
+        </Badge>
+      </Link>
+    );
+  }
+
+  if (status === "PENDING" || status === "RUNNING") {
+    return (
+      <Badge variant="info" dot className="whitespace-nowrap">
+        Đang chấm…
+      </Badge>
+    );
+  }
+
+  const retry = status === "FAILED";
+
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      loading={scoring}
+      onClick={() => onScore(job.id, job.title)}
+      title={
+        retry
+          ? "Lần chấm trước thất bại — bấm để chấm lại"
+          : "Chấm điểm độ phù hợp với hồ sơ của bạn"
+      }
+      aria-label={retry ? "Chấm lại" : "Chấm điểm"}
+    >
+      {!scoring && (retry ? <RotateCw className="size-3.5" /> : <Sparkles className="size-3.5" />)}
+      {/*
+        Chữ ẩn đi trên khung hẹp, chỉ còn icon. Cột này `whitespace-nowrap` nên
+        nó giữ nguyên 225px kể cả khi khung chỉ có 356px — đã đo, chữ vụn thành
+        mỗi dòng một từ. `aria-label` giữ tên nút cho trình đọc màn hình.
+      */}
+      <span className="hidden @2xl:inline">
+        {retry ? "Chấm lại" : "Chấm điểm"}
+      </span>
+    </Button>
+  );
+}
 
 interface AllJobsTableProps {
   jobs: JobRecord[];
@@ -42,7 +90,7 @@ interface AllJobsTableProps {
   scoreRequests: Map<string, ScoreRequest>;
   /** jobId đang chờ backend trả biên nhận. */
   scoring: string | null;
-  onScore: (jobId: string) => void;
+  onScore: (jobId: string, title: string) => void;
   onToggleSave: (jobId: string, saved: boolean) => void;
 }
 
@@ -90,7 +138,7 @@ function JobRow({
   job: JobRecord;
   request: ScoreRequest | undefined;
   scoring: boolean;
-  onScore: (jobId: string) => void;
+  onScore: (jobId: string, title: string) => void;
   onToggleSave: (jobId: string, saved: boolean) => void;
 }) {
   const salary = formatJobSalary({
@@ -100,16 +148,6 @@ function JobRow({
 
   return (
     <TableRow>
-      {/*
-        `w-full max-w-0` là cặp bắt buộc, không phải trang trí.
-
-        `truncate` là `white-space: nowrap`, và chữ không có chỗ ngắt thì
-        min-content của nó bằng CẢ CÂU. Đã đo: riêng cột này đóng góp ~848px, kéo
-        bảng lên 1472px trong một khung 1118px — nên `truncate` không bao giờ có
-        dịp cắt, nó chỉ đẩy bảng rộng ra. `max-w-0` bỏ phần đóng góp đó đi, còn
-        `w-full` cho cột nhận hết chỗ trống còn lại. Bỏ một trong hai thì hoặc
-        bảng lại tràn, hoặc cột co lại còn bằng cái logo.
-      */}
       <TableCell className="w-full max-w-0">
         <div className="flex items-start gap-3">
           <CompanyLogo
@@ -159,31 +197,7 @@ function JobRow({
 
       <TableCell>
         <div className="flex items-center justify-end gap-1.5">
-          {request === "queued" ? (
-            <Badge variant="info" dot className="whitespace-nowrap">
-              Đã xếp hàng
-            </Badge>
-          ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              loading={scoring}
-              onClick={() => onScore(job.id)}
-              title="Chấm điểm độ phù hợp với hồ sơ của bạn"
-              aria-label="Chấm điểm"
-            >
-              {!scoring && <Sparkles className="size-3.5" />}
-              {/*
-                Chữ ẩn đi trên khung hẹp, chỉ còn icon.
-
-                Cột này `whitespace-nowrap` nên nó giữ nguyên 225px kể cả khi khung
-                chỉ có 356px, và phần còn lại cho tiêu đề là 131px — đã đo, chữ vụn
-                thành mỗi dòng một từ. `aria-label` ở trên giữ tên nút cho trình đọc
-                màn hình và cho test, còn `title` giữ tooltip cho chuột.
-              */}
-              <span className="hidden @2xl:inline">Chấm điểm</span>
-            </Button>
-          )}
+          <ScoreCell job={job} scoring={scoring} onScore={onScore} />
 
           <Button
             size="sm"

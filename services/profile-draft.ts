@@ -47,18 +47,6 @@ export interface ProposedProject {
   period?: string;
 }
 
-/**
- * Hồ sơ do model ĐỀ XUẤT — chưa phải hồ sơ thật.
- *
- * Khớp `profileProposalSchema` ở backend. Cố ý KHÔNG có `citizenship`,
- * `workPermit`, `careerGoals`, `energizingTasks`, `drainingTasks`,
- * `targetSectors`, `dealBreakers`, `lackingSkills`, `remotePreference`,
- * `willingToRelocate`: model bị cấm đoán những trường đó, vì chúng là sở thích và
- * tình trạng pháp lý. Người dùng tự điền ở màn Hồ sơ.
- *
- * Đừng thêm chúng vào đây "cho đủ" — danh sách trắng ở backend sẽ chặn, nên thêm
- * vào chỉ tạo ra một ô tích không bao giờ có tác dụng.
- */
 export interface ProfileProposal {
   headline?: string;
   location?: string;
@@ -73,9 +61,7 @@ export interface ProfileProposal {
   educations: ProposedEducation[];
   certificates: ProposedCertificate[];
   projects: ProposedProject[];
-  /** Những gì model KHÔNG tìm thấy — phần trung thực nhất của đề xuất. */
   missing: string[];
-  /** Ghi chú của model về cách nó đọc bằng chứng. */
   notes: string[];
 }
 
@@ -88,14 +74,12 @@ export interface ProfileDraftRecord {
   storageKey: string | null;
   modelId: string | null;
   generatedAt: string | null;
-  /** null nghĩa là CHƯA áp dụng vào hồ sơ. */
   appliedAt: string | null;
   failureKind: AiFailureKind | null;
   createdAt: string;
   updatedAt: string;
 }
 
-/** Bản rút gọn ở danh sách lịch sử — KHÔNG có `evidence` và `proposal`. */
 export interface ProfileDraftSummary {
   id: string;
   status: WorkStatus;
@@ -106,7 +90,6 @@ export interface ProfileDraftSummary {
   failureKind: AiFailureKind | null;
 }
 
-/** Biên nhận sau khi nộp CV. `extracted` là `meta` của từng mẩu bằng chứng. */
 export interface CvUploadReceipt {
   draftId: string;
   queued: boolean;
@@ -114,17 +97,6 @@ export interface CvUploadReceipt {
 }
 
 export const profileDraftService = {
-  /**
-   * Nộp CV PDF.
-   *
-   * KHÔNG đặt `Content-Type` bằng tay: axios tự sinh header
-   * `multipart/form-data; boundary=...` từ `FormData`, và ghi đè nó bằng chuỗi
-   * không có boundary sẽ làm multer ở backend không parse được — lỗi hiện ra thành
-   * "chưa có file nào được nộp", nên rất dễ đi truy sai chỗ.
-   *
-   * `undefined` ở đây là để **xoá** header mặc định `application/json` mà instance
-   * axios dùng chung đang đặt.
-   */
   uploadCv: (file: File) => {
     const form = new FormData();
     form.append("file", file);
@@ -135,7 +107,6 @@ export const profileDraftService = {
       .then((r) => r.data);
   },
 
-  /** Lượt đọc mới nhất, kể cả đang chạy hoặc đã hỏng. 404 khi chưa từng nộp. */
   latest: () =>
     api.get<ProfileDraftRecord>("/profile-drafts/latest").then((r) => r.data),
 
@@ -145,13 +116,6 @@ export const profileDraftService = {
   history: () =>
     api.get<ProfileDraftSummary[]>("/profile-drafts/history").then((r) => r.data),
 
-  /**
-   * ĐƯỜNG GHI. Áp dụng đúng những trường người dùng đã tích vào hồ sơ thật.
-   *
-   * `fields` không được rỗng — backend trả 400. Đó là chủ đích: mảng rỗng gần như
-   * luôn là bug ở giao diện, và nếu chấp nhận thì bản nháp bị đánh dấu "đã áp dụng"
-   * mà hồ sơ không đổi gì.
-   */
   apply: (id: string, fields: string[]) =>
     api
       .put<ProfileDraftRecord>(`/profile-drafts/${id}/apply`, { fields })

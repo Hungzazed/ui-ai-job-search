@@ -15,8 +15,6 @@ import type { ProfileProposal, ProfileRecord } from "@/services";
  */
 
 export type FieldKind = "text" | "list" | "items";
-
-/** Đúng những trường backend cho phép áp dụng (`APPLICABLE_FIELDS`). */
 export const APPLICABLE_FIELDS = [
   "headline",
   "location",
@@ -71,53 +69,13 @@ export interface ProposalRow {
   field: ApplicableField;
   label: string;
   kind: FieldKind;
-  /** Đề xuất, đã đưa về dạng dòng chữ để hiện. Rỗng nghĩa là model không tìm thấy. */
   proposed: string[];
-  /** Giá trị đang có trong hồ sơ, cùng dạng. */
   current: string[];
-  /**
-   * `true` khi đề xuất không có gì cho trường này.
-   *
-   * Hàng như vậy vẫn được hiện — im lặng bỏ đi sẽ khiến người dùng tưởng model đã
-   * đọc được học vấn của mình trong khi thực tế là không. Nhưng nó KHÔNG được tích
-   * và không tích được.
-   */
   isEmpty: boolean;
-  /**
-   * `true` khi hồ sơ đang có dữ liệu KHÁC ở trường này, tức là nhận đề xuất sẽ
-   * GHI ĐÈ.
-   *
-   * Đây là thông tin quan trọng nhất trên mỗi hàng, nên nó là một trường riêng chứ
-   * không để giao diện tự suy từ `current.length`.
-   *
-   * Giá trị giống hệt nhau thì KHÔNG tính là ghi đè — xem `unchanged`.
-   */
   overwrites: boolean;
-  /**
-   * `true` khi đề xuất trùng khít giá trị đang có.
-   *
-   * Cần tách khỏi `overwrites` vì hai thứ này dẫn tới hai câu khác nhau. Trước đây
-   * chỉ có `overwrites`, nên trường "Quốc gia" hiện nhãn đỏ "ghi đè" trong khi cả
-   * hai bên đều là "Việt Nam" — nhãn đó cảnh báo một mất mát không tồn tại, và
-   * cảnh báo sai chỗ thì làm người dùng bỏ qua cả những cảnh báo thật.
-   */
   unchanged: boolean;
 }
 
-/// So hai danh sách dòng chữ, không phân biệt thứ tự.
-///
-/// Không phân biệt thứ tự là có chủ đích: model liệt kê kỹ năng theo thứ tự khác
-/// hồ sơ đang lưu thì đó vẫn là cùng một tập kỹ năng, và báo "ghi đè" cho một phép
-/// sắp lại thứ tự là báo sai.
-///
-/// `String.fromCharCode(0)` chứ không phải một escape trong chuỗi, và cũng không
-/// phải ký tự NUL nhúng thẳng vào file. Hai cách kia đều đã thử và đều hỏng: nhúng
-/// byte 0x00 làm git và grep coi cả file là binary, còn viết escape thì nó bị các
-/// tầng công cụ ăn mất, để lại `const SEP = ""` — một dấu phân cách RỖNG, tệ hơn
-/// hẳn dấu cách vì `["ab", "c"]` và `["a", "bc"]` ghép ra cùng một chuỗi.
-///
-/// Vì sao không dùng dấu cách hay dấu phẩy: dấu phân cách nào có thể xuất hiện
-/// trong chính dữ liệu thì sẽ làm hai tập khác nhau bị coi là bằng nhau.
 const SEP = String.fromCharCode(0);
 
 const sameLines = (a: string[], b: string[]): boolean =>
@@ -132,21 +90,6 @@ const list = (value: unknown): string[] =>
     ? value.filter((item): item is string => typeof item === "string" && item.length > 0)
     : [];
 
-/**
- * Thứ tự các phần khi một mục được rút thành MỘT dòng chữ.
- *
- * Khai đúng một lần ở đây, và **cả hai phía dùng chung**: đề xuất của AI lẫn khối
- * JSON đang có trong hồ sơ.
- *
- * Vì sao điều đó quan trọng: trước đây hai phía dựng dòng theo hai cách khác nhau —
- * phía đề xuất ghép `[name, issuer, year]`, còn phía hồ sơ đọc một danh sách khoá
- * cứng `[position, company, school, field, name, period]` không hề có `year` hay
- * `issuer`. Kết quả là ngay sau khi áp dụng Chứng chỉ, hàng đó vẫn hiện nhãn "ghi
- * đè": hai bên có cùng dữ liệu mà ra hai dòng chữ khác nhau. Một phép so sánh chỉ
- * đúng khi hai bên được rút cùng một cách.
- *
- * `technologies` là mảng nên được ghép bằng dấu phẩy trước.
- */
 const ITEM_PARTS = {
   experiences: ["position", "company", "period"],
   educations: ["school", "field", "period"],
@@ -230,10 +173,6 @@ export function currentLines(
     case "list":
       return list((profile as unknown as Record<string, unknown>)[field]);
     case "items":
-      // `ProfileRecord` chỉ khai `experiences` và `educations`; hai khối còn lại
-      // (`certificates`, `projects`) backend có nhưng service chưa khai. Đọc qua
-      // index nên không cần sửa kiểu ở đây, và thiếu thì ra mảng rỗng — hiện
-      // "chưa có" thay vì vỡ.
       return isItemField(field)
         ? itemLines(field, (profile as unknown as Record<string, unknown>)[field])
         : [];

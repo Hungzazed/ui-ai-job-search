@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Save, Upload } from "lucide-react";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
-import { profileService } from "@/services";
-import type { ProfileRecord } from "@/services";
+import { profileDraftService, profileService } from "@/services";
+import type { ProfileDraftRecord, ProfileRecord } from "@/services";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { useSession } from "@/components/dashboard/session";
 import { Alert, PageError } from "@/components/ui/alert";
@@ -34,6 +34,8 @@ export function ProfileView() {
   const { user } = useSession();
   const [profile, setProfile] = useState<ProfileRecord | null>(null);
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
+  /** Bản nháp CV gần nhất còn giữ file gốc, `null` nếu chưa từng nộp. */
+  const [cv, setCv] = useState<ProfileDraftRecord | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -45,10 +47,14 @@ export function ProfileView() {
 
     void (async () => {
       try {
-        const record = await profileService.get();
+        const [record, latest] = await Promise.all([
+          profileService.get(),
+          profileDraftService.latest().catch(() => null),
+        ]);
         if (cancelled) return;
         setProfile(record);
         setDraft(toDraft(record));
+        setCv(latest?.storageKey ? latest : null);
       } catch (err) {
         if (cancelled) return;
         // Cookie hết hạn giữa chừng: đưa về đăng nhập thay vì hiện lỗi mà người
@@ -135,6 +141,16 @@ export function ProfileView() {
               <span className="text-xs font-medium text-amber-600">
                 Có thay đổi chưa lưu
               </span>
+            )}
+            {cv && (
+              <a
+                href={profileDraftService.fileUrl(cv.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-slate-500 underline hover:text-slate-700"
+              >
+                CV gần nhất: {cv.filename}
+              </a>
             )}
             {/* Lối vào Agent 1. Đặt cạnh nút Lưu vì đây là hai cách điền cùng một
                 hồ sơ: gõ tay, hoặc để AI đọc CV rồi tự chọn nhận phần nào. */}

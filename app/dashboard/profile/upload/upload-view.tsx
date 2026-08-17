@@ -437,9 +437,23 @@ function ReviewCard({
             : "Không gì được ghi vào hồ sơ cho tới khi bạn bấm áp dụng."
         }
         actions={
-          <Badge variant={draft.appliedAt ? "success" : "neutral"}>
-            {draft.appliedAt ? "Đã áp dụng" : "Chờ xác nhận"}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {draft.filename && (
+              <a
+                href={profileDraftService.fileUrl(draft.id)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Button size="sm" variant="outline">
+                  <FileText className="size-3.5" />
+                  Xem CV gốc
+                </Button>
+              </a>
+            )}
+            <Badge variant={draft.appliedAt ? "success" : "neutral"}>
+              {draft.appliedAt ? "Đã áp dụng" : "Chờ xác nhận"}
+            </Badge>
+          </div>
         }
       >
         <div className="divide-y divide-slate-100">

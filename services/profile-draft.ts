@@ -116,6 +116,9 @@ export const profileDraftService = {
   history: () =>
     api.get<ProfileDraftSummary[]>("/profile-drafts/history").then((r) => r.data),
 
+  /** Link mở CV gốc trong tab mới. Cookie `sameSite: lax` nên thẻ `<a>` là đủ. */
+  fileUrl: (id: string) => `${api.defaults.baseURL}/profile-drafts/${id}/file`,
+
   apply: (id: string, fields: string[]) =>
     api
       .put<ProfileDraftRecord>(`/profile-drafts/${id}/apply`, { fields })

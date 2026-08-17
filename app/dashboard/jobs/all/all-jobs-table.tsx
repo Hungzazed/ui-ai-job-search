@@ -57,9 +57,19 @@ function ScoreCell({
   }
 
   const retry = status === "FAILED";
+  const { matched, total } = job.keywordMatch;
 
   return (
-    <Button
+    <div className="flex items-center gap-2">
+      {total > 0 && (
+        <span
+          className="hidden font-mono text-[11px] whitespace-nowrap text-slate-500 @4xl:inline"
+          title={`${matched} trong ${total} kỹ năng của bạn được nhắc trong tin này`}
+        >
+          khớp {matched}/{total}
+        </span>
+      )}
+      <Button
       size="sm"
       variant="outline"
       loading={scoring}
@@ -77,10 +87,11 @@ function ScoreCell({
         nó giữ nguyên 225px kể cả khi khung chỉ có 356px — đã đo, chữ vụn thành
         mỗi dòng một từ. `aria-label` giữ tên nút cho trình đọc màn hình.
       */}
-      <span className="hidden @2xl:inline">
-        {retry ? "Chấm lại" : "Chấm điểm"}
-      </span>
-    </Button>
+        <span className="hidden @2xl:inline">
+          {retry ? "Chấm lại" : "Chấm điểm"}
+        </span>
+      </Button>
+    </div>
   );
 }
 

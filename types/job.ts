@@ -83,6 +83,8 @@ export interface Job {
  */
 export interface JobMatchWithJob {
   jobId: string;
+  /** Vòng đời của lượt chấm. `DONE` mới có điểm. */
+  status: "PENDING" | "RUNNING" | "DONE" | "FAILED";
   /**
    * Cổng chặn cứng của `04-job-evaluation.md`, chấm TRƯỚC bốn chiều có trọng số.
    *
@@ -98,6 +100,8 @@ export interface JobMatchWithJob {
   eligibilityNote: string | null;
   overallScore: number | null;
   verdict: "STRONG" | "GOOD" | "MODERATE" | "WEAK" | "POOR" | null;
+  /** Điểm chấm TRƯỚC lần sửa hồ sơ gần nhất, nên không còn phản ánh hồ sơ hiện tại. */
+  stale?: boolean;
   technicalScore: number | null;
   experienceScore: number | null;
   strengths: string[];

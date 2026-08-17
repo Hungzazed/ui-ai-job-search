@@ -8,12 +8,24 @@ export interface JobMatchState {
   verdict: JobMatchWithJob["verdict"];
 }
 
+/**
+ * Số kỹ năng của hồ sơ được nhắc trong tin. KHÔNG phải độ phù hợp.
+ *
+ * Một tin rất hợp có thể chỉ nhắc một kỹ năng, nên đừng đổi tỉ lệ này ra phần
+ * trăm rồi đặt cạnh điểm AI.
+ */
+export interface KeywordMatch {
+  matched: number;
+  total: number;
+}
+
 /** Tin tuyển dụng kèm trạng thái chấm điểm, KHÔNG kèm kết quả chi tiết. */
 export type JobRecord = JobMatchWithJob["job"] & {
   source: string;
   workMode: string | null;
   description: string;
   match: JobMatchState | null;
+  keywordMatch: KeywordMatch;
 };
 
 export interface CreateJobInput {

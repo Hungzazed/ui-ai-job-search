@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText } from "lucide-react";
 import type { JobMatchWithJob } from "@/types";
-import type { JobRecord } from "@/services";
+import type { JobRecord, ProfileRecord } from "@/services";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import {
   applicationsService,
   jobsService,
   matchesService,
+  profileService,
 } from "@/services";
 import { toJobCard } from "@/lib/adapters";
 import { Alert } from "@/components/ui/alert";
@@ -20,6 +21,10 @@ import { InsightList } from "./match-insights";
 import { AssistedApplyCard } from "@/components/dashboard/assisted-apply-card";
 import { MatchPanel } from "./match-panel";
 
+/** Nhịp hỏi lại sau khi xếp hàng chấm điểm. p50 của một lượt chấm là ~40 giây. */
+const SCORE_POLL_MS = 5_000;
+const SCORE_TIMEOUT_MS = 180_000;
+
 interface JobDetailViewProps {
   jobId: string;
 }
@@ -28,18 +33,20 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
   const router = useRouter();
   const [job, setJob] = useState<JobRecord | null>(null);
   const [match, setMatch] = useState<JobMatchWithJob | null>(null);
+  const [profile, setProfile] = useState<ProfileRecord | null>(null);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [applied, setApplied] = useState(false);
+  const [scoring, setScoring] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       try {
-        const [record, evaluation] = await Promise.all([
+        const [record, evaluation, current] = await Promise.all([
           jobsService.get(jobId),
           // 404 ở đây nghĩa là công việc chưa được chấm, không phải hỏng hóc.
           // Nuốt riêng mã này để phần mô tả công việc vẫn hiện ra bình thường.
@@ -47,10 +54,14 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
             if (apiErrorStatus(err) === 404) return null;
             throw err;
           }),
+          // Chỉ để hiện "chấm theo hồ sơ nào". Hỏng thì bỏ dòng đó, đừng làm
+          // hỏng cả trang vì một chú thích.
+          profileService.get().catch(() => null),
         ]);
         if (cancelled) return;
         setJob(record);
         setMatch(evaluation);
+        setProfile(current);
         setSaved(record.saved);
       } catch (err) {
         if (cancelled) return;
@@ -77,6 +88,29 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
     void (next ? jobsService.save(jobId) : jobsService.unsave(jobId)).catch(
       () => setSaved(!next),
     );
+  };
+
+  /** Xếp hàng chấm điểm rồi hỏi lại tới khi worker xong. */
+  const handleScore = (force: boolean) => {
+    setScoring(true);
+    void (async () => {
+      try {
+        await matchesService.evaluate(jobId, force);
+        const started = Date.now();
+        while (Date.now() - started < SCORE_TIMEOUT_MS) {
+          await new Promise((done) => setTimeout(done, SCORE_POLL_MS));
+          const next = await matchesService.get(jobId).catch(() => null);
+          if (next && next.status !== "PENDING" && next.status !== "RUNNING") {
+            setMatch(next);
+            break;
+          }
+        }
+      } catch (err) {
+        if (apiErrorStatus(err) === 401) router.replace(`/login?next=/dashboard/jobs/${jobId}`);
+      } finally {
+        setScoring(false);
+      }
+    })();
   };
 
   const handleApply = async () => {
@@ -106,6 +140,7 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
   // này 0% sẽ bị đọc thành một kết luận đánh giá.
   const card = toJobCard({
     jobId: job.id,
+    status: match?.status ?? "PENDING",
     eligibility: match?.eligibility ?? null,
     eligibilityNote: match?.eligibilityNote ?? null,
     overallScore: match?.overallScore ?? null,
@@ -168,7 +203,12 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
           {job.url && <AssistedApplyCard jobId={job.id} jobUrl={job.url} />}
         </div>
 
-        <MatchPanel match={match} />
+        <MatchPanel
+          match={match}
+          profile={profile}
+          onScore={handleScore}
+          scoring={scoring}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import type { AiFailureKind } from "@/lib/failure-message";
 import { api } from "@/lib/axios";
-import type { QueuedResult, WorkStatus } from "./types";
+import type { Paginated, QueuedResult, WorkStatus } from "./types";
 
 export interface InterviewPrepRecord {
   id: string;
@@ -20,7 +20,11 @@ export interface InterviewPrepRecord {
 }
 
 export const interviewService = {
-  list: () => api.get<InterviewPrepRecord[]>("/interview").then((r) => r.data),
+  list: (page?: { limit?: number; offset?: number }) =>
+    api
+      .get<Paginated<InterviewPrepRecord>>("/interview", { params: page })
+      .then((r) => r.data),
+
   get: (jobId: string) =>
     api.get<InterviewPrepRecord>(`/interview/${jobId}`).then((r) => r.data),
 

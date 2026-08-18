@@ -54,8 +54,13 @@ export interface Application {
 /**
  * `counts` được backend đếm trên TOÀN BỘ đơn rồi mới lọc, nên các tab luôn
  * hiện tổng thật chứ không phải số sau khi đã lọc theo chính tab đang mở.
+ * `total` thì ngược lại - nó đếm trên tập ĐÃ lọc, vì thanh phân trang nói về
+ * đúng những đơn đang xem.
  */
 export interface ApplicationList {
   items: Application[];
+  total: number;
+  limit: number;
+  offset: number;
   counts: Record<"all" | ApplicationGroup, number>;
 }

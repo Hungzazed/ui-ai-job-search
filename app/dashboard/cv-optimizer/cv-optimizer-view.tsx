@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { useAsyncData } from "@/hooks/use-async-data";
@@ -32,21 +33,34 @@ const LOGIN_NEXT = "/dashboard/cv-optimizer";
 /** Đủ để chọn trong một danh sách thả xuống mà không kéo cả bảng matches về. */
 const MATCH_LIMIT = 50;
 
+/** Số tài liệu hiện một lúc trong kho; phần còn lại lật bằng phân trang. */
+const DOCUMENT_PAGE_SIZE = 10;
+
 /** Giá trị của mục "không nhắm vị trí nào" — backend coi jobId là tuỳ chọn. */
 const NO_JOB = "";
 
 export function CvOptimizerView() {
-  const [jobId, setJobId] = useState<string>(NO_JOB);
+  const fixedJobId = useSearchParams().get("jobId");
+  const [jobId, setJobId] = useState<string>(fixedJobId ?? NO_JOB);
 
   const job = useDocumentJob(LOGIN_NEXT);
 
+  const [documentOffset, setDocumentOffset] = useState(0);
+
   const load = useCallback(async () => {
-    const [page, records] = await Promise.all([
+    const [matchPage, documentPage] = await Promise.all([
       matchesService.list({ limit: MATCH_LIMIT }),
-      documentsService.list("CV"),
+      documentsService.list("CV", fixedJobId ?? undefined, {
+        limit: DOCUMENT_PAGE_SIZE,
+        offset: documentOffset,
+      }),
     ]);
-    return { matches: page.items, documents: records };
-  }, []);
+    return {
+      matches: matchPage.items,
+      documents: documentPage.items,
+      documentTotal: documentPage.total,
+    };
+  }, [fixedJobId, documentOffset]);
 
   const page = useAsyncData(load, {
     loginNext: LOGIN_NEXT,
@@ -80,8 +94,12 @@ export function CvOptimizerView() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Tối ưu CV"
-        subtitle="AI viết lại CV của bạn theo hồ sơ đã lưu, có thể bám theo một tin tuyển dụng cụ thể"
+        title={fixedJobId ? "Tối ưu CV cho tin này" : "CV đã tạo"}
+        subtitle={
+          fixedJobId
+            ? "AI viết lại CV của bạn bám theo đúng tin tuyển dụng bên dưới"
+            : "Kho CV đã sinh. Tạo mới thì vào một tin tuyển dụng rồi bấm Tối ưu CV"
+        }
       />
 
       <JobSelectCard
@@ -91,7 +109,7 @@ export function CvOptimizerView() {
         matches={matches}
         value={jobId}
         onChange={setJobId}
-        disabled={isGenerating}
+        disabled={isGenerating || Boolean(fixedJobId)}
         emptyOptionLabel="CV tổng quát (không nhắm vị trí nào)"
         action={
           <Button onClick={handleGenerate} loading={isGenerating}>
@@ -106,6 +124,12 @@ export function CvOptimizerView() {
       {job.phase === "done" && record && <CvResult record={record} />}
 
       <DocumentHistory
+        page={{
+          offset: documentOffset,
+          limit: DOCUMENT_PAGE_SIZE,
+          total: page.data?.documentTotal ?? 0,
+          onOffsetChange: setDocumentOffset,
+        }}
         documents={documents}
         activeId={record?.id ?? null}
         onSelect={job.open}

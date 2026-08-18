@@ -18,7 +18,6 @@ import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
 import { JobDetailHeader } from "./job-detail-header";
 import { InsightList } from "./match-insights";
-import { AssistedApplyCard } from "@/components/dashboard/assisted-apply-card";
 import { MatchPanel } from "./match-panel";
 
 /** Nhịp hỏi lại sau khi xếp hàng chấm điểm. p50 của một lượt chấm là ~40 giây. */
@@ -200,12 +199,13 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
 
           {/* Chỉ hiện khi tin có link: không có link thì không có gì để mở, và một
               nút bấm vào rồi báo lỗi tệ hơn là không có nút. */}
-          {job.url && <AssistedApplyCard jobId={job.id} jobUrl={job.url} />}
         </div>
 
         <MatchPanel
+          jobId={jobId}
           match={match}
           profile={profile}
+          system={job.systemMatch}
           onScore={handleScore}
           scoring={scoring}
         />

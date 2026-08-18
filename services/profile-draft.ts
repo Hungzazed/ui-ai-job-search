@@ -1,6 +1,6 @@
 import type { AiFailureKind } from "@/lib/failure-message";
 import { api } from "@/lib/axios";
-import type { WorkStatus } from "./types";
+import type { Paginated, WorkStatus } from "./types";
 
 /**
  * Một mẩu bằng chứng đã thu, khớp `server/src/modules/profile-sources/evidence.ts`.
@@ -113,8 +113,12 @@ export const profileDraftService = {
   get: (id: string) =>
     api.get<ProfileDraftRecord>(`/profile-drafts/${id}`).then((r) => r.data),
 
-  history: () =>
-    api.get<ProfileDraftSummary[]>("/profile-drafts/history").then((r) => r.data),
+  history: (page?: { limit?: number; offset?: number }) =>
+    api
+      .get<Paginated<ProfileDraftSummary>>("/profile-drafts/history", {
+        params: page,
+      })
+      .then((r) => r.data),
 
   /** Link mở CV gốc trong tab mới. Cookie `sameSite: lax` nên thẻ `<a>` là đủ. */
   fileUrl: (id: string) => `${api.defaults.baseURL}/profile-drafts/${id}/file`,

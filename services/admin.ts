@@ -1,4 +1,5 @@
 import { api } from "@/lib/axios";
+import type { Paginated } from "./types";
 
 export type AiFailureKind = "SCHEMA" | "TIMEOUT" | "UPSTREAM" | "OTHER";
 
@@ -59,7 +60,9 @@ export const adminService = {
 
   aiFailures: (limit = 20) =>
     api
-      .get<AiFailureRecord[]>("/admin/ai-failures", { params: { limit } })
+      .get<Paginated<AiFailureRecord>>("/admin/ai-failures", {
+        params: { limit },
+      })
       .then((r) => r.data),
 
   /**

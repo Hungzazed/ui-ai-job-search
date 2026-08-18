@@ -28,9 +28,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SectionCard } from "@/components/ui/section-card";
+import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const LOGIN_NEXT = "/login?next=/dashboard/interview";
+
+/** Số vị trí hiện một lúc ở cột trái. Phần còn lại lật bằng thanh phân trang. */
+const PAGE_SIZE = 15;
 
 /** Bốn trạng thái của một lượt soạn, mỗi cái cần một câu khác nhau. */
 const STATUS_LABEL: Record<InterviewPrepRecord["status"], string> = {
@@ -244,9 +248,13 @@ function PrepDetail({
 export function InterviewView() {
   const router = useRouter();
   const [preps, setPreps] = useState<InterviewPrepRecord[] | null>(null);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
+  /// Lượt tải đầu tiên mới được tự chọn hộ; lật trang thì giữ nguyên lựa chọn.
+  const picked = useRef(false);
   /// Chặn setState sau khi component đã rời khỏi cây: `retry` chờ hai request.
   const mounted = useRef(true);
   useEffect(() => {
@@ -261,9 +269,16 @@ export function InterviewView() {
 
     void (async () => {
       try {
-        const list = await interviewService.list();
+        const page = await interviewService.list({
+          limit: PAGE_SIZE,
+          offset,
+        });
         if (cancelled) return;
+        const list = page.items;
         setPreps(list);
+        setTotal(page.total);
+        if (picked.current) return;
+        picked.current = true;
         /*
          * Ưu tiên một bản ĐÃ XONG, chỉ lùi về bản mới nhất khi không có bản nào
          * xong.
@@ -288,7 +303,7 @@ export function InterviewView() {
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [router, offset]);
 
   const selected = preps?.find((prep) => prep.id === selectedId) ?? null;
 
@@ -304,9 +319,10 @@ export function InterviewView() {
     setError(null);
     try {
       await interviewService.prep(selected.job.id, true);
-      const list = await interviewService.list();
+      const page = await interviewService.list({ limit: PAGE_SIZE, offset });
       if (!mounted.current) return;
-      setPreps(list);
+      setPreps(page.items);
+      setTotal(page.total);
     } catch (err) {
       if (!mounted.current) return;
       if (apiErrorStatus(err) === 401) {
@@ -391,6 +407,14 @@ export function InterviewView() {
                 );
               })}
             </ul>
+
+            <Pagination
+              offset={offset}
+              limit={PAGE_SIZE}
+              total={total}
+              noun="vị trí"
+              onOffsetChange={setOffset}
+            />
           </Card>
 
           <div className="min-w-0">

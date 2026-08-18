@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import type { QueuedScrapeRun, WorkStatus } from "./types";
+import type { Paginated, QueuedScrapeRun, WorkStatus } from "./types";
 
 export interface ScrapeRunRecord {
   id: string;
@@ -18,7 +18,10 @@ export const scraperService = {
   portals: () =>
     api.get<{ portals: string[] }>("/scrape/portals").then((r) => r.data),
 
-  history: () => api.get<ScrapeRunRecord[]>("/scrape/runs").then((r) => r.data),
+  history: (page?: { limit?: number; offset?: number }) =>
+    api
+      .get<Paginated<ScrapeRunRecord>>("/scrape/runs", { params: page })
+      .then((r) => r.data),
 
   get: (id: string) =>
     api.get<ScrapeRunRecord>(`/scrape/runs/${id}`).then((r) => r.data),

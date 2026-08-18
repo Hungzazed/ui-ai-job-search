@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { QueryProvider } from "@/lib/query-client";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,7 +22,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi" className={inter.variable}>
-      <body>{children}</body>
+      {/*
+        QueryProvider bọc ở layout GỐC chứ không ở layout dashboard: trang đăng
+        nhập và đăng ký cũng gọi API, và một ngày nào đó chúng cũng sẽ muốn
+        cache. Nó là client component nên phần còn lại của cây vẫn render trên
+        máy chủ như cũ.
+      */}
+      <body>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }

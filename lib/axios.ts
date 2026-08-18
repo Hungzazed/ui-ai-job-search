@@ -17,6 +17,28 @@ export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api",
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
+  /**
+   * Mảng thành `province=HN&province=HCM`, KHÔNG phải `province[]=HN`.
+   *
+   * Mặc định axios thêm cặp ngoặc vuông vào tên tham số. Express đọc dạng đó ra
+   * khoá `province[]`, mà DTO khai `province` - `ValidationPipe` đang bật
+   * `forbidNonWhitelisted` nên nó trả 400 "property province[] should not
+   * exist" và cả trang lọc việc làm trắng xoá.
+   */
+  paramsSerializer: {
+    serialize: (params: Record<string, unknown>) => {
+      const search = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (value === undefined || value === null) continue;
+        if (Array.isArray(value)) {
+          for (const item of value) search.append(key, String(item));
+        } else {
+          search.append(key, String(value));
+        }
+      }
+      return search.toString();
+    },
+  },
 });
 
 /**

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Briefcase,
   FileText,
@@ -13,7 +13,6 @@ import {
   LogOut,
   Mail,
   MessageSquare,
-  Send,
   Settings,
   Sparkles,
   User,
@@ -25,11 +24,10 @@ import { useSession } from "@/components/dashboard/session";
 const navItems = [
   { label: "Tổng quan", href: "/dashboard", icon: LayoutDashboard, exact: true },
   { label: "Hồ sơ của tôi", href: "/dashboard/profile", icon: User },
-  { label: "Việc làm phù hợp", href: "/dashboard/jobs", icon: Briefcase },
-  { label: "Tất cả việc làm", href: "/dashboard/jobs/all", icon: Layers },
-  { label: "CV Optimizer", href: "/dashboard/cv-optimizer", icon: FileText },
-  { label: "Cover Letter", href: "/dashboard/cover-letter", icon: Mail },
-  { label: "Ứng tuyển", href: "/dashboard/applications/apply", icon: Send },
+  { label: "Việc làm phù hợp", href: "/dashboard/jobs?scored=1", icon: Briefcase },
+  { label: "Tất cả việc làm", href: "/dashboard/jobs", icon: Layers },
+  { label: "CV đã tạo", href: "/dashboard/cv-optimizer", icon: FileText },
+  { label: "Thư đã viết", href: "/dashboard/cover-letter", icon: Mail },
   { label: "Lịch sử ứng tuyển", href: "/dashboard/applications", icon: History },
   { label: "Chuẩn bị phỏng vấn", href: "/dashboard/interview", icon: MessageSquare },
   { label: "Lộ trình học", href: "/dashboard/upskill", icon: GraduationCap },
@@ -41,23 +39,33 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user, loading, logout } = useSession();
 
   /**
    * Mục khớp DÀI NHẤT thắng, chỉ một mục sáng tại một thời điểm.
    *
-   * `startsWith` trần không đủ vì các đường dẫn lồng nhau: ở
-   * /dashboard/applications/apply thì cả "Ứng tuyển" lẫn "Lịch sử ứng tuyển"
-   * cùng khớp, và /dashboard/jobs/all làm sáng luôn "Việc làm phù hợp".
+   * So cả query string, không chỉ pathname: "Việc làm phù hợp" và "Tất cả việc
+   * làm" cùng trỏ `/dashboard/jobs`, chỉ khác `?scored=1`. `usePathname()` bỏ
+   * query nên hai mục sẽ cùng khớp và mục sai sáng lên.
    */
   const activeHref = useMemo(() => {
-    const matched = navItems.filter((item) =>
-      item.exact
-        ? pathname === item.href
-        : pathname === item.href || pathname.startsWith(`${item.href}/`),
-    );
+    const query = searchParams.toString();
+    const current = query ? `${pathname}?${query}` : pathname;
+
+    const matched = navItems.filter((item) => {
+      const [itemPath, itemQuery] = item.href.split("?");
+      if (itemQuery) return current === item.href;
+      // Mục không có query chỉ khớp khi URL cũng không có query, nếu không nó
+      // sẽ nuốt luôn mọi biến thể lọc của chính đường dẫn đó.
+      if (query && pathname === itemPath) return false;
+      return item.exact
+        ? pathname === itemPath
+        : pathname === itemPath || pathname.startsWith(`${itemPath}/`);
+    });
+
     return matched.sort((a, b) => b.href.length - a.href.length)[0]?.href;
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white">

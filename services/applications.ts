@@ -11,10 +11,13 @@ export const applicationsService = {
    * Lọc ở backend chứ đừng lọc mảng đã tải: `counts` phải là tổng thật trên
    * toàn bộ đơn, không phải đếm lại sau khi đã lọc theo chính tab đang mở.
    */
-  list: (group?: ApplicationGroup) =>
+  list: (
+    group?: ApplicationGroup,
+    page?: { limit?: number; offset?: number },
+  ) =>
     api
       .get<ApplicationList>("/applications", {
-        params: group ? { group } : undefined,
+        params: { ...(group ? { group } : {}), ...page },
       })
       .then((r) => r.data),
 

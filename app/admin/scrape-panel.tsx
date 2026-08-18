@@ -21,7 +21,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-/** Chỉ hiện những lượt gần đây; lịch sử dài không giúp gì cho việc vận hành. */
+/**
+ * Chỉ hiện những lượt gần đây; lịch sử dài không giúp gì cho việc vận hành.
+ * Cắt ở SERVER chứ không `.slice()` mảng đã tải: cắt ở client vẫn kéo cả lịch
+ * sử về rồi vứt đi phần thừa.
+ */
 const VISIBLE_RUNS = 15;
 
 const STATUS_VARIANT: Record<
@@ -61,7 +65,7 @@ export function ScrapePanel() {
   const [startError, setStartError] = useState<string | null>(null);
 
   const load = useCallback(
-    async () => (await scraperService.history()).slice(0, VISIBLE_RUNS),
+    async () => (await scraperService.history({ limit: VISIBLE_RUNS })).items,
     [],
   );
 

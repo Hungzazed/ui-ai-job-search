@@ -1,6 +1,6 @@
 import { api } from "@/lib/axios";
 import { blobErrorToError } from "./blob-error";
-import type { QueuedDocument, WorkStatus } from "./types";
+import type { Paginated, QueuedDocument, WorkStatus } from "./types";
 
 export type DocumentKind = "CV" | "COVER_LETTER" | "FORM_ANSWER";
 
@@ -22,9 +22,19 @@ export interface DocumentRecord {
 }
 
 export const documentsService = {
-  list: (kind?: DocumentKind) =>
+  list: (
+    kind?: DocumentKind,
+    jobId?: string,
+    page?: { limit?: number; offset?: number },
+  ) =>
     api
-      .get<DocumentRecord[]>("/documents", { params: kind ? { kind } : undefined })
+      .get<Paginated<DocumentRecord>>("/documents", {
+        params: {
+          ...(kind ? { kind } : {}),
+          ...(jobId ? { jobId } : {}),
+          ...page,
+        },
+      })
       .then((r) => r.data),
 
   get: (id: string) =>

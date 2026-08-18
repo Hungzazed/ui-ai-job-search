@@ -71,6 +71,10 @@ export interface Job {
    * thống chưa nói gì.
    */
   aiMatch: number | null;
+  /** Đối chiếu hệ thống, hiện dạng đếm trên thẻ. `null` khi chưa có hồ sơ. */
+  systemMatch: { kind: "REQUIREMENTS" | "KEYWORDS"; met: number; total: number } | null;
+  /** Tin này đã có đánh giá AI hay chưa. Thẻ chỉ hiện NHÃN, không hiện số. */
+  hasAiScore: boolean;
   saved: boolean;
 }
 

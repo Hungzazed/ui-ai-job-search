@@ -16,10 +16,10 @@ Hiện nay, ứng viên phải dành nhiều thời gian cho các công việc l
 
 ## 2. GIẢI PHÁP & MỤC TIÊU ĐỀ TÀI
 
-Phát triển nền tảng **AI-Native Career Agent** dựa trên kiến trúc Multi-Agent, ứng dụng các công nghệ cốt lõi: **LLM, Vector Search và RPA (Browser Automation)**.
+Phát triển nền tảng **AI-Native Career Agent** dựa trên kiến trúc Multi-Agent, ứng dụng các công nghệ cốt lõi: **LLM và Vector Search**.
 
 ### Mục tiêu chính:
-1. **Tự động hóa ứng tuyển:** Tự động phân tích hồ sơ, đánh giá mức độ phù hợp với từng vị trí, tối ưu CV, tạo Cover Letter cá nhân hóa và hỗ trợ tự động nộp hồ sơ.
+1. **Tự động hóa chuẩn bị hồ sơ ứng tuyển:** Tự động phân tích hồ sơ, đánh giá mức độ phù hợp với từng vị trí, tối ưu CV và tạo Cover Letter cá nhân hóa.
 2. **Career Mentor:** Phân tích khoảng trống kỹ năng (Skill Gap), đề xuất lộ trình học tập cá nhân hóa và mô phỏng phỏng vấn giả lập 1-1 với AI.
 
 ---
@@ -54,7 +54,6 @@ Bao gồm các AI Agent chuyên trách chạy ngầm, tích hợp các công ngh
 | **4** | **Matching Engine Agent** | Sử dụng **Embedding, Vector Search & LLM** để đối sánh hồ sơ ứng viên với JD. Tính toán **Match Score** (kỹ năng, kinh nghiệm, dự án, cấp bậc, mức lương). Phân tích **Skill Gap** và đề xuất **Learning Path** cá nhân hóa. |
 | **5** | **CV Optimizer Agent** | Tự động tinh chỉnh và viết lại CV để khớp nhất với JD, tuân thủ nghiêm ngặt quy tắc **không bịa đặt dữ liệu**. |
 | **6** | **Cover Letter Generator** | Tự động sinh thư ứng tuyển cá nhân hóa, mang tính độc bản dựa trên CV và JD. |
-| **7** | **Apply Agent** | Ứng dụng **Browser Automation** để tự động hóa toàn bộ luồng điền form, đính kèm hồ sơ, upload bằng cấp và submit đơn ứng tuyển. |
 | **8** | **AI Mock Interviewer** | Đóng vai trò HR chuyên nghiệp, sử dụng CV đã tối ưu và JD để đặt câu hỏi phỏng vấn, đánh giá và phản hồi năng lực của ứng viên. |
 
 ---
@@ -88,7 +87,6 @@ Bao gồm các AI Agent chuyên trách chạy ngầm, tích hợp các công ngh
 
 ### 3. Thu thập Dữ liệu & Tự động hóa
 * **Web Scraping:** Viết bot cào dữ liệu tuyển dụng từ các nền tảng lớn (*ITviec, LinkedIn, TopCV...*).
-* **Browser Automation:** Thành thạo các thư viện như **Playwright** hoặc **Puppeteer** để tự động hóa thao tác trên trình duyệt.
 
 ---
 
@@ -100,6 +98,5 @@ Bao gồm các AI Agent chuyên trách chạy ngầm, tích hợp các công ngh
    * Tự động cào và phân tích JD bằng LLM.
    * Thuật toán **Matching Engine** tính điểm **Match Score** chính xác bằng Vector Search.
    * Tự động tối ưu CV và sinh Cover Letter độc bản (không hallucinate / bịa đặt).
-   * Luồng RPA tự động mở link, điền form, upload file và submit thành công.
 3. **Hiệu năng & Nghiệp vụ:** Giảm thời gian tìm việc, tăng tỷ lệ khớp công việc và hỗ trợ ứng tuyển hiệu quả.
 4. **Báo cáo Khóa luận:** Hoàn chỉnh theo đúng mẫu và chuẩn chất lượng của nhà trường.

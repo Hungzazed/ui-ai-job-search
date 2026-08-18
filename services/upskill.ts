@@ -1,6 +1,6 @@
 import type { AiFailureKind } from "@/lib/failure-message";
 import { api } from "@/lib/axios";
-import type { QueuedReport, WorkStatus } from "./types";
+import type { Paginated, QueuedReport, WorkStatus } from "./types";
 
 export interface UpskillReportRecord {
   id: string;
@@ -21,8 +21,10 @@ export interface UpskillReportRecord {
 export const upskillService = {
   latest: () => api.get<UpskillReportRecord>("/upskill").then((r) => r.data),
 
-  history: () =>
-    api.get<UpskillReportRecord[]>("/upskill/history").then((r) => r.data),
+  history: (page?: { limit?: number; offset?: number }) =>
+    api
+      .get<Paginated<UpskillReportRecord>>("/upskill/history", { params: page })
+      .then((r) => r.data),
 
   get: (id: string) =>
     api.get<UpskillReportRecord>(`/upskill/${id}`).then((r) => r.data),

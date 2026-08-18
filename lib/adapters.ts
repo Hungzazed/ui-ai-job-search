@@ -5,7 +5,7 @@ import type {
   SalaryCurrency,
   SalaryRange,
 } from "@/types";
-import type { JobRecord } from "@/services";
+import type { JobListItem } from "@/services";
 import {
   companyColor,
   companyInitials,
@@ -69,7 +69,9 @@ export function toSalaryRange(job: RawSalary): SalaryRange | null {
 }
 
 /** Phần dùng chung của hai bộ chuyển đổi — mọi thứ trừ điểm phù hợp. */
-function toCardBase(job: JobMatchWithJob["job"]): Omit<Job, "aiMatch"> {
+function toCardBase(
+  job: JobMatchWithJob["job"],
+): Omit<Job, "aiMatch" | "systemMatch" | "hasAiScore"> {
   return {
     id: job.id,
     company: job.company,
@@ -80,7 +82,10 @@ function toCardBase(job: JobMatchWithJob["job"]): Omit<Job, "aiMatch"> {
     location: job.location ?? "Không rõ",
     salary: toSalaryRange(job),
     salaryRaw: job.salaryRaw,
-    tags: job.tags,
+    // Bỏ tag trùng: portal trả về những tin có "AI" hoặc "Cloud Architecture"
+    // hai lần, và thẻ dùng chính chuỗi tag làm `key` của React nên trùng là
+    // React cảnh báo rồi bỏ bớt phần tử.
+    tags: [...new Set(job.tags)],
     postedAt: toJobTimestamp(job),
     saved: job.saved,
   };
@@ -93,6 +98,8 @@ export function toJobCard(match: JobMatchWithJob): Job {
     // Giữ nguyên null: bản ghi đang chạy dở chưa có điểm, và trên thẻ thì
     // "chưa chấm" phải đọc khác hẳn "0%".
     aiMatch: match.overallScore,
+    systemMatch: null,
+    hasAiScore: match.status === "DONE",
   };
 }
 
@@ -102,6 +109,17 @@ export function toJobCard(match: JobMatchWithJob): Job {
  * `aiMatch` luôn null ở đây, và đó là sự thật chứ không phải giá trị mặc định:
  * endpoint này không biết gì về hồ sơ người dùng.
  */
-export function toJobCardFromRecord(job: JobRecord): Job {
-  return { ...toCardBase(job), aiMatch: null };
+export function toJobCardFromRecord(job: JobListItem): Job {
+  return {
+    ...toCardBase(job),
+    aiMatch: null,
+    systemMatch: job.systemMatch
+      ? {
+          kind: job.systemMatch.kind,
+          met: job.systemMatch.met,
+          total: job.systemMatch.total,
+        }
+      : null,
+    hasAiScore: job.match?.status === "DONE",
+  };
 }

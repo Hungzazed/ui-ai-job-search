@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { cn, formatDate } from "@/utils";
 import { DocumentStatusBadge } from "./document-status-badge";
 
@@ -16,11 +17,19 @@ export function DocumentHistory({
   activeId,
   onSelect,
   emptyLabel,
+  page,
 }: {
   documents: DocumentRecord[];
   activeId: string | null;
   onSelect: (id: string) => void;
   emptyLabel: string;
+  /** Bỏ trống thì không vẽ thanh lật trang - dùng cho danh sách ngắn cố định. */
+  page?: {
+    offset: number;
+    limit: number;
+    total: number;
+    onOffsetChange: (offset: number) => void;
+  };
 }) {
   return (
     <Card className="border-slate-200/90">
@@ -66,6 +75,16 @@ export function DocumentHistory({
           </ul>
         )}
       </CardContent>
+
+      {page && (
+        <Pagination
+          offset={page.offset}
+          limit={page.limit}
+          total={page.total}
+          noun="tài liệu"
+          onOffsetChange={page.onOffsetChange}
+        />
+      )}
     </Card>
   );
 }

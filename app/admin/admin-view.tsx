@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bot } from "lucide-react";
 import type { AuthUser } from "@/types";
 import type { AiFailureRecord, AiHealth } from "@/services";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { adminService, authService } from "@/services";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert, PageError } from "@/components/ui/alert";
@@ -18,14 +18,10 @@ import { AccessDenied, AdminSkeleton, HealthSkeleton } from "./admin-states";
 import { HealthReport } from "./health-report";
 import { ScrapePanel } from "./scrape-panel";
 
-const LOGIN_NEXT = "/admin";
-
 export function AdminView() {
   const [days, setDays] = useState(7);
 
-  const loadMe = useCallback(() => authService.me(), []);
-  const me = useAsyncData(loadMe, {
-    loginNext: LOGIN_NEXT,
+  const me = useApiQuery(["auth", "me"], () => authService.me(), {
     errorMessage: "Không xác định được tài khoản",
   });
 
@@ -33,33 +29,31 @@ export function AdminView() {
   const role = user?.role;
 
   /**
-   * Chỉ đọc số liệu SAU KHI biết tài khoản là ADMIN — `null` nghĩa là chưa tới lúc.
+   * Chỉ đọc số liệu SAU KHI biết tài khoản là ADMIN — `enabled: false` nghĩa là
+   * chưa tới lúc, thay cho `load = null` của `useAsyncData`.
    *
-   * Gộp hai request vào một `load` là có chủ đích: màn hình chỉ hiện báo cáo khi có
-   * cả hai (`!health || !failures` cho ra khung xám), nên tách thành hai lượt tải
-   * riêng chỉ tạo ra một trạng thái nửa vời mà không màn nào dùng.
+   * Gộp hai request vào một `queryFn` là có chủ đích: màn hình chỉ hiện báo cáo khi
+   * có cả hai (`!report.data` cho ra khung xám), nên tách thành hai query riêng chỉ
+   * tạo ra một trạng thái nửa vời mà không màn nào dùng.
+   *
+   * `days` nằm trong queryKey chứ không nằm trong thân hàm: đó là thứ khiến đổi tab
+   * khoảng thời gian trở thành một truy vấn KHÁC — nạp đúng một lần, và lần quay
+   * lại mốc cũ thì dùng cache. Có spec Playwright đếm đúng số request này.
    */
-  const loadHealth = useMemo(
-    () =>
-      role === "ADMIN"
-        ? async (): Promise<{
-            health: AiHealth;
-            failures: AiFailureRecord[];
-          }> => {
-            const [health, failures] = await Promise.all([
-              adminService.aiHealth(days),
-              adminService.aiFailures(FAILURE_LIMIT),
-            ]);
-            return { health, failures };
-          }
-        : null,
-    [role, days],
+  const report = useApiQuery(
+    ["admin", "report", days],
+    async (): Promise<{ health: AiHealth; failures: AiFailureRecord[] }> => {
+      const [health, failures] = await Promise.all([
+        adminService.aiHealth(days),
+        adminService.aiFailures(FAILURE_LIMIT),
+      ]);
+      return { health, failures: failures.items };
+    },
+    {
+      enabled: role === "ADMIN",
+      errorMessage: "Không tải được số liệu AI gateway",
+    },
   );
-
-  const report = useAsyncData(loadHealth, {
-    loginNext: LOGIN_NEXT,
-    errorMessage: "Không tải được số liệu AI gateway",
-  });
 
   if (me.error) {
     return (

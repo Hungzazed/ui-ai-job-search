@@ -89,7 +89,25 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
                   {job.title}
                 </Link>
               </div>
-              <MatchBadge score={job.aiMatch} />
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                {job.systemMatch && job.systemMatch.total > 0 && (
+                  <span
+                    className="rounded-full bg-teal-50 px-2 py-0.5 font-mono text-[11px] font-semibold whitespace-nowrap text-teal-700"
+                    title={
+                      job.systemMatch.kind === "REQUIREMENTS"
+                        ? `Hồ sơ đáp ứng ${job.systemMatch.met}/${job.systemMatch.total} yêu cầu tin nêu ra`
+                        : `Tin chưa được rút trích yêu cầu; đang đếm kỹ năng của bạn xuất hiện trong tin`
+                    }
+                  >
+                    khớp {job.systemMatch.met}/{job.systemMatch.total}
+                  </span>
+                )}
+                {job.hasAiScore && (
+                  <span className="text-[10px] whitespace-nowrap text-slate-400">
+                    đã có đánh giá AI
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="mt-2.5 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-slate-500">

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { useAsyncData } from "@/hooks/use-async-data";
@@ -25,20 +26,33 @@ const LOGIN_NEXT = "/dashboard/cover-letter";
 
 const MATCH_LIMIT = 50;
 
+/** Số tài liệu hiện một lúc trong kho; phần còn lại lật bằng phân trang. */
+const DOCUMENT_PAGE_SIZE = 10;
+
 export function CoverLetterView() {
   // Rỗng nghĩa là chưa chọn. Backend BẮT BUỘC có jobId cho thư xin việc, nên
   // không có mục "tổng quát" như bên CV.
-  const [jobId, setJobId] = useState<string>("");
+  const fixedJobId = useSearchParams().get("jobId");
+  const [jobId, setJobId] = useState<string>(fixedJobId ?? "");
 
   const job = useDocumentJob(LOGIN_NEXT);
 
+  const [documentOffset, setDocumentOffset] = useState(0);
+
   const load = useCallback(async () => {
-    const [page, records] = await Promise.all([
+    const [matchPage, documentPage] = await Promise.all([
       matchesService.list({ limit: MATCH_LIMIT }),
-      documentsService.list("COVER_LETTER"),
+      documentsService.list("COVER_LETTER", fixedJobId ?? undefined, {
+        limit: DOCUMENT_PAGE_SIZE,
+        offset: documentOffset,
+      }),
     ]);
-    return { matches: page.items, documents: records };
-  }, []);
+    return {
+      matches: matchPage.items,
+      documents: documentPage.items,
+      documentTotal: documentPage.total,
+    };
+  }, [fixedJobId, documentOffset]);
 
   const page = useAsyncData(load, {
     loginNext: LOGIN_NEXT,
@@ -78,8 +92,12 @@ export function CoverLetterView() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Thư xin việc"
-        subtitle="AI viết thư dựa trên hồ sơ của bạn và tin tuyển dụng bạn chọn"
+        title={fixedJobId ? "Thư xin việc cho tin này" : "Thư đã viết"}
+        subtitle={
+          fixedJobId
+            ? "AI viết thư dựa trên hồ sơ của bạn và đúng tin tuyển dụng bên dưới"
+            : "Kho thư đã viết. Tạo mới thì vào một tin tuyển dụng rồi bấm Viết thư xin việc"
+        }
       />
 
       <JobSelectCard
@@ -89,7 +107,7 @@ export function CoverLetterView() {
         matches={matches}
         value={jobId}
         onChange={setJobId}
-        disabled={isGenerating}
+        disabled={isGenerating || Boolean(fixedJobId)}
         emptyOptionLabel="— Chọn một công việc —"
         hint={
           matches.length === 0
@@ -129,6 +147,12 @@ export function CoverLetterView() {
       )}
 
       <DocumentHistory
+        page={{
+          offset: documentOffset,
+          limit: DOCUMENT_PAGE_SIZE,
+          total: page.data?.documentTotal ?? 0,
+          onOffsetChange: setDocumentOffset,
+        }}
         documents={documents}
         activeId={record?.id ?? null}
         onSelect={job.open}

@@ -10,6 +10,8 @@ interface PaginationProps {
   limit: number;
   total: number;
   onOffsetChange: (offset: number) => void;
+  /** Danh từ đếm được, ví dụ "tin" hay "đơn". Mặc định là "kết quả". */
+  noun?: string;
   /** Khoá nút trong lúc đang tải trang kế, tránh bấm chồng nhiều lần. */
   disabled?: boolean;
 }
@@ -25,6 +27,7 @@ export function Pagination({
   limit,
   total,
   onOffsetChange,
+  noun = "kết quả",
   disabled,
 }: PaginationProps) {
   // Không có gì để lật thì không vẽ thanh điều hướng.
@@ -41,7 +44,7 @@ export function Pagination({
         <span className="font-mono font-semibold text-slate-700">
           {formatCount(from)}–{formatCount(to)}
         </span>{" "}
-        trên tổng {formatCount(total)} tin
+        trên tổng {formatCount(total)} {noun}
       </p>
 
       <div className="flex items-center gap-2">

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Send } from "lucide-react";
+import { } from "lucide-react";
 import type {
   Application,
   ApplicationGroup,
@@ -25,8 +25,8 @@ import { CompanyLogo } from "@/components/dashboard/company-logo";
 import { LocationText } from "@/components/dashboard/location-text";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CountTabs } from "@/components/ui/tabs";
 import {
@@ -40,9 +40,13 @@ import {
 
 type Filter = "all" | ApplicationGroup;
 
+/** Số đơn hiện một lúc. Bảng dài hơn thế là phải cuộn để tìm, không phải đọc. */
+const PAGE_SIZE = 20;
+
 export default function ApplicationsPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>("all");
+  const [offset, setOffset] = useState(0);
   const [data, setData] = useState<ApplicationList | null>(null);
   const [error, setError] = useState<string | null>(null);
   /** Tăng lên để tải lại danh sách sau khi đổi trạng thái thành công. */
@@ -61,6 +65,7 @@ export default function ApplicationsPage() {
       try {
         const response = await applicationsService.list(
           filter === "all" ? undefined : filter,
+          { limit: PAGE_SIZE, offset },
         );
         if (!cancelled) setData(response);
       } catch (err) {
@@ -76,7 +81,7 @@ export default function ApplicationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [filter, router, reloadToken]);
+  }, [filter, offset, router, reloadToken]);
 
   /**
    * Đổi trạng thái rồi TẢI LẠI cả danh sách, thay vì vá bản ghi tại chỗ.
@@ -118,20 +123,16 @@ export default function ApplicationsPage() {
       <PageHeader
         title="Lịch sử ứng tuyển"
         subtitle="Theo dõi trạng thái từng đơn ứng tuyển của bạn"
-        actions={
-          <Link href="/dashboard/applications/apply">
-            <Button>
-              <Send className="size-4" />
-              Ứng tuyển mới
-            </Button>
-          </Link>
-        }
       />
 
+      {/* Đổi tab thì về trang đầu: giữ offset cũ rất dễ ra một bảng trống. */}
       <CountTabs
         tabs={APPLICATION_TABS}
         value={filter}
-        onChange={setFilter}
+        onChange={(next) => {
+          setFilter(next);
+          setOffset(0);
+        }}
         counts={data?.counts}
       />
 
@@ -244,6 +245,14 @@ export default function ApplicationsPage() {
               Không có đơn ứng tuyển nào ở trạng thái này.
             </div>
           )}
+
+          <Pagination
+            offset={offset}
+            limit={PAGE_SIZE}
+            total={data.total}
+            noun="đơn"
+            onOffsetChange={setOffset}
+          />
         </Card>
       )}
     </div>

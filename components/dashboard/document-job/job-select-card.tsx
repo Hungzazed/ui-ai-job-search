@@ -3,7 +3,8 @@
 import type { ReactNode } from "react";
 import { Wand2 } from "lucide-react";
 import type { JobMatchWithJob } from "@/types";
-import { Label, Select } from "@/components/ui/form";
+import { Label } from "@/components/ui/form";
+import { Select } from "@/components/ui/select";
 import { SectionCard } from "@/components/ui/section-card";
 
 interface JobSelectCardProps {
@@ -58,15 +59,15 @@ export function JobSelectCard({
           id={selectId}
           value={value}
           disabled={disabled}
-          onChange={(event) => onChange(event.target.value)}
-        >
-          <option value="">{emptyOptionLabel}</option>
-          {matches.map((match) => (
-            <option key={match.jobId} value={match.jobId}>
-              {match.job.title} — {match.job.company}
-            </option>
-          ))}
-        </Select>
+          options={[
+            { value: "", label: emptyOptionLabel },
+            ...matches.map((match) => ({
+              value: match.jobId,
+              label: `${match.job.title} — ${match.job.company}`,
+            })),
+          ]}
+          onChange={onChange}
+        />
         {hint && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
       </div>
       {action}

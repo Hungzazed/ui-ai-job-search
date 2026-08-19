@@ -2,7 +2,6 @@ import {
   forwardRef,
   type InputHTMLAttributes,
   type LabelHTMLAttributes,
-  type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
 import { cn } from "@/utils";
@@ -46,18 +45,3 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
   ),
 );
 Textarea.displayName = "Textarea";
-
-export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(
-  ({ className, ...props }, ref) => (
-    <select
-      ref={ref}
-      className={cn(
-        "h-10 w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm",
-        "focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100",
-        className,
-      )}
-      {...props}
-    />
-  ),
-);
-Select.displayName = "Select";

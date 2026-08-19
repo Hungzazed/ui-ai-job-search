@@ -18,7 +18,7 @@ import {
   APPLICATION_TABS,
   NEXT_STATUSES,
 } from "@/lib/application-status";
-import { Select } from "@/components/ui/form";
+import { Select } from "@/components/ui/select";
 import { companyColor, companyInitials, formatDate } from "@/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { CompanyLogo } from "@/components/dashboard/company-logo";
@@ -194,10 +194,6 @@ export default function ApplicationsPage() {
                   </TableCell>
                   <TableCell>
                     {/*
-                      Dùng <select> gốc thay vì dựng một menu riêng: nó có sẵn
-                      điều hướng bàn phím và hoạt động với trình đọc màn hình mà
-                      không phải tự cài lại ARIA.
-
                       `value` ghim ở chuỗi rỗng nên ô luôn quay về dòng gợi ý sau
                       mỗi lần chọn — trạng thái thật đã nằm ở Badge bên cạnh, để
                       hai chỗ cùng hiển thị một thứ chỉ tạo cơ hội cho chúng lệch
@@ -205,29 +201,24 @@ export default function ApplicationsPage() {
                     */}
                     <Select
                       aria-label={`Đổi trạng thái đơn ${application.job.title}`}
-                      className="h-9 min-w-40 text-xs"
+                      className="min-w-40"
                       value=""
-                      disabled={savingId === application.id}
-                      onChange={(event) => {
-                        const next = event.target.value;
-                        if (!next) return;
-                        void changeStatus(
-                          application,
-                          next as ApplicationStatus,
-                        );
-                      }}
-                    >
-                      <option value="">
-                        {savingId === application.id
+                      placeholder={
+                        savingId === application.id
                           ? "Đang lưu…"
-                          : "Đổi trạng thái…"}
-                      </option>
-                      {NEXT_STATUSES[application.status].map((status) => (
-                        <option key={status} value={status}>
-                          {APPLICATION_STATUS_LABELS[status]}
-                        </option>
-                      ))}
-                    </Select>
+                          : "Đổi trạng thái…"
+                      }
+                      disabled={savingId === application.id}
+                      options={NEXT_STATUSES[application.status].map(
+                        (status) => ({
+                          value: status,
+                          label: APPLICATION_STATUS_LABELS[status],
+                        }),
+                      )}
+                      onChange={(next) =>
+                        void changeStatus(application, next as ApplicationStatus)
+                      }
+                    />
                     {rowError?.id === application.id && (
                       // Nguyên văn lý do máy chủ trả về. Nó biết những thứ dữ
                       // liệu ở đây không biết, ví dụ đơn đã từng ở OFFER hay chưa.

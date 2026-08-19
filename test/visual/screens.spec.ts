@@ -138,7 +138,7 @@ test("chụp các màn sau khi đăng nhập", async ({ page }) => {
 
 test("ô đổi trạng thái với tới được ở cỡ desktop", async ({ page }) => {
   /*
-   * Bảng Lịch sử ứng tuyển có cột cuối là <select> đổi trạng thái — control duy
+   * Bảng Lịch sử ứng tuyển có cột cuối là ô đổi trạng thái — control duy
    * nhất trên màn hình đó. Khi cột Địa điểm còn in nguyên địa chỉ thô, bảng rộng
    * quá khung và cột này bị đẩy ra ngoài vùng thấy được.
    *
@@ -148,10 +148,10 @@ test("ô đổi trạng thái với tới được ở cỡ desktop", async ({ p
    */
   await login(page);
   await page.goto("/dashboard/applications");
-  await page.locator("table select").first().waitFor();
+  await page.locator('table [role="combobox"]').first().waitFor();
 
   const reach = await page.evaluate(() => {
-    const select = document.querySelector("table select");
+    const select = document.querySelector('table [role="combobox"]');
     if (!select) return null;
     const box = select.getBoundingClientRect();
     return { right: Math.round(box.right), viewport: window.innerWidth };

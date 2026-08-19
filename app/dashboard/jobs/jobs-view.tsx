@@ -31,13 +31,23 @@ const SEARCH_DEBOUNCE_MS = 500;
 const SORTS: JobSort[] = ["newest", "salary", "match"];
 
 /**
+ * Thứ tự mặc định khác nhau giữa hai lối vào.
+ *
+ * "Việc làm phù hợp" mà sắp theo thời gian quét thì một tin vừa đủ điểm vẫn
+ * đứng trên một tin rất hợp chỉ vì nó mới hơn — trong khi cả trang tồn tại là
+ * để trả lời câu "tin nào hợp với tôi nhất".
+ */
+const defaultSort = (scored: boolean): JobSort =>
+  scored ? "match" : "newest";
+
+/**
  * Đọc bộ lọc TỪ URL.
  *
  * URL là nguồn sự thật duy nhất, không phải `useState`. Nhờ vậy một bộ lọc là
  * một đường link chia sẻ được, nút Back đưa về đúng kết quả trước đó, và tải
  * lại trang không mất gì - đúng cách mọi trang tuyển dụng hoạt động.
  */
-function readFilter(params: URLSearchParams): JobFilterValue {
+function readFilter(params: URLSearchParams, scored: boolean): JobFilterValue {
   const sort = params.get("sort");
   return {
     q: params.get("q") ?? "",
@@ -45,7 +55,9 @@ function readFilter(params: URLSearchParams): JobFilterValue {
     occupation: params.getAll("occupation"),
     salaryMin: Number(params.get("salaryMin") ?? 0) || 0,
     postedWithin: Number(params.get("postedWithin") ?? 0) || 0,
-    sort: SORTS.includes(sort as JobSort) ? (sort as JobSort) : "newest",
+    sort: SORTS.includes(sort as JobSort)
+      ? (sort as JobSort)
+      : defaultSort(scored),
   };
 }
 
@@ -63,7 +75,7 @@ function writeFilter(
   if (filter.salaryMin) params.set("salaryMin", String(filter.salaryMin));
   if (filter.postedWithin)
     params.set("postedWithin", String(filter.postedWithin));
-  if (filter.sort !== "newest") params.set("sort", filter.sort);
+  if (filter.sort !== defaultSort(scored)) params.set("sort", filter.sort);
   if (offset) params.set("offset", String(offset));
   return params.toString();
 }
@@ -73,11 +85,11 @@ export function JobsView() {
   const queryClient = useQueryClient();
   const params = useSearchParams();
 
-  /** `?scored=1` = lối vào "Việc làm phù hợp": chỉ tin đã có đánh giá AI. */
+  /** `?scored=1` = lối vào "Việc làm phù hợp": tin đã chấm và KHÔNG bị chấm POOR. */
   const scored = params.get("scored") === "1";
   const filter = useMemo(
-    () => readFilter(new URLSearchParams(params.toString())),
-    [params],
+    () => readFilter(new URLSearchParams(params.toString()), scored),
+    [params, scored],
   );
   const offset = Number(params.get("offset") ?? 0) || 0;
 
@@ -204,7 +216,7 @@ export function JobsView() {
         title={scored ? "Việc làm phù hợp" : "Tất cả việc làm"}
         subtitle={
           scored
-            ? `${page.data.total} việc làm đã có đánh giá AI`
+            ? `${page.data.total} việc làm AI đánh giá là đáng cân nhắc`
             : `${page.data.total} tin khớp với bộ lọc hiện tại`
         }
       />

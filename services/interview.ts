@@ -5,7 +5,13 @@ import type { Paginated, QueuedResult, WorkStatus } from "./types";
 export interface InterviewPrepRecord {
   id: string;
   jobId: string;
-  job: { id: string; title: string; company: string };
+  /** `companyLogo` là null với hai portal không đưa logo ra trang danh sách. */
+  job: {
+    id: string;
+    title: string;
+    company: string;
+    companyLogo: string | null;
+  };
   status: WorkStatus;
   starAnswers: unknown;
   toughQuestions: unknown;

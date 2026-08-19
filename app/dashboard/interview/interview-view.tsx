@@ -387,6 +387,7 @@ export function InterviewView() {
                       <CompanyLogo
                         initials={companyInitials(prep.job.company)}
                         color={companyColor(prep.job.company)}
+                        src={prep.job.companyLogo}
                         size="sm"
                       />
                       <div className="min-w-0 flex-1">

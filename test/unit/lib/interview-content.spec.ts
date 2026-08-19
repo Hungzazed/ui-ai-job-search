@@ -12,7 +12,12 @@ const prep = (
 ): InterviewPrepRecord => ({
   id: "prep-1",
   jobId: "job-1",
-  job: { id: "job-1", title: "Backend Developer", company: "Công ty A" },
+  job: {
+    id: "job-1",
+    title: "Backend Developer",
+    company: "Công ty A",
+    companyLogo: null,
+  },
   status: "DONE",
   starAnswers: null,
   toughQuestions: null,

@@ -17,7 +17,11 @@ export function Tabs({ tabs, value, onChange, className }: TabsProps) {
     <div
       role="tablist"
       className={cn(
-        "scrollbar-thin flex w-full gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1",
+        // `w-fit` chứ KHÔNG `w-full`: nền xám phải ôm sát các viên, nếu không thì
+        // hai tab ngắn để lại một mảng xám rỗng kéo dài hết bề ngang - trông như
+        // còn tab nữa chưa nạp xong. `max-w-full` giữ lại đường cuộn ngang cho
+        // trường hợp nhiều tab trên màn hẹp.
+        "scrollbar-thin flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-slate-100 p-1",
         className,
       )}
     >

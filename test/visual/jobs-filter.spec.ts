@@ -11,7 +11,7 @@ import { waitForImages } from "./support";
  */
 const SHOTS = "test/visual/screenshots";
 const EMAIL = process.env.VISUAL_EMAIL ?? "admin@aijob.local";
-const PASSWORD = process.env.VISUAL_PASSWORD ?? "MatKhauTest123!";
+const PASSWORD = process.env.VISUAL_PASSWORD ?? "Demo@12345";
 
 async function login(page: Page) {
   await page.goto("/login");

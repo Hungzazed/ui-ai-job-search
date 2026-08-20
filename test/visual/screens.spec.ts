@@ -25,7 +25,7 @@ import { waitForImages } from "./support";
  * Vai ADMIN là bắt buộc: `/admin` chặn theo vai.
  */
 const EMAIL = process.env.VISUAL_EMAIL ?? "admin@aijob.local";
-const PASSWORD = process.env.VISUAL_PASSWORD ?? "MatKhauTest123!";
+const PASSWORD = process.env.VISUAL_PASSWORD ?? "Demo@12345";
 const SHOTS = "test/visual/screenshots";
 
 /** Chuỗi cho thấy trang đã vỡ, chứ không phải đang tải. */

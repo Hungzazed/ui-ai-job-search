@@ -26,7 +26,7 @@ test("man Admin: doi khoang thoi gian tai lai dung mot lan", async ({
 
   await page.goto("/login");
   await page.getByLabel("Email").fill("admin@aijob.local");
-  await page.getByLabel("Mật khẩu").fill("MatKhauTest123!");
+  await page.getByLabel("Mật khẩu").fill("Demo@12345");
   await page.getByRole("button", { name: "Đăng nhập" }).click();
   await page.waitForURL(/\/dashboard/);
 

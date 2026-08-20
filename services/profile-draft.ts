@@ -123,6 +123,17 @@ export const profileDraftService = {
   /** Link mở CV gốc trong tab mới. Cookie `sameSite: lax` nên thẻ `<a>` là đủ. */
   fileUrl: (id: string) => `${api.defaults.baseURL}/profile-drafts/${id}/file`,
 
+  /**
+   * Chạy lại một bản nháp FAILED từ bằng chứng đã lưu.
+   *
+   * Khác hẳn nộp lại file: không parse lại PDF, không ghi trùng file, không đẻ
+   * thêm bản nháp. Backend chỉ nhận khi bản nháp đang FAILED.
+   */
+  retry: (id: string) =>
+    api
+      .post<ProfileDraftRecord>(`/profile-drafts/${id}/retry`)
+      .then((r) => r.data),
+
   apply: (id: string, fields: string[]) =>
     api
       .put<ProfileDraftRecord>(`/profile-drafts/${id}/apply`, { fields })

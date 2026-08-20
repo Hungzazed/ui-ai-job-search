@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   FileText,
   Info,
+  RotateCcw,
   TriangleAlert,
   Upload,
 } from "lucide-react";
@@ -56,6 +57,7 @@ export function UploadCvView() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [waiting, setWaiting] = useState(false);
+  const [retrying, setRetrying] = useState(false);
 
   const [selected, setSelected] = useState<ApplicableField[]>([]);
   const [applying, setApplying] = useState(false);
@@ -177,6 +179,33 @@ export function UploadCvView() {
     }
   };
 
+  /**
+   * Chạy lại lượt đọc mà không bắt nộp lại file — bằng chứng đã nằm trong bản
+   * nháp. Dùng chung `waitForDraft` với luồng nộp mới, vì từ lúc này trở đi hai
+   * luồng giống hệt nhau.
+   */
+  const retry = async () => {
+    if (!draft) return;
+    setRetrying(true);
+    setError(null);
+
+    try {
+      const restarted = await profileDraftService.retry(draft.id);
+      if (!mounted.current) return;
+      setDraft(restarted);
+      void waitForDraft(restarted.id);
+    } catch (err) {
+      if (!mounted.current) return;
+      if (apiErrorStatus(err) === 401) {
+        router.replace(LOGIN_NEXT);
+        return;
+      }
+      setError(apiErrorMessage(err, "Không chạy lại được lượt đọc"));
+    } finally {
+      if (mounted.current) setRetrying(false);
+    }
+  };
+
   const apply = async () => {
     if (!draft || selected.length === 0) return;
     setApplying(true);
@@ -241,7 +270,11 @@ export function UploadCvView() {
       ) : running ? (
         <RunningCard draft={draft} />
       ) : draft?.status === "FAILED" ? (
-        <FailedCard draft={draft} />
+        <FailedCard
+          draft={draft}
+          onRetry={() => void retry()}
+          retrying={retrying}
+        />
       ) : draft?.status === "DONE" ? (
         <ReviewCard
           draft={draft}
@@ -369,14 +402,38 @@ function RunningCard({ draft }: { draft: ProfileDraftRecord | null }) {
   );
 }
 
-function FailedCard({ draft }: { draft: ProfileDraftRecord }) {
+/**
+ * `isWorthRetrying` sai với `SCHEMA`: model trả sai cấu trúc thì bấm lại cũng
+ * hỏng như cũ, và mỗi lần bấm là một lượt gọi bị đốt. Ba loại còn lại đều là
+ * "hệ thống bận", tức đáng thử lại.
+ */
+function FailedCard({
+  draft,
+  onRetry,
+  retrying,
+}: {
+  draft: ProfileDraftRecord;
+  onRetry: () => void;
+  retrying: boolean;
+}) {
   return (
     <Alert tone="danger" title="Không đọc được CV này">
       <p>{failureMessage(draft.failureKind)}</p>
       {isWorthRetrying(draft.failureKind) && (
-        <p className="mt-2 text-xs">
-          Nộp lại file ở khối trên để thử lần nữa.
-        </p>
+        <>
+          <p className="mt-2 text-xs">
+            Bằng chứng đã đọc từ CV vẫn còn, nên chạy lại không cần nộp lại file.
+          </p>
+          <Button
+            variant="outline"
+            onClick={onRetry}
+            disabled={retrying}
+            className="mt-3"
+          >
+            <RotateCcw className="size-4" />
+            {retrying ? "Đang xếp lại…" : "Thử lại"}
+          </Button>
+        </>
       )}
     </Alert>
   );

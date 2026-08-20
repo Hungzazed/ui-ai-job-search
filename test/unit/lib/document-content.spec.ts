@@ -1,8 +1,11 @@
 import { describe, expect, test } from "vitest";
 import {
+  applicationEmailPlainText,
   coverLetterPlainText,
+  isApplicationEmailEmpty,
   isCoverLetterEmpty,
   isCvContentEmpty,
+  parseApplicationEmailContent,
   parseCoverLetterContent,
   parseCvContent,
 } from "@/lib/document-content";
@@ -185,5 +188,91 @@ describe("coverLetterPlainText", () => {
 
   test("nội dung rỗng cho chuỗi rỗng", () => {
     expect(coverLetterPlainText(parseCoverLetterContent(null))).toBe("");
+  });
+});
+
+describe("parseApplicationEmailContent", () => {
+  test.each([
+    ["null", null],
+    ["chuỗi", "chữ"],
+    ["mảng", []],
+  ])("đầu vào %s vẫn trả về hình dạng hợp lệ", (_label, input) => {
+    const email = parseApplicationEmailContent(input);
+
+    expect(isApplicationEmailEmpty(email)).toBe(true);
+    expect(email.paragraphs).toEqual([]);
+    expect(email.signature).toEqual({
+      name: null,
+      email: null,
+      phone: null,
+      title: null,
+    });
+  });
+
+  /// Chữ ký do backend ghép, nhưng bản ghi CŨ sinh trước khi có mail ứng tuyển
+  /// vẫn có thể rơi vào đây - và một `signature` là chuỗi thì `.name` sẽ ném.
+  test("signature sai kiểu thì thành chữ ký rỗng, không ném", () => {
+    const email = parseApplicationEmailContent({ signature: "Nguyễn Văn A" });
+
+    expect(email.signature.name).toBeNull();
+  });
+});
+
+describe("applicationEmailPlainText", () => {
+  const CONTENT = {
+    subject: "Ứng tuyển vị trí Kế toán tổng hợp - Nguyễn Thị B",
+    greeting: "Kính gửi Bộ phận Tuyển dụng,",
+    paragraphs: ["Đoạn một.", "Đoạn hai."],
+    attachmentNote: "CV của tôi được đính kèm.",
+    closing: "Rất mong nhận được phản hồi.",
+    signOff: "Trân trọng,",
+    signature: {
+      name: "Nguyễn Thị B",
+      title: "Kế toán tổng hợp",
+      phone: "0901234567",
+      email: "b@example.com",
+    },
+  };
+
+  /// Tiêu đề KHÔNG được nằm trong phần sao chép: nó đi vào một ô khác của trình
+  /// gửi thư, dán nhầm vào thân mail thì người dùng phải xoá tay.
+  test("không kèm tiêu đề mail", () => {
+    const text = applicationEmailPlainText(
+      parseApplicationEmailContent(CONTENT),
+    );
+
+    expect(text).not.toContain("Ứng tuyển vị trí");
+    expect(text.startsWith("Kính gửi Bộ phận Tuyển dụng,")).toBe(true);
+  });
+
+  test("chữ ký nằm cuối, mỗi dòng một mục", () => {
+    const text = applicationEmailPlainText(
+      parseApplicationEmailContent(CONTENT),
+    );
+
+    expect(text.split("\n\n").at(-1)).toBe(
+      "Nguyễn Thị B\nKế toán tổng hợp\n0901234567\nb@example.com",
+    );
+  });
+
+  /// Hồ sơ chưa khai số điện thoại là chuyện thường; chữ ký phải co lại chứ
+  /// không được để một dòng trống giữa tên và email.
+  test("hồ sơ thiếu số điện thoại thì chữ ký co lại", () => {
+    const text = applicationEmailPlainText(
+      parseApplicationEmailContent({
+        ...CONTENT,
+        signature: { ...CONTENT.signature, phone: null },
+      }),
+    );
+
+    expect(text.split("\n\n").at(-1)).toBe(
+      "Nguyễn Thị B\nKế toán tổng hợp\nb@example.com",
+    );
+  });
+
+  test("nội dung rỗng cho chuỗi rỗng", () => {
+    expect(applicationEmailPlainText(parseApplicationEmailContent(null))).toBe(
+      "",
+    );
   });
 });

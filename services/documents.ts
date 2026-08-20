@@ -2,7 +2,19 @@ import { api } from "@/lib/axios";
 import { blobErrorToError } from "./blob-error";
 import type { Paginated, QueuedDocument, WorkStatus } from "./types";
 
-export type DocumentKind = "CV" | "COVER_LETTER" | "FORM_ANSWER";
+export type DocumentKind =
+  | "CV"
+  | "COVER_LETTER"
+  | "APPLICATION_EMAIL"
+  | "FORM_ANSWER";
+
+/**
+ * Nguồn tin tuyển dụng cho mail ứng tuyển: một tin đã có trong hệ thống, hoặc
+ * một JD dán tay. Backend từ chối nếu gửi nửa vời (có JD nhưng thiếu công ty).
+ */
+export type ApplicationEmailInput =
+  | { jobId: string }
+  | { jobDescription: string; company: string; title: string };
 
 export interface DocumentRecord {
   id: string;
@@ -74,6 +86,17 @@ export const documentsService = {
   createCoverLetter: (jobId: string) =>
     api
       .post<QueuedDocument>("/documents/cover-letter", { jobId })
+      .then((r) => r.data),
+
+  /**
+   * Mail ứng tuyển gửi thẳng cho nhà tuyển dụng.
+   *
+   * JD dán tay KHÔNG được lưu thành tin tuyển dụng: kho việc làm là của chung,
+   * nên tin dán tay sẽ hiện trong danh sách của mọi người dùng khác.
+   */
+  createApplicationEmail: (input: ApplicationEmailInput) =>
+    api
+      .post<QueuedDocument>("/documents/application-email", input)
       .then((r) => r.data),
 
   /**

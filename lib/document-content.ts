@@ -154,3 +154,83 @@ export function coverLetterPlainText(letter: CoverLetterContent): string {
     .filter((part): part is string => part !== null)
     .join("\n\n");
 }
+
+/* =========================================================
+   Mail ứng tuyển
+   ========================================================= */
+
+/** Chữ ký do BACKEND ghép từ hồ sơ, không phải do model viết. */
+export interface ApplicationEmailSignature {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  title: string | null;
+}
+
+export interface ApplicationEmailContent {
+  subject: string | null;
+  greeting: string | null;
+  paragraphs: string[];
+  attachmentNote: string | null;
+  closing: string | null;
+  signOff: string | null;
+  signature: ApplicationEmailSignature;
+  company: string | null;
+  position: string | null;
+}
+
+export function parseApplicationEmailContent(
+  content: unknown,
+): ApplicationEmailContent {
+  const root = isRecord(content) ? content : {};
+  const signature = isRecord(root.signature) ? root.signature : {};
+  return {
+    subject: text(root.subject),
+    greeting: text(root.greeting),
+    paragraphs: textList(root.paragraphs),
+    attachmentNote: text(root.attachmentNote),
+    closing: text(root.closing),
+    signOff: text(root.signOff),
+    signature: {
+      name: text(signature.name),
+      email: text(signature.email),
+      phone: text(signature.phone),
+      title: text(signature.title),
+    },
+    company: text(root.company),
+    position: text(root.position),
+  };
+}
+
+export function isApplicationEmailEmpty(
+  email: ApplicationEmailContent,
+): boolean {
+  return !email.subject && email.paragraphs.length === 0 && !email.greeting;
+}
+
+/**
+ * Thân mail dạng văn bản thuần, để dán thẳng vào hộp soạn thư.
+ *
+ * KHÔNG kèm tiêu đề: tiêu đề đi vào một ô khác của trình gửi mail, và người
+ * dùng dán nhầm nó vào thân mail thì phải xoá tay. Vì vậy màn hình có hai nút
+ * sao chép riêng.
+ */
+export function applicationEmailPlainText(
+  email: ApplicationEmailContent,
+): string {
+  const { name, title, phone, email: address } = email.signature;
+  const signature = [name, title, phone, address].filter(
+    (part): part is string => part !== null,
+  );
+
+  return [
+    email.greeting,
+    ...email.paragraphs,
+    email.attachmentNote,
+    email.closing,
+    email.signOff,
+    signature.length > 0 ? signature.join("\n") : null,
+  ]
+    .filter((part): part is string => part !== null)
+    .join("\n\n");
+}

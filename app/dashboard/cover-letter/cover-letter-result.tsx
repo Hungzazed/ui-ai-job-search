@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Check, Copy, Mail } from "lucide-react";
 import type { DocumentRecord } from "@/services";
+import { useCopy } from "@/hooks/use-copy";
 import {
   coverLetterPlainText,
   isCoverLetterEmpty,
@@ -18,9 +18,6 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
 
-/** Nhãn "Đã sao chép" tự tắt sau chừng này — đủ để đọc, không đủ để gây nhiễu. */
-const COPIED_RESET_MS = 2000;
-
 export function CoverLetterResult({
   record,
   loginNext,
@@ -29,20 +26,9 @@ export function CoverLetterResult({
   loginNext: string;
 }) {
   const letter = parseCoverLetterContent(record.content);
-  const [copied, setCopied] = useState(false);
+  const { copied, copy } = useCopy();
 
-  // Hẹn giờ phải được dọn khi rời trang — cùng một kỷ luật với vòng hỏi trạng thái.
-  useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), COPIED_RESET_MS);
-    return () => clearTimeout(timer);
-  }, [copied]);
-
-  const handleCopy = () => {
-    const plain = coverLetterPlainText(letter);
-    if (!plain || !navigator.clipboard) return;
-    void navigator.clipboard.writeText(plain).then(() => setCopied(true));
-  };
+  const handleCopy = () => copy("letter", coverLetterPlainText(letter));
 
   const paragraphs = [
     letter.opening,

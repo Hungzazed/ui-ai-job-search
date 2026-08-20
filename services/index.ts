@@ -33,7 +33,11 @@ export type {
   RequirementCheck,
   SystemMatch,
 } from "./jobs";
-export type { DocumentKind, DocumentRecord } from "./documents";
+export type {
+  ApplicationEmailInput,
+  DocumentKind,
+  DocumentRecord,
+} from "./documents";
 export type { InterviewPrepRecord } from "./interview";
 export type { UpskillReportRecord } from "./upskill";
 export type { ProfileRecord } from "./profile";

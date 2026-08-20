@@ -115,7 +115,8 @@ export function JsonField({
   value,
   onChange,
   icon,
-}: FieldProps & { icon: ReactNode }) {
+  rows = 8,
+}: FieldProps & { icon: ReactNode; rows?: number }) {
   // Báo JSON sai ngay lúc gõ, chứ không đợi tới lúc bấm Lưu mới nói.
   const invalid = value.trim().length > 0 && !isJsonText(value);
   return (
@@ -126,7 +127,7 @@ export function JsonField({
       </Label>
       <Textarea
         id={id}
-        rows={8}
+        rows={rows}
         spellCheck={false}
         value={value}
         placeholder={placeholder}

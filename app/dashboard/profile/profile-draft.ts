@@ -35,7 +35,9 @@ export interface ProfileDraft {
   targetSectors: string;
   dealBreakers: string;
   experiences: string;
+  projects: string;
   educations: string;
+  certificates: string;
   behavioralTraits: string;
 }
 
@@ -96,12 +98,20 @@ const LIST_FIELDS = [
   "dealBreakers",
 ] as const;
 
-const JSON_FIELDS = ["experiences", "educations", "behavioralTraits"] as const;
+const JSON_FIELDS = [
+  "experiences",
+  "projects",
+  "educations",
+  "certificates",
+  "behavioralTraits",
+] as const;
 
 /** Nhãn tiếng Việt để báo lỗi JSON chỉ đúng ô người dùng gõ sai. */
 const JSON_LABELS: Record<(typeof JSON_FIELDS)[number], string> = {
   experiences: "Kinh nghiệm làm việc",
+  projects: "Dự án",
   educations: "Học vấn",
+  certificates: "Chứng chỉ",
   behavioralTraits: "Đặc điểm hành vi",
 };
 
@@ -137,7 +147,9 @@ export const toDraft = (profile: ProfileRecord): ProfileDraft => ({
   targetSectors: joinList(profile.targetSectors),
   dealBreakers: joinList(profile.dealBreakers),
   experiences: toJsonText(profile.experiences),
+  projects: toJsonText(profile.projects),
   educations: toJsonText(profile.educations),
+  certificates: toJsonText(profile.certificates),
   behavioralTraits: toJsonText(profile.behavioralTraits),
 });
 

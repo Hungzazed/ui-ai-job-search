@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CvOptimizerView } from "./cv-optimizer-view";
 
@@ -7,5 +8,10 @@ import { CvOptimizerView } from "./cv-optimizer-view";
 export const metadata: Metadata = { title: "Tối ưu CV — AI Career Agent" };
 
 export default function CvOptimizerPage() {
-  return <CvOptimizerView />;
+  // useSearchParams cần Suspense, nếu không `next build` dừng ở bước prerender.
+  return (
+    <Suspense>
+      <CvOptimizerView />
+    </Suspense>
+  );
 }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { CoverLetterView } from "./cover-letter-view";
 
@@ -7,5 +8,10 @@ import { CoverLetterView } from "./cover-letter-view";
 export const metadata: Metadata = { title: "Thư xin việc — AI Career Agent" };
 
 export default function CoverLetterPage() {
-  return <CoverLetterView />;
+  // useSearchParams cần Suspense, nếu không `next build` dừng ở bước prerender.
+  return (
+    <Suspense>
+      <CoverLetterView />
+    </Suspense>
+  );
 }

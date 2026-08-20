@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { JobsView } from "./jobs-view";
 
@@ -6,5 +7,10 @@ import { JobsView } from "./jobs-view";
 export const metadata: Metadata = { title: "Việc làm phù hợp — AI Career Agent" };
 
 export default function JobsPage() {
-  return <JobsView />;
+  // useSearchParams cần Suspense, nếu không `next build` dừng ở bước prerender.
+  return (
+    <Suspense>
+      <JobsView />
+    </Suspense>
+  );
 }

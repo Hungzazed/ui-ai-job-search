@@ -12,27 +12,18 @@ import {
   DocumentStatusBadge,
   UNREADABLE_CONTENT_MESSAGE,
 } from "@/components/dashboard/document-job";
+import { gmailComposeUrl } from "@/lib/mail-link";
 import { useCopy } from "@/hooks/use-copy";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
-
-/**
- * Trần độ dài cho đường `mailto:`.
- *
- * Trình duyệt và trình gửi thư đều có giới hạn riêng cho URL, và khi vượt thì
- * chúng KHÔNG báo lỗi — chúng mở một cửa sổ soạn thư với thân mail bị cắt cụt.
- * Quá dài thì thà giấu nút đi và để người dùng dùng nút sao chép, còn hơn đưa
- * họ một bản thiếu mà trông như đủ.
- */
-const MAILTO_MAX_LENGTH = 1800;
 
 export function ApplicationEmailResult({ record }: { record: DocumentRecord }) {
   const email = parseApplicationEmailContent(record.content);
   const { copied, copy } = useCopy();
 
   const body = applicationEmailPlainText(email);
-  const mailto = `mailto:?subject=${encodeURIComponent(email.subject ?? "")}&body=${encodeURIComponent(body)}`;
+  const compose = gmailComposeUrl({ subject: email.subject, body });
   const signature = email.signature;
 
   if (isApplicationEmailEmpty(email)) {
@@ -74,11 +65,11 @@ export function ApplicationEmailResult({ record }: { record: DocumentRecord }) {
             )}
             {copied === "body" ? "Đã sao chép" : "Sao chép nội dung"}
           </Button>
-          {mailto.length <= MAILTO_MAX_LENGTH && (
-            <a href={mailto}>
+          {compose && (
+            <a href={compose} target="_blank" rel="noopener noreferrer">
               <Button variant="secondary" size="sm">
                 <Send className="size-3.5" />
-                Mở trình gửi mail
+                Soạn trong Gmail
               </Button>
             </a>
           )}

@@ -3,6 +3,7 @@ export { dashboardService } from "./dashboard";
 export { applicationsService } from "./applications";
 export { jobsService } from "./jobs";
 export { matchesService } from "./matches";
+export { agentService } from "./agent";
 export { documentsService } from "./documents";
 export { interviewService } from "./interview";
 export { upskillService } from "./upskill";
@@ -33,6 +34,14 @@ export type {
   RequirementCheck,
   SystemMatch,
 } from "./jobs";
+export type {
+  AgentArtifact,
+  AgentRunInput,
+  AgentRunRecord,
+  AgentRunStatus,
+  AgentRunSummary,
+  AgentStep,
+} from "./agent";
 export type {
   ApplicationEmailInput,
   DocumentKind,

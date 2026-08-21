@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
+  Bot,
   Briefcase,
   FileText,
   GraduationCap,
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Tất cả việc làm", href: "/dashboard/jobs", icon: Layers },
   { label: "CV đã tạo", href: "/dashboard/cv-optimizer", icon: FileText },
   { label: "Thư đã viết", href: "/dashboard/cover-letter", icon: Mail },
+  { label: "Ứng tuyển tự động", href: "/dashboard/apply", icon: Bot },
   { label: "Lịch sử ứng tuyển", href: "/dashboard/applications", icon: History },
   { label: "Chuẩn bị phỏng vấn", href: "/dashboard/interview", icon: MessageSquare },
   { label: "Lộ trình học", href: "/dashboard/upskill", icon: GraduationCap },

@@ -80,8 +80,36 @@ describe("summarizeStep", () => {
     const summary = summarizeStep(step({ text: "Kết luận: nên nộp." }));
 
     expect(summary.tools).toEqual([]);
-    expect(summary.text).toBe("Kết luận: nên nộp.");
+    expect(summary.preview).toBe("Kết luận: nên nộp.");
     expect(summary.outcome).toBeNull();
+  });
+
+  /**
+   * Model viết bằng Markdown, và preview chỉ có ba dòng.
+   *
+   * In nguyên văn thì người đọc thấy một dãy `|---|---|` — đúng thứ đã xảy ra
+   * trên màn hình thật. Bảng bị rút thành các ô nối bằng dấu chấm giữa.
+   */
+  test("bỏ cú pháp Markdown khỏi preview", () => {
+    const summary = summarizeStep(
+      step({
+        text: [
+          "## Đánh giá mức độ phù hợp",
+          "",
+          "| Tiêu chí | Điểm |",
+          "|----------|------|",
+          "| Kỹ năng | 85/100 |",
+          "",
+          "**Kết luận:** phù hợp trung bình.",
+        ].join("\n"),
+      }),
+    );
+
+    expect(summary.preview).not.toContain("|--");
+    expect(summary.preview).not.toContain("**");
+    expect(summary.preview).not.toContain("##");
+    expect(summary.preview).toContain("Đánh giá mức độ phù hợp");
+    expect(summary.preview).toContain("Kỹ năng · 85/100");
   });
 
   /// Kết quả tool là JSON do model và tool sinh ra, nên hình dạng nào cũng có

@@ -7,6 +7,7 @@
  * được bằng test hàm thuần thay vì phải dựng cả màn hình.
  */
 
+import { toPlainText } from "./markdown-blocks";
 import { isRecord, text } from "./parse-json";
 import type { AgentStep } from "@/services";
 
@@ -36,8 +37,8 @@ export interface StepSummary {
   /** Câu tóm tắt kết quả, hoặc lý do hỏng. */
   outcome: string | null;
   failed: boolean;
-  /** Chữ model viết ra ở bước này. */
-  text: string | null;
+  /** Chữ model viết ra ở bước này, ĐÃ bỏ cú pháp Markdown để hiện một dòng. */
+  preview: string | null;
   seconds: number;
 }
 
@@ -89,7 +90,7 @@ export function summarizeStep(step: AgentStep): StepSummary {
     tools: step.toolCalls.map((call) => toolLabel(call.tool)),
     outcome: outcomes.find((item) => item.line)?.line ?? null,
     failed: outcomes.some((item) => item.failed),
-    text: text(step.text),
+    preview: text(step.text) && toPlainText(step.text) ? toPlainText(step.text) : null,
     seconds: Math.round(step.durationMs / 1000),
   };
 }

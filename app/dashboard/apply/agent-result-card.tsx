@@ -5,6 +5,7 @@ import type { AgentRunRecord } from "@/services";
 import { useCopy } from "@/hooks/use-copy";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Markdown } from "@/components/ui/markdown";
 import { SectionCard } from "@/components/ui/section-card";
 
 const kb = (bytes: number): string => `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -46,8 +47,8 @@ export function AgentResultCard({ run }: { run: AgentRunRecord }) {
       }
     >
       {text ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 text-sm leading-relaxed whitespace-pre-wrap text-slate-700">
-          {text}
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <Markdown text={text} />
         </div>
       ) : (
         <Alert tone="warning">

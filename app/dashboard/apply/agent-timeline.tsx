@@ -80,12 +80,14 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
                 </p>
               )}
 
-              {/* Chữ model viết ra ở bước này — thường là phần đánh giá. Cắt
-                  ngắn: bảng này để theo dõi tiến trình, bản đầy đủ nằm ở khối
-                  kết quả bên dưới. */}
-              {step.text && (
+              {/* Chữ model viết ra ở bước này — thường là phần đánh giá, và nó
+                  viết bằng Markdown. Ở đây BỎ HẾT cú pháp thay vì vẽ ra: ba
+                  dòng preview không chứa nổi một cái bảng, mà in nguyên văn thì
+                  người đọc chỉ thấy một dãy `|---|---|`. Bản đầy đủ, có bảng
+                  hẳn hoi, nằm ở khối Kết quả bên dưới. */}
+              {step.preview && (
                 <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-slate-600">
-                  {step.text}
+                  {step.preview}
                 </p>
               )}
             </div>

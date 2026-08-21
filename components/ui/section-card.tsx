@@ -47,7 +47,14 @@ export function SectionCard({
       <CardHeader
         className={cn(
           compact && "border-b border-slate-100 pb-3",
-          actions && "flex-row items-start justify-between space-y-0",
+          /*
+             Xếp DỌC trên màn hẹp, ngang từ `sm` trở lên.
+             Để `flex-row` ở mọi cỡ thì cột tiêu đề bị ép còn một nửa và một tên
+             tài liệu dài vỡ thành sáu dòng bên cạnh hai cái nút — đã thấy trên
+             ảnh chụp 390px của khối kết quả mail.
+          */
+          actions &&
+            "flex-col items-start gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4",
         )}
       >
         <div className="min-w-0">
@@ -67,7 +74,9 @@ export function SectionCard({
             </CardDescription>
           )}
         </div>
-        {actions && <div className="flex items-center gap-2">{actions}</div>}
+        {actions && (
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
+        )}
       </CardHeader>
       <CardContent className={cn("space-y-4", contentClassName)}>
         {children}

@@ -12,10 +12,13 @@ import { agentService, type AgentRunRecord } from "@/services";
 const POLL_INTERVAL_MS = 4000;
 
 /**
- * 90 lần × 4 giây = 6 phút. Dài hơn hẳn vòng hỏi tài liệu vì một lượt agent là
- * cả chục lượt gọi model nối nhau — đo thật: 12 bước hết 3 phút 30.
+ * 165 lần × 4 giây = 11 phút, tức DÀI HƠN `AGENT_TIMEOUT_MS` 9 phút của backend.
+ *
+ * Thứ tự này phải giữ: vòng hỏi ngắn hơn hạn của lượt chạy thì màn hình bỏ cuộc
+ * trong khi agent vẫn đang chạy, và người dùng thấy "chờ quá lâu" cho một lượt
+ * hai phút sau đó kết thúc bình thường.
  */
-const MAX_POLLS = 90;
+const MAX_POLLS = 165;
 
 export interface AgentRunView {
   run: AgentRunRecord | null;

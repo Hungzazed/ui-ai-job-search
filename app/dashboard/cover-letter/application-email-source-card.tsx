@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useDraftState } from "@/hooks/use-draft-state";
 import { ClipboardPaste, Sparkles } from "lucide-react";
 import type { JobMatchWithJob } from "@/types";
 import type { ApplicationEmailInput } from "@/services";
@@ -41,9 +42,15 @@ export function ApplicationEmailSourceCard({
 }) {
   const [source, setSource] = useState<Source>(fixedJobId ? "pick" : "paste");
   const [jobId, setJobId] = useState(fixedJobId ?? "");
-  const [jobDescription, setJobDescription] = useState("");
-  const [company, setCompany] = useState("");
-  const [title, setTitle] = useState("");
+
+  /*
+   * Ba ô này giữ qua việc đổi tab và tải lại trang. Đổi tab làm React tháo cả
+   * panel, và một JD dài vừa dán mà biến mất thì người dùng phải đi copy lại từ
+   * đầu - không cảnh báo, không hoàn tác.
+   */
+  const [jobDescription, setJobDescription] = useDraftState("email-jd");
+  const [company, setCompany] = useDraftState("email-company");
+  const [title, setTitle] = useDraftState("email-title");
 
   const jd = jobDescription.trim();
   const pasteReady =

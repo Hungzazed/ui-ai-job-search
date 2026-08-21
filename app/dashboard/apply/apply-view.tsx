@@ -77,6 +77,9 @@ export function ApplyView() {
       "Không gửi được câu trả lời",
     );
 
+  const retry = () =>
+    void send(() => agentService.retry(runId!), "Không chạy lại được lượt này");
+
   if (page.error)
     return <PageError title="Không tải được dữ liệu" message={page.error} />;
 
@@ -106,7 +109,7 @@ export function ApplyView() {
             </Button>
           }
         >
-          Đã chờ sáu phút mà lượt chạy chưa dừng. Hàng đợi có thể đang kẹt.
+          Đã chờ mười một phút mà lượt chạy chưa dừng — lâu hơn cả hạn của chính nó. Hàng đợi có thể đang kẹt.
         </Alert>
       )}
 
@@ -119,8 +122,23 @@ export function ApplyView() {
       )}
 
       {run?.status === "FAILED" && (
-        <Alert tone="danger" title="Lượt chạy thất bại">
+        <Alert
+          tone="danger"
+          title="Lượt chạy thất bại"
+          actions={
+            <Button variant="outline" size="sm" loading={sending} onClick={retry}>
+              <RotateCcw className="size-3.5" />
+              Chạy tiếp từ chỗ dừng
+            </Button>
+          }
+        >
           {run.error ?? "Không rõ lý do"}
+          {run.steps.length > 0 && (
+            <span className="mt-1 block text-xs">
+              {run.steps.length} bước trước đó vẫn còn — chạy tiếp sẽ đi từ đó,
+              không làm lại từ đầu.
+            </span>
+          )}
         </Alert>
       )}
 

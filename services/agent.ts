@@ -88,6 +88,16 @@ export const agentService = {
       .get<Paginated<AgentRunSummary>>("/agent-runs", { params: page })
       .then((r) => r.data),
 
+  /**
+   * Chạy lại một lượt đã hỏng. Backend tự chọn đường: còn điểm khôi phục thì
+   * đi tiếp từ chỗ dừng, không thì bắt đầu lại từ chính đầu vào cũ - dù đường
+   * nào thì người dùng cũng không phải dán lại mô tả công việc.
+   */
+  retry: (id: string) =>
+    api
+      .post<{ queued: true; runId: string }>(`/agent-runs/${id}/retry`)
+      .then((r) => r.data),
+
   /** Trả lời câu hỏi agent đang chờ; backend xếp nó chạy tiếp. */
   answer: (id: string, text: string) =>
     api

@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import type { DashboardOverview } from "@/types";
-import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { dashboardService } from "@/services";
 import { AISuggestionCard } from "@/components/dashboard/ai-suggestion-card";
 import { useSession } from "@/components/dashboard/session";
@@ -15,37 +12,14 @@ import { ScoreBreakdown } from "./score-breakdown";
 import { TopMatches } from "./top-matches";
 
 export default function DashboardPage() {
-  const router = useRouter();
   // Người dùng đã được SessionProvider của layout tải sẵn — gọi lại `/auth/me`
   // ở đây là một request thứ hai cho đúng dữ liệu đang nằm sẵn trong context.
   const { user, loading: loadingUser } = useSession();
-  const [data, setData] = useState<DashboardOverview | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const overview = await dashboardService.overview();
-        if (cancelled) return;
-        setData(overview);
-      } catch (err) {
-        if (cancelled) return;
-        // Cookie hết hạn giữa chừng: đưa về đăng nhập thay vì hiện lỗi mà người
-        // dùng không làm gì được.
-        if (apiErrorStatus(err) === 401) {
-          router.replace("/login?next=/dashboard");
-          return;
-        }
-        setError(apiErrorMessage(err, "Không tải được dữ liệu tổng quan"));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
+  const { data, error } = useApiQuery(
+    ["dashboard", "overview"],
+    () => dashboardService.overview(),
+    { errorMessage: "Không tải được dữ liệu tổng quan" },
+  );
 
   if (error) return <PageError title="Không tải được dữ liệu" message={error} />;
 

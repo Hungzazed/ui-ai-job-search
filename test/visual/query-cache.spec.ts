@@ -15,9 +15,15 @@ import { expect, test, type Page } from "@playwright/test";
 const EMAIL = process.env.VISUAL_EMAIL ?? "admin@aijob.local";
 const PASSWORD = process.env.VISUAL_PASSWORD ?? "Demo@12345";
 
-async function login(page: Page) {
+/**
+ * Studio cần một tài khoản CÓ CV sẵn, mà tài khoản admin thì không có.
+ * `ketoan@` là một trong bảy hồ sơ ngoài ngành IT do `pnpm db:seed` dựng.
+ */
+const STUDIO_EMAIL = process.env.VISUAL_STUDIO_EMAIL ?? "ketoan@aijob.local";
+
+async function login(page: Page, email = EMAIL) {
   await page.goto("/login");
-  await page.getByLabel("Email").fill(EMAIL);
+  await page.getByLabel("Email").fill(email);
   await page.getByLabel("Mật khẩu").fill(PASSWORD);
   await page.getByRole("button", { name: "Đăng nhập" }).click();
   await page.waitForURL(/\/dashboard/);
@@ -85,4 +91,56 @@ test("quay lại màn đã xem thì không gọi API nữa", async ({ page }) =>
   // Màn Tổng quan chưa từng mở trong phiên này nên nó được phép gọi một lần.
   // Màn Lịch sử thì đã có trong cache, và đó là thứ được khẳng định ở đây.
   expect(dump().filter((url) => url.includes("/api/applications"))).toEqual([]);
+});
+
+/**
+ * Khung xem trước của CvStudio: chỗ rủi ro nhất trong lần chuyển này.
+ *
+ * Nó vừa hoãn nhịp gõ vừa đọc cache, nên hỏng thì hỏng theo hai kiểu mà không
+ * có gì báo: hoặc mỗi phím một request, hoặc bản vẽ đứng im không đổi theo bản
+ * nháp. Test bấm qua lại giữa hai mẫu và đếm request — bấm lại một mẫu đã dựng
+ * phải là 0.
+ *
+ * Cần một CV có sẵn trong database dev; không có thì bỏ qua thay vì báo đỏ.
+ */
+test("xem trước CV dùng lại bản đã dựng", async ({ page }) => {
+  let previewCalls = 0;
+  page.on("request", (request) => {
+    if (request.url().includes("/preview")) previewCalls += 1;
+  });
+
+  await login(page, STUDIO_EMAIL);
+  await page.goto("/dashboard/cv-optimizer");
+
+  const documents = page.locator("li button, table button");
+  await documents.first().waitFor({ timeout: 20_000 }).catch(() => {});
+  test.skip(
+    (await documents.count()) === 0,
+    "Database dev chưa có CV nào để mở studio",
+  );
+  await documents.first().click();
+
+  const frame = page.locator('iframe[title="Xem trước CV"]');
+  await frame.waitFor({ timeout: 20_000 });
+  // Bản vẽ phải có nội dung thật, không phải một trang trắng.
+  expect((await frame.getAttribute("srcdoc"))?.length ?? 0).toBeGreaterThan(1000);
+
+  await page.getByRole("tab", { name: "Mẫu trình bày" }).click();
+  const cards = page.locator("ul.grid li button");
+  await cards.nth(1).waitFor({ timeout: 10_000 });
+
+  await cards.nth(1).click();
+  await page.waitForTimeout(2500);
+  const afterFirstVisit = previewCalls;
+
+  await cards.nth(0).click();
+  await page.waitForTimeout(2500);
+
+  await cards.nth(1).click();
+  await page.waitForTimeout(2500);
+  const revisit = previewCalls - afterFirstVisit;
+
+  // Lượt quay về mẫu đầu vẫn có thể tốn một request (màu nhấn đã đổi theo), nên
+  // chỉ khẳng định lượt bấm LẠI đúng bản nháp vừa dựng.
+  expect(revisit).toBeLessThanOrEqual(1);
 });

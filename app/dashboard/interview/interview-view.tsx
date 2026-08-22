@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   Sparkles,
 } from "lucide-react";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { failureMessage, isWorthRetrying } from "@/lib/failure-message";
 import { interviewService, type InterviewPrepRecord } from "@/services";
@@ -249,64 +250,40 @@ function PrepDetail({
 
 export function InterviewView() {
   const router = useRouter();
-  const [preps, setPreps] = useState<InterviewPrepRecord[] | null>(null);
-  const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [retryError, setRetryError] = useState<string | null>(null);
+  /** `null` = người dùng chưa bấm chọn, để hệ thống chọn hộ. */
+  const [chosenId, setChosenId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
-  /// Lượt tải đầu tiên mới được tự chọn hộ; lật trang thì giữ nguyên lựa chọn.
-  const picked = useRef(false);
-  /// Chặn setState sau khi component đã rời khỏi cây: `retry` chờ hai request.
-  const mounted = useRef(true);
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
 
-  useEffect(() => {
-    let cancelled = false;
+  const page = useApiQuery(
+    ["interview", "list", offset],
+    () => interviewService.list({ limit: PAGE_SIZE, offset }),
+    {
+      errorMessage: "Không tải được bộ câu hỏi phỏng vấn",
+      keepPrevious: true,
+    },
+  );
 
-    void (async () => {
-      try {
-        const page = await interviewService.list({
-          limit: PAGE_SIZE,
-          offset,
-        });
-        if (cancelled) return;
-        const list = page.items;
-        setPreps(list);
-        setTotal(page.total);
-        if (picked.current) return;
-        picked.current = true;
-        /*
-         * Ưu tiên một bản ĐÃ XONG, chỉ lùi về bản mới nhất khi không có bản nào
-         * xong.
-         *
-         * Backend sắp theo `updatedAt` giảm dần, mà một lần chạy hỏng cũng cập
-         * nhật `updatedAt` — nên "bản mới nhất" rất hay chính là bản vừa hỏng, và
-         * người dùng mở màn hình ra là gặp ngay một khối lỗi đỏ trong khi vẫn có
-         * bộ câu hỏi dùng được ở ngay dưới. Đó đúng là điều đã xảy ra.
-         */
-        const firstDone = list.find((prep) => prep.status === "DONE");
-        setSelectedId((firstDone ?? list[0])?.id ?? null);
-      } catch (err) {
-        if (cancelled) return;
-        if (apiErrorStatus(err) === 401) {
-          router.replace(LOGIN_NEXT);
-          return;
-        }
-        setError(apiErrorMessage(err, "Không tải được bộ câu hỏi phỏng vấn"));
-      }
-    })();
+  const preps: InterviewPrepRecord[] | null = page.data?.items ?? null;
+  const total = page.data?.total ?? 0;
+  const error = retryError ?? page.error;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [router, offset]);
-
+  /*
+   * Ưu tiên một bản ĐÃ XONG, chỉ lùi về bản mới nhất khi không có bản nào xong.
+   *
+   * Backend sắp theo `updatedAt` giảm dần, mà một lần chạy hỏng cũng cập nhật
+   * `updatedAt` — nên "bản mới nhất" rất hay chính là bản vừa hỏng, và người
+   * dùng mở màn hình ra là gặp ngay một khối lỗi đỏ trong khi vẫn có bộ câu hỏi
+   * dùng được ở ngay dưới. Đó đúng là điều đã xảy ra.
+   *
+   * Suy ra lúc render thay vì gieo vào state sau khi tải: bản cũ cần một `ref`
+   * để nhớ đã chọn hộ lần nào chưa, và lật trang thì lựa chọn cũ trỏ vào một
+   * bản ghi không còn trên trang — khung bên phải trống trơn.
+   */
+  const autoId =
+    (preps?.find((prep) => prep.status === "DONE") ?? preps?.[0])?.id ?? null;
+  const selectedId = chosenId ?? autoId;
   const selected = preps?.find((prep) => prep.id === selectedId) ?? null;
 
   /**
@@ -318,22 +295,18 @@ export function InterviewView() {
   const retry = async () => {
     if (!selected) return;
     setRetrying(true);
-    setError(null);
+    setRetryError(null);
     try {
       await interviewService.prep(selected.job.id, true);
-      const page = await interviewService.list({ limit: PAGE_SIZE, offset });
-      if (!mounted.current) return;
-      setPreps(page.items);
-      setTotal(page.total);
+      page.reload();
     } catch (err) {
-      if (!mounted.current) return;
       if (apiErrorStatus(err) === 401) {
         router.replace(LOGIN_NEXT);
         return;
       }
-      setError(apiErrorMessage(err, "Không xếp lại được vào hàng đợi"));
+      setRetryError(apiErrorMessage(err, "Không xếp lại được vào hàng đợi"));
     } finally {
-      if (mounted.current) setRetrying(false);
+      setRetrying(false);
     }
   };
 
@@ -386,7 +359,7 @@ export function InterviewView() {
                   <li key={prep.id}>
                     <button
                       type="button"
-                      onClick={() => setSelectedId(prep.id)}
+                      onClick={() => setChosenId(prep.id)}
                       aria-current={active ? "true" : undefined}
                       className={cn(
                         "flex w-full cursor-pointer items-center gap-3 px-3 py-3 text-left transition-colors",

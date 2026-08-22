@@ -10,6 +10,7 @@ import {
   type DocumentRecord,
 } from "@/services";
 import { apiErrorMessage } from "@/lib/axios";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { parseCvContent } from "@/lib/document-content";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -98,47 +99,59 @@ export function CvStudio({
   const [templateId, setTemplateId] = useState(saved.templateId);
   const [accent, setAccent] = useState(saved.accent);
 
-  const [preview, setPreview] = useState<{ key: string; html: string } | null>(
-    null,
-  );
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const draft = useMemo(
     () => ({ content, layout, templateId, accent }),
     [content, layout, templateId, accent],
   );
-
-  // Gắn khoá vào bản đã tải rồi so lúc render: lượt tải cũ về muộn không đè được
-  // lên bản nháp người dùng vừa gõ.
   const previewKey = `${record.id}|${JSON.stringify(draft)}`;
-  const html = preview?.key === previewKey ? preview.html : null;
 
+  /*
+   * Hoãn 400ms rồi mới đổi KHOÁ, thay vì hoãn lời gọi.
+   *
+   * Người dùng gõ liên tục nên phải có nhịp hoãn; nhưng hoãn ở tầng khoá thì
+   * phần còn lại là việc của cache: một bản nháp đã dựng rồi hiện lại tức thì,
+   * không tốn request. Đó là chuyện xảy ra thật mỗi lần bấm thử qua lại giữa
+   * hai mẫu, hoặc gõ nhầm rồi xoá đi.
+   *
+   * `setState` nằm trong callback của timer, không nằm thẳng trong thân effect
+   * — đây là hẹn giờ thật, không phải một vòng đồng bộ state thừa.
+   */
+  const [debouncedKey, setDebouncedKey] = useState(previewKey);
   useEffect(() => {
-    let alive = true;
-    const timer = setTimeout(() => {
-      documentsService
-        .previewDraft(record.id, draft)
-        .then((body) => {
-          if (alive) setPreview({ key: previewKey, html: body });
-        })
-        .catch((cause: unknown) => {
-          if (alive)
-            setError(apiErrorMessage(cause, "Không tải được bản xem trước"));
-        });
-    }, PREVIEW_DEBOUNCE_MS);
+    const timer = setTimeout(
+      () => setDebouncedKey(previewKey),
+      PREVIEW_DEBOUNCE_MS,
+    );
+    return () => clearTimeout(timer);
+  }, [previewKey]);
 
-    return () => {
-      alive = false;
-      clearTimeout(timer);
-    };
-  }, [record.id, draft, previewKey]);
+  /*
+   * `keepPrevious`: giữ bản vẽ trước trên màn trong lúc bản mới đang dựng. Bản
+   * cũ để `html` về null giữa hai lượt, nên cứ mỗi nhịp ngừng gõ là khung xem
+   * trước chớp thành khung xám rồi mới hiện lại.
+   *
+   * Lượt tải cũ về muộn không đè được lên bản mới: cache khoá theo bản nháp, nên
+   * mỗi phản hồi chỉ rơi đúng vào ô của chính nó.
+   */
+  const preview = useApiQuery(
+    ["cv-preview", debouncedKey],
+    () => documentsService.previewDraft(record.id, draft),
+    {
+      errorMessage: "Không tải được bản xem trước",
+      keepPrevious: true,
+    },
+  );
 
+  const html = preview.data;
+  const error = saveError ?? preview.error;
   const dirty = previewKey !== `${record.id}|${JSON.stringify(saved)}`;
 
   const handleSave = useCallback(async () => {
     setSaving(true);
-    setError(null);
+    setSaveError(null);
     try {
       await documentsService.updateCv(record.id, { content, layout });
       if (templateId !== saved.templateId || accent !== saved.accent) {
@@ -146,14 +159,14 @@ export function CvStudio({
       }
       onSaved();
     } catch (cause: unknown) {
-      setError(apiErrorMessage(cause, "Không lưu được thay đổi"));
+      setSaveError(apiErrorMessage(cause, "Không lưu được thay đổi"));
     } finally {
       setSaving(false);
     }
   }, [record.id, content, layout, templateId, accent, saved, onSaved]);
 
   const handleDownload = useCallback(async () => {
-    setError(null);
+    setSaveError(null);
     try {
       const blob = await documentsService.pdf(record.id, "html");
       const url = URL.createObjectURL(blob);
@@ -161,7 +174,7 @@ export function CvStudio({
       // Thu hồi ngay thì tab vừa mở chưa kịp đọc xong blob.
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (cause: unknown) {
-      setError(apiErrorMessage(cause, "Không tạo được PDF"));
+      setSaveError(apiErrorMessage(cause, "Không tạo được PDF"));
     }
   }, [record.id]);
 

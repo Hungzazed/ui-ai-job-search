@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { documentsService, type CvTemplate } from "@/services";
-import { apiErrorMessage } from "@/lib/axios";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,29 +38,18 @@ export function CvTemplatePicker({
   onTemplateChange: (templateId: string) => void;
   onAccentChange: (accent: string) => void;
 }) {
-  const [templates, setTemplates] = useState<CvTemplate[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Danh sách mẫu gần như bất biến - sáu mục do máy chủ khai cứng. Trước đây
+  // mỗi lần mở kho mẫu là một request cho đúng sáu dòng đó.
+  const { data: templates, error } = useApiQuery(
+    ["cv-templates"],
+    () => documentsService.cvTemplates(),
+    { errorMessage: "Không tải được danh sách mẫu" },
+  );
 
   const selected = useMemo(
     () => templates?.find((template) => template.id === templateId) ?? null,
     [templates, templateId],
   );
-
-  useEffect(() => {
-    let alive = true;
-    documentsService
-      .cvTemplates()
-      .then((items) => {
-        if (alive) setTemplates(items);
-      })
-      .catch((cause: unknown) => {
-        if (alive)
-          setError(apiErrorMessage(cause, "Không tải được danh sách mẫu"));
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
 
   if (error) return <Alert tone="danger">{error}</Alert>;
 

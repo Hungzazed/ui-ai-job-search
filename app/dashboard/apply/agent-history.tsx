@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { cn, formatDate } from "@/utils";
-import { AgentStatusBadge } from "./agent-status-badge";
+import { AgentStatusBadge } from "@/components/dashboard/agent-status-badge";
 
 /** Các lượt chạy trước, bấm vào để mở lại. */
 export function AgentHistory({

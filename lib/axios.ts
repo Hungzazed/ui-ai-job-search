@@ -1,6 +1,16 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 
 export const AUTH_COOKIE = "aijob_token";
+
+/**
+ * Cookie "còn phiên hay không" — KHÔNG httpOnly, giá trị luôn là '1', và cố ý
+ * không chứa bí mật gì. Backend đặt nó song song với hai cookie token.
+ *
+ * `middleware.ts` đọc cookie này chứ không đọc `AUTH_COOKIE`: access token chỉ
+ * sống 15 phút, nên lấy nó làm dấu hiệu "đã đăng nhập" thì người dùng hợp lệ bị
+ * đá về /login mỗi 15 phút.
+ */
+export const SESSION_HINT_COOKIE = "aijob_session";
 
 /**
  * Client gọi thẳng backend NestJS từ trình duyệt.
@@ -40,6 +50,81 @@ export const api = axios.create({
     },
   },
 });
+
+/**
+ * Những route KHÔNG được thử lại sau 401.
+ *
+ * `/auth/refresh` phải nằm đây nếu không interceptor gọi lại chính nó vô tận.
+ * Hai route kia thì 401 là câu trả lời ĐÚNG chứ không phải token hết hạn — sai
+ * mật khẩu — nên làm mới chỉ thêm một request thừa cho mỗi lần gõ sai.
+ *
+ * `/auth/me` CỐ Ý KHÔNG nằm đây, dù nó cũng trả 401 khi chưa đăng nhập. Nó là
+ * lời gọi khôi phục phiên của `SessionProvider`, tức đúng lời gọi phải sống sót
+ * khi access token hết hạn. Loại nó ra thì mọi lần tải trang với access đã hết
+ * hạn đều kết thúc ở `/login` — kể cả khi refresh token còn nguyên và những
+ * request khác trên cùng trang đã làm mới xong. Đã dính đúng lỗi này.
+ */
+const NO_RETRY = ["/auth/refresh", "/auth/login", "/auth/register"];
+
+/**
+ * Lời gọi refresh đang bay, dùng chung cho mọi request cùng gặp 401.
+ *
+ * Đây là chỗ mô hình refresh token hay hỏng nhất: một trang dashboard bắn 5-6
+ * request song song, access token hết hạn thì CẢ SÁU nhận 401 cùng lúc. Không
+ * gom lại thì cả sáu cùng gọi /auth/refresh. Giữ một promise duy nhất ở tầm
+ * module khiến request đầu tiên đi gọi thật, năm cái còn lại chờ ké kết quả.
+ */
+let refreshing: Promise<void> | null = null;
+
+const refreshOnce = (): Promise<void> => {
+  refreshing ??= api
+    .post("/auth/refresh")
+    .then(() => undefined)
+    .finally(() => {
+      refreshing = null;
+    });
+  return refreshing;
+};
+
+/** Cờ đánh dấu request đã thử lại một lần, để không lặp vô hạn. */
+type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean };
+
+/**
+ * Access token hết hạn thì đổi lấy cái mới rồi chạy lại request, thay vì đá
+ * người dùng về màn đăng nhập giữa chừng.
+ *
+ * Chỉ thử lại ĐÚNG MỘT lần cho mỗi request (`_retried`). Refresh chạy xong mà
+ * vẫn 401 nghĩa là phiên đã chết thật - thử tiếp cũng chỉ ra 401, và vòng lặp
+ * đó âm thầm bắn hàng nghìn request.
+ */
+api.interceptors.response.use(
+  (response) => response,
+  async (error: unknown) => {
+    if (!(error instanceof AxiosError)) throw error;
+
+    const config = error.config as RetriableConfig | undefined;
+    const url = config?.url ?? "";
+    if (
+      error.response?.status !== 401 ||
+      !config ||
+      config._retried ||
+      NO_RETRY.some((path) => url.startsWith(path))
+    ) {
+      throw error;
+    }
+
+    config._retried = true;
+    try {
+      await refreshOnce();
+    } catch {
+      // Refresh cũng hỏng: phiên đã hết thật. Ném lỗi 401 GỐC ra ngoài để chỗ
+      // gọi thấy đúng request nào của mình hỏng, chứ không phải lỗi của một
+      // lời gọi nội bộ mà nó chưa từng phát ra.
+      throw error;
+    }
+    return api.request(config);
+  },
+);
 
 /**
  * Rút thông báo lỗi mà backend gửi kèm.

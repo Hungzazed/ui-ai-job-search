@@ -2,6 +2,12 @@ import type { AuthUser } from "@/types";
 
 export interface AuthResult {
   accessToken: string;
+  /**
+   * Giao diện web KHÔNG dùng tới trường này - refresh token nằm sẵn trong
+   * cookie httpOnly `aijob_refresh`. Nó đi cùng trong body cho script và ứng
+   * dụng di động, những nơi không có kho cookie của trình duyệt.
+   */
+  refreshToken: string;
   user: AuthUser;
 }
 

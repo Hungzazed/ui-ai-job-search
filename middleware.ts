@@ -1,6 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const AUTH_COOKIE = "aijob_token";
+/**
+ * Cookie "còn phiên hay không" — KHÔNG httpOnly, giá trị luôn là '1'.
+ *
+ * Cố ý KHÔNG đọc `aijob_token` ở đây: access token chỉ sống 15 phút, nên lấy
+ * nó làm dấu hiệu "đã đăng nhập" thì người dùng hợp lệ bị đá về /login mỗi 15
+ * phút dù refresh token còn nguyên 7 ngày. Mà `aijob_refresh` thì cũng không
+ * dùng được: nó bị giới hạn `path=/api/auth/refresh` nên trình duyệt không
+ * đính kèm khi request một trang của frontend.
+ */
+const SESSION_HINT_COOKIE = "aijob_session";
 
 /**
  * Chặn /dashboard và /admin khi chưa đăng nhập.
@@ -15,8 +24,8 @@ const AUTH_COOKIE = "aijob_token";
  * chuyển hướng sớm hơn.
  */
 export function middleware(request: NextRequest) {
-  const token = request.cookies.get(AUTH_COOKIE)?.value;
-  if (token) return NextResponse.next();
+  const session = request.cookies.get(SESSION_HINT_COOKIE)?.value;
+  if (session) return NextResponse.next();
 
   const loginUrl = new URL("/login", request.url);
   // Nhớ nơi người dùng định vào để đăng nhập xong quay lại đúng chỗ đó.

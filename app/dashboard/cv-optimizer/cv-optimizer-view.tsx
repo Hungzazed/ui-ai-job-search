@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
 import { CvContentView } from "./cv-content";
+import { CvStudio } from "./cv-studio";
 
 const LOGIN_NEXT = "/dashboard/cv-optimizer";
 
@@ -98,7 +99,7 @@ export function CvOptimizerView() {
         subtitle={
           fixedJobId
             ? "AI viết lại CV của bạn bám theo đúng tin tuyển dụng bên dưới"
-            : "Kho CV đã sinh. Tạo mới thì vào một tin tuyển dụng rồi bấm Tối ưu CV"
+            : "Bấm vào một CV bên dưới để đổi mẫu trình bày và tải PDF"
         }
       />
 
@@ -121,7 +122,9 @@ export function CvOptimizerView() {
 
       <DocumentJobStatus job={job} onRegenerate={handleGenerate} />
 
-      {job.phase === "done" && record && <CvResult record={record} />}
+      {job.phase === "done" && record && (
+        <CvResult record={record} onTemplateSaved={job.recheck} />
+      )}
 
       <DocumentHistory
         page={{
@@ -139,7 +142,14 @@ export function CvOptimizerView() {
   );
 }
 
-function CvResult({ record }: { record: DocumentRecord }) {
+/** Nội dung CV đã sinh, kèm kho chọn mẫu trình bày. */
+function CvResult({
+  record,
+  onTemplateSaved,
+}: {
+  record: DocumentRecord;
+  onTemplateSaved: () => void;
+}) {
   const cv = parseCvContent(record.content);
 
   return (
@@ -157,6 +167,8 @@ function CvResult({ record }: { record: DocumentRecord }) {
         ) : null}
         <CvContentView cv={cv} />
       </SectionCard>
+
+      <CvStudio record={record} onSaved={onTemplateSaved} />
 
       {/* `key` là BẮT BUỘC: nó buộc React dựng lại component khi đổi tài
           liệu, thay cho một effect tự dọn state bên trong. */}

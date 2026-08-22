@@ -1,5 +1,5 @@
 import { api } from "@/lib/axios";
-import { blobErrorToError } from "./blob-error";
+import { blobErrorToError, textErrorToError } from "./blob-error";
 import type { Paginated, QueuedDocument, WorkStatus } from "./types";
 
 export type DocumentKind =
@@ -16,6 +16,54 @@ export type ApplicationEmailInput =
   | { jobId: string }
   | { jobDescription: string; company: string; title: string };
 
+/**
+ * Nội dung CV gửi lên để LƯU. Khác `CvContent` trong `lib/document-content`: bên
+ * đó dùng `string | null` để hiển thị an toàn, còn ở đây backend từ chối `null`.
+ */
+export interface CvContentInput {
+  profileStatement: string;
+  coreCompetencies: string[];
+  experiences: Array<{
+    position: string;
+    company: string;
+    location: string;
+    period: string;
+    bullets: string[];
+  }>;
+  educations: Array<{
+    degree: string;
+    institution: string;
+    period: string;
+    detail: string;
+  }>;
+  skillGroups: Array<{ label: string; items: string[] }>;
+}
+
+/** Khoá của năm mục CV. Phải khớp `SECTION_KEYS` phía backend. */
+export type CvSectionKey =
+  | "profile"
+  | "competencies"
+  | "experience"
+  | "education"
+  | "skills";
+
+/** Thứ tự mục và mục bị ẩn. Tách khỏi nội dung. */
+export interface CvLayout {
+  order: CvSectionKey[];
+  hidden: CvSectionKey[];
+}
+
+/** Một mẫu CV trong kho chọn mẫu. */
+export interface CvTemplate {
+  id: string;
+  name: string;
+  description: string;
+  style: "don-gian" | "chuyen-nghiep" | "hien-dai";
+  accent: string;
+  /** Mẫu đen trắng thì `false`, và giao diện phải ẩn bảng chọn màu đi. */
+  usesAccent: boolean;
+}
+
 export interface DocumentRecord {
   id: string;
   userId: string;
@@ -26,6 +74,12 @@ export interface DocumentRecord {
   /** Nội dung có cấu trúc do model sinh; bản .tex chỉ là một cách trình bày. */
   content: unknown;
   storageKey: string | null;
+  /** Mẫu trình bày đang chọn. Chỉ có nghĩa với CV. */
+  templateId: string;
+  /** Tuỳ chọn của mẫu, hiện chỉ có `{ accent }`. */
+  templateOptions: { accent?: string } | null;
+  /** Thứ tự mục và mục ẩn. `null` nghĩa là chưa đụng tới. */
+  layout: CvLayout | null;
   modelId: string | null;
   generatedAt: string | null;
   error: string | null;
@@ -53,10 +107,16 @@ export const documentsService = {
     api.get<DocumentRecord>(`/documents/${id}`).then((r) => r.data),
 
   /** File .tex thô, trả về text/plain chứ không phải JSON. */
-  source: (id: string) =>
-    api
-      .get<string>(`/documents/${id}/source`, { responseType: "text" })
-      .then((r) => r.data),
+  source: async (id: string) => {
+    try {
+      const response = await api.get<string>(`/documents/${id}/source`, {
+        responseType: "text",
+      });
+      return response.data;
+    } catch (error) {
+      throw textErrorToError(error);
+    }
+  },
 
   /**
    * Compile ra PDF rồi trả về bytes. Mất khoảng 5 giây — đã đo.
@@ -68,9 +128,10 @@ export const documentsService = {
    * `responseType: "blob"`, thân phản hồi lỗi CŨNG là Blob, nên `apiErrorMessage`
    * không đọc ra được câu đó — vì vậy phải đọc Blob thành chữ ở đây.
    */
-  pdf: async (id: string): Promise<Blob> => {
+  pdf: async (id: string, engine?: "latex" | "html"): Promise<Blob> => {
     try {
       const response = await api.get<Blob>(`/documents/${id}/pdf`, {
+        params: engine ? { engine } : undefined,
         responseType: "blob",
       });
       return response.data;
@@ -109,6 +170,66 @@ export const documentsService = {
     characterLimit?: number;
   }) =>
     api.post<QueuedDocument>("/documents/form-answer", input).then((r) => r.data),
+
+  /** Danh mục mẫu CV. Là hằng số phía backend nên gọi một lần là đủ. */
+  cvTemplates: () =>
+    api
+      .get<{ items: CvTemplate[] }>("/documents/cv-templates")
+      .then((r) => r.data.items),
+
+  /**
+   * Bản HTML của CV để nhúng vào khung xem trước. Truyền `templateId` để xem thử
+   * mà KHÔNG lưu. `responseType: "text"` bắt buộc, nếu không axios cố parse JSON.
+   */
+  previewHtml: async (
+    id: string,
+    override?: { templateId?: string; accent?: string },
+  ) => {
+    try {
+      const response = await api.get<string>(`/documents/${id}/preview`, {
+        params: override,
+        responseType: "text",
+      });
+      return response.data;
+    } catch (error) {
+      throw textErrorToError(error);
+    }
+  },
+
+  /**
+   * Xem trước bản nháp CHƯA lưu. Thiếu trường nào thì backend lấy bản đã lưu cho
+   * trường đó. POST vì nội dung CV không nhét vừa query string, nhưng KHÔNG ghi gì.
+   */
+  previewDraft: async (
+    id: string,
+    draft: {
+      content?: CvContentInput;
+      layout?: CvLayout;
+      templateId?: string;
+      accent?: string;
+    },
+  ) => {
+    try {
+      const response = await api.post<string>(
+        `/documents/${id}/preview`,
+        draft,
+        { responseType: "text" },
+      );
+      return response.data;
+    } catch (error) {
+      throw textErrorToError(error);
+    }
+  },
+
+  /** Lưu bản CV người dùng đã sửa. KHÔNG tốn lượt gọi model. */
+  updateCv: (id: string, input: { content?: CvContentInput; layout?: CvLayout }) =>
+    api.put<DocumentRecord>(`/documents/${id}/cv`, input).then((r) => r.data),
+
+  /** Lưu mẫu đã chọn. KHÔNG tốn lượt gọi model. */
+  setTemplate: (id: string, templateId: string, accent?: string) =>
+    api
+      .put<DocumentRecord>(`/documents/${id}/template`, { templateId, accent })
+      .then((r) => r.data),
 
   /** Chạy ngay một tài liệu đã tạo. Dùng để thử nghiệm, mất vài chục giây. */
   generateSync: (id: string) =>

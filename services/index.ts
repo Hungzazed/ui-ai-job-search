@@ -44,6 +44,10 @@ export type {
 } from "./agent";
 export type {
   ApplicationEmailInput,
+  CvContentInput,
+  CvLayout,
+  CvSectionKey,
+  CvTemplate,
   DocumentKind,
   DocumentRecord,
 } from "./documents";

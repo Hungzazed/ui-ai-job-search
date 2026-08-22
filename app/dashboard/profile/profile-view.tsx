@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { Save, Upload } from "lucide-react";
-import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { apiErrorMessage } from "@/lib/axios";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { profileDraftService, profileService } from "@/services";
 import type { ProfileDraftRecord, ProfileRecord } from "@/services";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -26,59 +27,67 @@ import { IdentitySection } from "./sections/identity-section";
 import { RecordsSection } from "./sections/records-section";
 import { SkillsSection } from "./sections/skills-section";
 
-const LOGIN_NEXT = "/login?next=/dashboard/profile";
+const PROFILE_KEY = ["profile"];
+
+/** Hồ sơ và bản nháp CV gần nhất, gộp một mục cache để chúng luôn khớp nhau. */
+interface ProfileData {
+  profile: ProfileRecord;
+  cv: ProfileDraftRecord | null;
+}
 
 export function ProfileView() {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   // Tên và email lấy từ context của layout, không gọi lại `/auth/me`.
   const { user } = useSession();
-  const [profile, setProfile] = useState<ProfileRecord | null>(null);
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
-  /** Bản nháp CV gần nhất còn giữ file gốc, `null` nếu chưa từng nộp. */
-  const [cv, setCv] = useState<ProfileDraftRecord | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  /** Bản hồ sơ mà `draft` được gieo từ đó. Dùng để biết khi nào phải gieo lại. */
+  const [draftOf, setDraftOf] = useState<ProfileRecord | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState("identity");
 
-  useEffect(() => {
-    let cancelled = false;
+  const { data, error } = useApiQuery(
+    PROFILE_KEY,
+    async () => {
+      const [record, latest] = await Promise.all([
+        profileService.get(),
+        profileDraftService.latest().catch(() => null),
+      ]);
+      return { profile: record, cv: latest?.storageKey ? latest : null };
+    },
+    { errorMessage: "Không tải được hồ sơ" },
+  );
 
-    void (async () => {
-      try {
-        const [record, latest] = await Promise.all([
-          profileService.get(),
-          profileDraftService.latest().catch(() => null),
-        ]);
-        if (cancelled) return;
-        setProfile(record);
-        setDraft(toDraft(record));
-        setCv(latest?.storageKey ? latest : null);
-      } catch (err) {
-        if (cancelled) return;
-        // Cookie hết hạn giữa chừng: đưa về đăng nhập thay vì hiện lỗi mà người
-        // dùng không làm gì được.
-        if (apiErrorStatus(err) === 401) {
-          router.replace(LOGIN_NEXT);
-          return;
-        }
-        setError(apiErrorMessage(err, "Không tải được hồ sơ"));
-      }
-    })();
+  const profile = data?.profile ?? null;
+  const cv = data?.cv ?? null;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
-
-  // Bản nháp gốc suy ra từ hồ sơ đang giữ, nên sau khi lưu xong nó tự khớp lại
-  // với câu trả lời của backend và nút Lưu tắt đi mà không cần dọn tay.
-  const baseline = useMemo(() => (profile ? toDraft(profile) : null), [profile]);
+  /*
+   * Gieo bản nháp sửa được từ hồ sơ máy chủ, NGAY TRONG LÚC RENDER.
+   *
+   * Đây là mẫu React khuyến nghị cho "state phải đặt lại khi dữ liệu đổi", và
+   * nó thay cho một `useEffect` gọi `setDraft` — thứ eslint của dự án đã chặn
+   * một lần (`react-hooks/set-state-in-effect`) vì nó tốn thêm một vòng render
+   * và dễ thành vòng lặp.
+   *
+   * Điều kiện so theo THAM CHIẾU của bản ghi, nên nó chỉ chạy khi máy chủ trả
+   * về một bản mới: lần tải đầu, và ngay sau khi lưu. Một lượt nạp lại nền cũng
+   * tạo tham chiếu mới, và đó là lý do phải có `!dirty` - nếu không, người dùng
+   * đang gõ dở mà cache nạp lại là mất sạch những gì họ vừa nhập.
+   */
+  const baselineOfDraft = useMemo(
+    () => (draftOf ? toDraft(draftOf) : null),
+    [draftOf],
+  );
   const dirty =
     draft !== null &&
-    baseline !== null &&
-    JSON.stringify(draft) !== JSON.stringify(baseline);
+    baselineOfDraft !== null &&
+    JSON.stringify(draft) !== JSON.stringify(baselineOfDraft);
+
+  if (profile && profile !== draftOf && !dirty) {
+    setDraftOf(profile);
+    setDraft(toDraft(profile));
+  }
 
   const update = <K extends keyof ProfileDraft>(
     key: K,
@@ -110,14 +119,17 @@ export function ProfileView() {
       const updated = await profileService.update(changes);
       // Lấy nguyên bản backend trả về: `completion` được tính lại ở đó, tự dựng
       // lại con số ở client sẽ lệch ngay khi công thức chấm đổi.
-      setProfile(updated);
+      //
+      // Ghi vào cache chứ không giữ bản sao riêng, và gieo lại bản nháp NGAY tại
+      // đây: `dirty` vẫn còn true ở vòng render kế nên nhánh gieo lúc render sẽ
+      // không tự chạy.
+      queryClient.setQueryData(PROFILE_KEY, (current: ProfileData | undefined) =>
+        current ? { ...current, profile: updated } : current,
+      );
+      setDraftOf(updated);
       setDraft(toDraft(updated));
       setSaved(true);
     } catch (err) {
-      if (apiErrorStatus(err) === 401) {
-        router.replace(LOGIN_NEXT);
-        return;
-      }
       setSaveError(apiErrorMessage(err, "Không lưu được hồ sơ"));
     } finally {
       setSaving(false);

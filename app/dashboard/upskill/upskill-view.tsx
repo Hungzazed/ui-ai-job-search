@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, GraduationCap, Layers, RefreshCw, Target } from "lucide-react";
 import { failureMessage } from "@/lib/failure-message";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { upskillService, type UpskillReportRecord } from "@/services";
 import {
   GAP_CATEGORY_LABELS,
@@ -26,6 +28,9 @@ import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const LOGIN_NEXT = "/login?next=/dashboard/upskill";
+
+/** Khoá cache của báo cáo mới nhất. Vòng hỏi lại ghi vào đúng khoá này. */
+const LATEST_KEY = ["upskill", "latest"];
 
 /**
  * 4 giây × 40 lần ≈ 2 phút 40 giây.
@@ -193,9 +198,8 @@ function ReportBody({ report }: { report: UpskillReportRecord }) {
 
 export function UpskillView() {
   const router = useRouter();
-  const [report, setReport] = useState<UpskillReportRecord | null>(null);
-  /** Đã tải xong lần đầu chưa — phân biệt "đang tải" với "chưa có báo cáo". */
-  const [loaded, setLoaded] = useState(false);
+  const queryClient = useQueryClient();
+  /** Lỗi phát sinh SAU khi tải xong: lượt tạo báo cáo hỏng, hoặc hỏi lại hỏng. */
   const [error, setError] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -217,30 +221,28 @@ export function UpskillView() {
     [router],
   );
 
-  useEffect(() => {
-    let cancelled = false;
+  const query = useApiQuery(
+    LATEST_KEY,
+    () =>
+      // 404 KHÔNG phải lỗi: backend trả nó khi người dùng chưa từng tạo báo cáo
+      // nào. Đó là trạng thái rỗng bình thường của màn hình này.
+      upskillService.latest().catch((err: unknown) => {
+        if (apiErrorStatus(err) === 404) return null;
+        throw err;
+      }),
+    { errorMessage: "Không tải được báo cáo" },
+  );
 
-    void (async () => {
-      try {
-        const latest = await upskillService.latest();
-        if (!cancelled) setReport(latest);
-      } catch (err) {
-        if (cancelled) return;
-        if (handleUnauthorized(err)) return;
-        // 404 KHÔNG phải lỗi: backend trả nó khi người dùng chưa từng tạo báo
-        // cáo nào. Đó là trạng thái rỗng bình thường của màn hình này.
-        if (apiErrorStatus(err) !== 404) {
-          setError(apiErrorMessage(err, "Không tải được báo cáo"));
-        }
-      } finally {
-        if (!cancelled) setLoaded(true);
-      }
-    })();
+  const report = query.data;
+  // Có dữ liệu rồi thì coi như đã tải xong, kể cả khi đang nạp lại nền — không
+  // thì quay lại màn này sẽ chớp một nhịp khung xám trên dữ liệu đã có sẵn.
+  const loaded = report !== null || !query.loading;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [handleUnauthorized]);
+  /** Thay cho `setReport`: vòng hỏi lại ghi thẳng kết quả vào cache. */
+  const putReport = useCallback(
+    (next: UpskillReportRecord) => queryClient.setQueryData(LATEST_KEY, next),
+    [queryClient],
+  );
 
   const generate = async () => {
     setGenerating(true);
@@ -272,7 +274,7 @@ export function UpskillView() {
         if (!mounted.current) return;
 
         if (current.status === "DONE" || current.status === "FAILED") {
-          setReport(current);
+          putReport(current);
           setGenerating(false);
           if (current.status === "FAILED") {
             // Câu cho người dùng, không phải nguyên văn của SDK — xem
@@ -320,7 +322,11 @@ export function UpskillView() {
       />
 
       {refusal && <Alert tone="warning">{refusal}</Alert>}
-      {error && <Alert tone="danger">{error}</Alert>}
+      {/* Lỗi lúc tải và lỗi lúc tạo báo cáo đi chung một hộp: người dùng chỉ
+          cần biết màn này đang hỏng, không cần biết hỏng ở giai đoạn nào. */}
+      {(error ?? query.error) && (
+        <Alert tone="danger">{error ?? query.error}</Alert>
+      )}
 
       {!loaded ? (
         <Skeleton className="h-64 animate-pulse" />

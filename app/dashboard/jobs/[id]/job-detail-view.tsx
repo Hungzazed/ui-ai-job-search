@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
 import type { JobMatchWithJob } from "@/types";
 import type { JobRecord, ProfileRecord } from "@/services";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { useApiQuery } from "@/hooks/use-api-query";
 import {
   applicationsService,
   jobsService,
@@ -28,65 +30,67 @@ interface JobDetailViewProps {
   jobId: string;
 }
 
+/** Ba nguồn của màn này, gộp làm một mục cache để chúng luôn khớp nhau. */
+interface JobDetailData {
+  job: JobRecord;
+  match: JobMatchWithJob | null;
+  profile: ProfileRecord | null;
+}
+
 export function JobDetailView({ jobId }: JobDetailViewProps) {
   const router = useRouter();
-  const [job, setJob] = useState<JobRecord | null>(null);
-  const [match, setMatch] = useState<JobMatchWithJob | null>(null);
-  const [profile, setProfile] = useState<ProfileRecord | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [applying, setApplying] = useState(false);
   const [applyError, setApplyError] = useState<string | null>(null);
   const [applied, setApplied] = useState(false);
   const [scoring, setScoring] = useState(false);
+  /** Ý muốn của người dùng khi vừa bấm Lưu, chưa kịp có xác nhận từ máy chủ. */
+  const [savePending, setSavePending] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const key = ["job", jobId];
+  const { data, error } = useApiQuery(
+    key,
+    async () => {
+      const [record, evaluation, current] = await Promise.all([
+        jobsService.get(jobId),
+        // 404 ở đây nghĩa là công việc chưa được chấm, không phải hỏng hóc.
+        // Nuốt riêng mã này để phần mô tả công việc vẫn hiện ra bình thường.
+        matchesService.get(jobId).catch((err: unknown) => {
+          if (apiErrorStatus(err) === 404) return null;
+          throw err;
+        }),
+        // Chỉ để hiện "chấm theo hồ sơ nào". Hỏng thì bỏ dòng đó, đừng làm
+        // hỏng cả trang vì một chú thích.
+        profileService.get().catch(() => null),
+      ]);
+      return { job: record, match: evaluation, profile: current };
+    },
+    { errorMessage: "Không tải được thông tin công việc" },
+  );
 
-    void (async () => {
-      try {
-        const [record, evaluation, current] = await Promise.all([
-          jobsService.get(jobId),
-          // 404 ở đây nghĩa là công việc chưa được chấm, không phải hỏng hóc.
-          // Nuốt riêng mã này để phần mô tả công việc vẫn hiện ra bình thường.
-          matchesService.get(jobId).catch((err: unknown) => {
-            if (apiErrorStatus(err) === 404) return null;
-            throw err;
-          }),
-          // Chỉ để hiện "chấm theo hồ sơ nào". Hỏng thì bỏ dòng đó, đừng làm
-          // hỏng cả trang vì một chú thích.
-          profileService.get().catch(() => null),
-        ]);
-        if (cancelled) return;
-        setJob(record);
-        setMatch(evaluation);
-        setProfile(current);
-        setSaved(record.saved);
-      } catch (err) {
-        if (cancelled) return;
-        if (apiErrorStatus(err) === 401) {
-          router.replace(`/login?next=/dashboard/jobs/${jobId}`);
-          return;
-        }
-        setError(apiErrorMessage(err, "Không tải được thông tin công việc"));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [jobId, router]);
+  const job = data?.job ?? null;
+  const match = data?.match ?? null;
+  const profile = data?.profile ?? null;
+  const saved = savePending ?? job?.saved ?? false;
 
   /**
    * Đổi trạng thái nút trước rồi mới gọi API, và hoàn lại nếu hỏng: nút Lưu
    * phải phản hồi tức thì, nhưng không được nói dối về sự thật ở máy chủ.
+   *
+   * Ý muốn giữ ở `savePending` chứ không ghi đè dữ liệu trong cache: cache là
+   * câu trả lời của máy chủ, còn đây là điều người dùng vừa bấm mà máy chủ chưa
+   * xác nhận. Trộn hai thứ vào một chỗ thì một lượt nạp lại nền sẽ lặng lẽ lật
+   * ngược cái nút.
    */
   const toggleSave = () => {
     const next = !saved;
-    setSaved(next);
-    void (next ? jobsService.save(jobId) : jobsService.unsave(jobId)).catch(
-      () => setSaved(!next),
-    );
+    setSavePending(next);
+    void (next ? jobsService.save(jobId) : jobsService.unsave(jobId))
+      .then(async () => {
+        await queryClient.invalidateQueries({ queryKey: key });
+        setSavePending(null);
+      })
+      .catch(() => setSavePending(!next));
   };
 
   /** Xếp hàng chấm điểm rồi hỏi lại tới khi worker xong. */
@@ -100,7 +104,13 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
           await new Promise((done) => setTimeout(done, SCORE_POLL_MS));
           const next = await matchesService.get(jobId).catch(() => null);
           if (next && next.status !== "PENDING" && next.status !== "RUNNING") {
-            setMatch(next);
+            // Ghi thẳng vào cache thay vì giữ một bản sao trong state: màn danh
+            // sách đọc cùng khoá này, nên điểm mới có mặt ở cả hai nơi.
+            queryClient.setQueryData(
+              key,
+              (current: JobDetailData | undefined) =>
+                current ? { ...current, match: next } : current,
+            );
             break;
           }
         }

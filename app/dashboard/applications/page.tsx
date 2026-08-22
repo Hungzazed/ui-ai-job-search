@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { } from "lucide-react";
 import type {
   Application,
   ApplicationGroup,
-  ApplicationList,
   ApplicationStatus,
 } from "@/types";
-import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { apiErrorMessage } from "@/lib/axios";
+import { useApiQuery } from "@/hooks/use-api-query";
 import { applicationsService } from "@/services";
 import {
   APPLICATION_STATUS_LABELS,
@@ -44,13 +42,8 @@ type Filter = "all" | ApplicationGroup;
 const PAGE_SIZE = 20;
 
 export default function ApplicationsPage() {
-  const router = useRouter();
   const [filter, setFilter] = useState<Filter>("all");
   const [offset, setOffset] = useState(0);
-  const [data, setData] = useState<ApplicationList | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  /** Tăng lên để tải lại danh sách sau khi đổi trạng thái thành công. */
-  const [reloadToken, setReloadToken] = useState(0);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [rowError, setRowError] = useState<{ id: string; message: string } | null>(
     null,
@@ -58,30 +51,24 @@ export default function ApplicationsPage() {
 
   // Lọc ở phía backend chứ không lọc mảng đã tải: `counts` phải là tổng thật
   // trên toàn bộ đơn, không phải đếm lại sau khi đã lọc theo chính tab đang mở.
-  useEffect(() => {
-    let cancelled = false;
-
-    void (async () => {
-      try {
-        const response = await applicationsService.list(
-          filter === "all" ? undefined : filter,
-          { limit: PAGE_SIZE, offset },
-        );
-        if (!cancelled) setData(response);
-      } catch (err) {
-        if (cancelled) return;
-        if (apiErrorStatus(err) === 401) {
-          router.replace("/login?next=/dashboard/applications");
-          return;
-        }
-        setError(apiErrorMessage(err, "Không tải được danh sách đơn"));
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [filter, offset, router, reloadToken]);
+  const {
+    data,
+    error,
+    reload,
+  } = useApiQuery(
+    ["applications", filter, offset],
+    () =>
+      applicationsService.list(filter === "all" ? undefined : filter, {
+        limit: PAGE_SIZE,
+        offset,
+      }),
+    {
+      errorMessage: "Không tải được danh sách đơn",
+      // Đổi tab hay lật trang thì giữ bảng cũ trên màn cho tới khi trang mới
+      // về, thay vì chớp một nhịp khung xám.
+      keepPrevious: true,
+    },
+  );
 
   /**
    * Đổi trạng thái rồi TẢI LẠI cả danh sách, thay vì vá bản ghi tại chỗ.
@@ -103,12 +90,8 @@ export default function ApplicationsPage() {
     setRowError(null);
     try {
       await applicationsService.updateStatus(application.id, next);
-      setReloadToken((current) => current + 1);
+      reload();
     } catch (err) {
-      if (apiErrorStatus(err) === 401) {
-        router.replace("/login?next=/dashboard/applications");
-        return;
-      }
       setRowError({
         id: application.id,
         message: apiErrorMessage(err, "Không đổi được trạng thái"),

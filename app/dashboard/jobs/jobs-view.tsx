@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { JobListItem, JobSort } from "@/services";
 import { jobsService } from "@/services";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { invalidateAfter, keys } from "@/lib/query-keys";
 import { toJobCardFromRecord } from "@/lib/adapters";
 import { PageHeader } from "@/components/dashboard/page-header";
 import {
@@ -138,12 +139,12 @@ export function JobsView() {
     return () => clearTimeout(timer);
   }, [draftQuery, filter, push]);
 
-  const filters = useApiQuery(["jobs", "filters"], jobsService.filters, {
+  const filters = useApiQuery(keys.jobFilters(), jobsService.filters, {
     errorMessage: "Không tải được danh mục bộ lọc",
   });
 
   const page = useApiQuery(
-    ["jobs", "list", { ...filter, offset, scored }],
+    keys.jobList({ ...filter, offset, scored }),
     () =>
       jobsService.list({
         limit: PAGE_SIZE,
@@ -175,7 +176,7 @@ export function JobsView() {
     (jobId: string, saved: boolean) => {
       const apply = (value: boolean) =>
         queryClient.setQueriesData<{ items: JobListItem[] }>(
-          { queryKey: ["jobs", "list"] },
+          { queryKey: keys.jobLists() },
           (current) =>
             current
               ? {
@@ -188,9 +189,12 @@ export function JobsView() {
         );
 
       apply(saved);
-      void (saved ? jobsService.save(jobId) : jobsService.unsave(jobId)).catch(
-        () => apply(!saved),
-      );
+      void (saved ? jobsService.save(jobId) : jobsService.unsave(jobId))
+        // Vá tại chỗ chỉ chữa được danh sách đang mở. Trang chi tiết giữ bản
+        // riêng ở khoá khác, nên phải xoá nó đi - không thì mở tin vừa lưu ra
+        // vẫn thấy nút "Lưu việc làm".
+        .then(() => invalidateAfter(queryClient, "saveJob"))
+        .catch(() => apply(!saved));
     },
     [queryClient],
   );

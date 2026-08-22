@@ -48,13 +48,28 @@ export function MatchBadge({ score }: { score: number | null }) {
 }
 
 export function JobCard({ job, onSavedChange }: JobCardProps) {
-  const [saved, setSaved] = useState(job.saved);
+  /**
+   * Ý muốn của người dùng khi vừa bấm, chưa có xác nhận từ máy chủ. `null` =
+   * chưa bấm gì, tin cái máy chủ nói.
+   *
+   * KHÔNG chép `job.saved` vào state bằng `useState(job.saved)`. Chép một lần
+   * lúc mount thì thẻ đóng băng ở giá trị đầu tiên: sau đó dữ liệu mới về bao
+   * nhiêu lần cũng không đẩy được nút đi. Đã trả giá đúng như vậy - lưu một tin
+   * ở trang chi tiết rồi quay lại danh sách, máy chủ trả `saved: true`, danh
+   * sách đã nạp lại, mà ngôi sao vẫn tắt. Người dùng đọc ra thành "bấm hụt".
+   */
+  const [pending, setPending] = useState<boolean | null>(null);
+  const saved = pending ?? job.saved;
 
   const toggleSave = () => {
     const next = !saved;
-    setSaved(next);
+    setPending(next);
     onSavedChange?.(job.id, next);
   };
+
+  // Máy chủ đã trả lời đúng thứ người dùng vừa bấm thì bỏ ý muốn đi, để những
+  // lần đổi sau từ nơi khác vẫn tới được thẻ này.
+  if (pending !== null && pending === job.saved) setPending(null);
 
   /*
    * `h-full flex flex-col` ở Card, `flex-1` xuống tới cột nội dung, `mt-auto` ở

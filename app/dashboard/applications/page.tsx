@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useQueryClient } from "@tanstack/react-query";
 import type {
   Application,
   ApplicationGroup,
@@ -9,6 +10,7 @@ import type {
 } from "@/types";
 import { apiErrorMessage } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { invalidateAfter, keys } from "@/lib/query-keys";
 import { applicationsService } from "@/services";
 import {
   APPLICATION_STATUS_LABELS,
@@ -42,6 +44,7 @@ type Filter = "all" | ApplicationGroup;
 const PAGE_SIZE = 20;
 
 export default function ApplicationsPage() {
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<Filter>("all");
   const [offset, setOffset] = useState(0);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -51,12 +54,8 @@ export default function ApplicationsPage() {
 
   // Lọc ở phía backend chứ không lọc mảng đã tải: `counts` phải là tổng thật
   // trên toàn bộ đơn, không phải đếm lại sau khi đã lọc theo chính tab đang mở.
-  const {
-    data,
-    error,
-    reload,
-  } = useApiQuery(
-    ["applications", filter, offset],
+  const { data, error } = useApiQuery(
+    keys.applicationList(filter, offset),
     () =>
       applicationsService.list(filter === "all" ? undefined : filter, {
         limit: PAGE_SIZE,
@@ -90,7 +89,9 @@ export default function ApplicationsPage() {
     setRowError(null);
     try {
       await applicationsService.updateStatus(application.id, next);
-      reload();
+      // Không chỉ tải lại bảng này: màn Tổng quan đếm đơn theo trạng thái từ
+      // cùng một nguồn, nên nó cũng vừa cũ đi.
+      invalidateAfter(queryClient, "applicationStatus");
     } catch (err) {
       setRowError({
         id: application.id,

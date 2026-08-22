@@ -144,3 +144,47 @@ test("xem trước CV dùng lại bản đã dựng", async ({ page }) => {
   // chỉ khẳng định lượt bấm LẠI đúng bản nháp vừa dựng.
   expect(revisit).toBeLessThanOrEqual(1);
 });
+
+/**
+ * Ngôi sao "đã lưu" phải nói cùng một chuyện ở danh sách và ở trang chi tiết.
+ *
+ * Đây là một lỗi ĐÃ XẢY RA, tái hiện được ngày 2026-08-22: bấm lưu ở trang chi
+ * tiết trả về "Đã lưu" đúng, quay lại danh sách thì nút vẫn là "Lưu". Hai
+ * nguyên nhân chồng lên nhau — chi tiết chỉ xoá khoá của chính nó, và thẻ trong
+ * danh sách chép `job.saved` vào state lúc mount nên không nhận dữ liệu mới nữa.
+ *
+ * Test khẳng định hai màn KHỚP NHAU chứ không khẳng định một giá trị cụ thể, nên
+ * chạy bao nhiêu lần cũng được dù nó có đổi dữ liệu thật.
+ */
+const isSaved = (label: string | null) => (label ?? "").trim() === "Đã lưu";
+
+test("trạng thái đã lưu khớp giữa danh sách và chi tiết", async ({ page }) => {
+  await login(page);
+  await page.goto("/dashboard/jobs/all");
+
+  const inList = page.locator("button", { hasText: /^Lưu$|^Đã lưu$/ }).first();
+  const inDetail = page
+    .locator("button", { hasText: /^Đã lưu$|^Lưu việc làm$/ })
+    .first();
+
+  await inList.waitFor({ timeout: 20_000 });
+
+  // Chiều 1: bấm ở danh sách, mở chi tiết ra xem.
+  await inList.click();
+  await page.waitForTimeout(2_000);
+  const afterListClick = await inList.textContent();
+
+  await page.locator('a[href^="/dashboard/jobs/"]').first().click();
+  await inDetail.waitFor({ timeout: 20_000 });
+  expect(isSaved(await inDetail.textContent())).toBe(isSaved(afterListClick));
+
+  // Chiều 2: bấm ở chi tiết, quay lại danh sách xem.
+  await inDetail.click();
+  await page.waitForTimeout(2_000);
+  const afterDetailClick = await inDetail.textContent();
+
+  await page.goBack();
+  await inList.waitFor({ timeout: 20_000 });
+  await page.waitForTimeout(2_500);
+  expect(isSaved(await inList.textContent())).toBe(isSaved(afterDetailClick));
+});

@@ -8,6 +8,7 @@ import type { JobMatchWithJob } from "@/types";
 import type { JobRecord, ProfileRecord } from "@/services";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { invalidateAfter, keys } from "@/lib/query-keys";
 import {
   applicationsService,
   jobsService,
@@ -47,7 +48,7 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
   /** Ý muốn của người dùng khi vừa bấm Lưu, chưa kịp có xác nhận từ máy chủ. */
   const [savePending, setSavePending] = useState<boolean | null>(null);
 
-  const key = ["job", jobId];
+  const key = keys.job(jobId);
   const { data, error } = useApiQuery(
     key,
     async () => {
@@ -86,8 +87,10 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
     const next = !saved;
     setSavePending(next);
     void (next ? jobsService.save(jobId) : jobsService.unsave(jobId))
-      .then(async () => {
-        await queryClient.invalidateQueries({ queryKey: key });
+      .then(() => {
+        // Xoá cả nhóm `jobs` chứ không riêng tin này: thẻ của nó cũng nằm trong
+        // danh sách đang mở ở tab trước, và hai chỗ phải nói cùng một chuyện.
+        invalidateAfter(queryClient, "saveJob");
         setSavePending(null);
       })
       .catch(() => setSavePending(!next));

@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Save, Upload } from "lucide-react";
 import { apiErrorMessage } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { invalidateAfter, keys } from "@/lib/query-keys";
 import { profileDraftService, profileService } from "@/services";
 import type { ProfileDraftRecord, ProfileRecord } from "@/services";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -27,8 +28,6 @@ import { IdentitySection } from "./sections/identity-section";
 import { RecordsSection } from "./sections/records-section";
 import { SkillsSection } from "./sections/skills-section";
 
-const PROFILE_KEY = ["profile"];
-
 /** Hồ sơ và bản nháp CV gần nhất, gộp một mục cache để chúng luôn khớp nhau. */
 interface ProfileData {
   profile: ProfileRecord;
@@ -48,7 +47,7 @@ export function ProfileView() {
   const [tab, setTab] = useState("identity");
 
   const { data, error } = useApiQuery(
-    PROFILE_KEY,
+    keys.profile(),
     async () => {
       const [record, latest] = await Promise.all([
         profileService.get(),
@@ -123,12 +122,14 @@ export function ProfileView() {
       // Ghi vào cache chứ không giữ bản sao riêng, và gieo lại bản nháp NGAY tại
       // đây: `dirty` vẫn còn true ở vòng render kế nên nhánh gieo lúc render sẽ
       // không tự chạy.
-      queryClient.setQueryData(PROFILE_KEY, (current: ProfileData | undefined) =>
+      queryClient.setQueryData(keys.profile(), (current: ProfileData | undefined) =>
         current ? { ...current, profile: updated } : current,
       );
       setDraftOf(updated);
       setDraft(toDraft(updated));
       setSaved(true);
+      // Ô "mức độ hoàn thiện hồ sơ" trên Tổng quan tính lại sau mỗi lần lưu.
+      invalidateAfter(queryClient, "saveProfile");
     } catch (err) {
       setSaveError(apiErrorMessage(err, "Không lưu được hồ sơ"));
     } finally {

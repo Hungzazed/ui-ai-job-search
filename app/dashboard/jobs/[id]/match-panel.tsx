@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Mail, RotateCw, Sparkles } from "lucide-react";
+import { FileText, Mail, Mic, RotateCw, Sparkles } from "lucide-react";
 import type { JobMatchWithJob } from "@/types";
 import type { ProfileRecord, SystemMatch } from "@/services";
 import { AIMatchProgress } from "@/components/dashboard/ai-match-progress";
@@ -204,6 +204,20 @@ export function MatchPanel({
           <Button variant="outline" className="w-full">
             <Mail className="size-4" />
             Viết thư xin việc cho tin này
+          </Button>
+        </Link>
+        {/*
+          Lối vào buổi luyện đặt ở ĐÂY, cạnh hai nút kia, chứ không chỉ ở màn
+          Chuẩn bị phỏng vấn: bộ đề chỉ sinh ra khi đơn đã chuyển sang trạng thái
+          Phỏng vấn, mà luyện thì KHÔNG cần bộ đề — kịch bản tự soạn nếu chưa có.
+          Để lối vào duy nhất nằm sau bộ đề là khoá tính năng sau một điều kiện
+          nó không cần, và người dùng chưa có đơn nào ở vòng phỏng vấn thì không
+          có đường nào tới.
+        */}
+        <Link href={`/dashboard/interview/${jobId}/mock`} className="block">
+          <Button variant="outline" className="w-full">
+            <Mic className="size-4" />
+            Luyện phỏng vấn cho tin này
           </Button>
         </Link>
       </div>

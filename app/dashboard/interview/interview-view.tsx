@@ -7,6 +7,7 @@ import {
   CircleHelp,
   Lightbulb,
   MessageSquare,
+  Mic,
   RefreshCw,
   ShieldAlert,
   Sparkles,
@@ -30,6 +31,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SectionCard } from "@/components/ui/section-card";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MockSessions } from "./mock-sessions";
 
 const LOGIN_NEXT = "/login?next=/dashboard/interview";
 
@@ -342,6 +344,13 @@ export function InterviewView() {
         subtitle="Bộ câu hỏi và câu trả lời gợi ý, soạn riêng cho từng vị trí bạn đang phỏng vấn"
       />
 
+      {/*
+        Đặt TRƯỚC nhánh rẽ bên dưới, không nằm trong nó: nhánh đó trả về ô trống
+        khi chưa có bộ đề nào, mà buổi luyện thì không cần bộ đề - nhét vào trong
+        là lặp lại đúng lỗi đã làm một lần, khoá lối vào sau một điều kiện thừa.
+      */}
+      <MockSessions />
+
       {error ? (
         <Alert tone="danger">{error}</Alert>
       ) : !preps ? (
@@ -432,6 +441,20 @@ export function InterviewView() {
                       soạn {relativeDay(selected.generatedAt)}
                     </span>
                   )}
+                  {/*
+                    Lối vào buổi luyện đặt Ở ĐÂY chứ không phải trên thanh bên:
+                    một buổi luyện luôn gắn với MỘT vị trí, và đây là chỗ duy
+                    nhất trên màn hình mà người dùng đã chọn xong vị trí đó.
+                  */}
+                  <Link
+                    href={`/dashboard/interview/${selected.job.id}/mock`}
+                    className="ml-auto"
+                  >
+                    <Button variant="outline" size="sm">
+                      <Mic className="size-3.5" />
+                      Phỏng vấn thử
+                    </Button>
+                  </Link>
                 </div>
                 <PrepDetail prep={selected} retrying={retrying} onRetry={retry} />
               </>

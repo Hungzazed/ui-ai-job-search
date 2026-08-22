@@ -43,6 +43,8 @@ export interface AgentRunRecord {
   id: string;
   workflow: string;
   status: AgentRunStatus;
+  /** Tin tuyển dụng lượt chạy này nhắm tới, khi nó bắt đầu từ một tin đã lưu. */
+  jobId: string | null;
   input: { jobUrl?: string | null; jobDescription?: string | null };
   result: AgentRunResult | null;
   /** Có giá trị khi và chỉ khi status là WAITING_USER. */
@@ -65,14 +67,30 @@ export interface AgentRunSummary {
   error: string | null;
   createdAt: string;
   finishedAt: string | null;
+  jobId: string | null;
+  /** `null` khi tin tuyển dụng đã bị dọn đi; lượt chạy thì vẫn còn. */
+  job: { title: string; company: string } | null;
   _count: { steps: number };
 }
 
-/** Nguồn tin cho một lượt chạy: link tin tuyển dụng, hoặc JD dán tay. */
+/**
+ * Nguồn tin cho một lượt chạy: tin đã lưu, link, hoặc JD dán tay.
+ *
+ * `jobId` khác hai cái kia ở chỗ backend tự gom bối cảnh quanh nó - đơn ứng
+ * tuyển, tài liệu đã soạn, điểm phù hợp - nên không cần gửi kèm mô tả.
+ */
 export type AgentRunInput = {
   workflow: string;
   note?: string;
-} & ({ jobUrl: string } | { jobDescription: string });
+} & ({ jobId: string } | { jobUrl: string } | { jobDescription: string });
+
+/** Bộ lọc danh sách lượt chạy. Bỏ trống thì lấy mọi lượt của người dùng. */
+export type AgentRunListQuery = {
+  limit?: number;
+  offset?: number;
+  jobId?: string;
+  workflow?: string;
+};
 
 export const agentService = {
   start: (input: AgentRunInput) =>
@@ -83,9 +101,9 @@ export const agentService = {
   get: (id: string) =>
     api.get<AgentRunRecord>(`/agent-runs/${id}`).then((r) => r.data),
 
-  list: (page?: { limit?: number; offset?: number }) =>
+  list: (query?: AgentRunListQuery) =>
     api
-      .get<Paginated<AgentRunSummary>>("/agent-runs", { params: page })
+      .get<Paginated<AgentRunSummary>>("/agent-runs", { params: query })
       .then((r) => r.data),
 
   /**

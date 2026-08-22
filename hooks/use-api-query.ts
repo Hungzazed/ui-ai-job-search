@@ -49,6 +49,19 @@ export function useApiQuery<T>(
      * là nói sai.
      */
     keepPrevious?: boolean;
+    /**
+     * Bao lâu thì dữ liệu bị coi là cũ. Mặc định 30 giây, khai ở `QueryProvider`.
+     *
+     * Đặt `Infinity` cho những thứ KHÔNG PHẢI dữ liệu người dùng: danh mục tỉnh
+     * và ngành, danh sách mẫu CV - chúng là hằng số khai trong code, chỉ đổi khi
+     * deploy bản mới. Hỏi lại chúng sau mỗi 30 giây là hỏi một câu đã biết trước
+     * câu trả lời.
+     *
+     * ĐỪNG dùng cho dữ liệu có tiến trình nền đang ghi vào (lượt chạy agent, báo
+     * cáo đang soạn, lượt quét đang chạy): ở đó cache dài không làm app nhanh
+     * hơn, nó làm màn hình đứng ở chữ "Đang chạy" trong khi việc đã xong.
+     */
+    staleTime?: number;
   },
 ): AsyncData<T> {
   const enabled = options.enabled ?? true;
@@ -58,6 +71,7 @@ export function useApiQuery<T>(
     queryFn: fetcher,
     enabled,
     refetchInterval: options.refetchInterval ?? false,
+    ...(options.staleTime === undefined ? {} : { staleTime: options.staleTime }),
     ...(options.keepPrevious ? { placeholderData: keepPreviousData } : {}),
   });
 

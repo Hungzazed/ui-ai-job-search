@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { Play, RefreshCw, Radar } from "lucide-react";
 import { apiErrorMessage } from "@/lib/axios";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { keys } from "@/lib/query-keys";
 import { adminService, scraperService, type ScrapeRunRecord } from "@/services";
 import { formatDateTime, formatDuration } from "@/utils";
 import { Alert } from "@/components/ui/alert";
@@ -64,15 +65,11 @@ export function ScrapePanel() {
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
 
-  const load = useCallback(
+  const history = useApiQuery(
+    keys.scrapeHistory(),
     async () => (await scraperService.history({ limit: VISIBLE_RUNS })).items,
-    [],
+    { errorMessage: "Không tải được lịch sử quét" },
   );
-
-  const history = useAsyncData(load, {
-    loginNext: "/admin",
-    errorMessage: "Không tải được lịch sử quét",
-  });
 
   const runs = history.data;
 

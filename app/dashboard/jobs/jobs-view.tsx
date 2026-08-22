@@ -139,8 +139,10 @@ export function JobsView() {
     return () => clearTimeout(timer);
   }, [draftQuery, filter, push]);
 
+  // Danh mục tỉnh và ngành là hằng số trong code, không phải dữ liệu người dùng.
   const filters = useApiQuery(keys.jobFilters(), jobsService.filters, {
     errorMessage: "Không tải được danh mục bộ lọc",
+    staleTime: Infinity,
   });
 
   const page = useApiQuery(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import type { JobMatchWithJob } from "@/types";
 import { documentsService, type DocumentRecord } from "@/services";
@@ -11,7 +11,8 @@ import {
   upsertDocument,
   useDocumentJob,
 } from "@/components/dashboard/document-job";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { keys } from "@/lib/query-keys";
 import { PageError } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
@@ -41,19 +42,15 @@ export function CoverLetterPanel({
   const job = useDocumentJob(loginNext);
   const [documentOffset, setDocumentOffset] = useState(0);
 
-  const load = useCallback(
+  const page = useApiQuery(
+    keys.documentList("COVER_LETTER", fixedJobId, documentOffset),
     () =>
       documentsService.list("COVER_LETTER", fixedJobId ?? undefined, {
         limit: DOCUMENT_PAGE_SIZE,
         offset: documentOffset,
       }),
-    [fixedJobId, documentOffset],
+    { errorMessage: "Không tải được kho thư xin việc", keepPrevious: true },
   );
-
-  const page = useAsyncData(load, {
-    loginNext,
-    errorMessage: "Không tải được kho thư xin việc",
-  });
 
   /**
    * Bản ghi đang bám theo cũng là một dòng trong lịch sử, và ở đây nó được **suy

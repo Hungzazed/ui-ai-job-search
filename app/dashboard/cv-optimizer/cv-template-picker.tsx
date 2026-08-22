@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { documentsService, type CvTemplate } from "@/services";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { keys } from "@/lib/query-keys";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,9 +42,9 @@ export function CvTemplatePicker({
   // Danh sách mẫu gần như bất biến - sáu mục do máy chủ khai cứng. Trước đây
   // mỗi lần mở kho mẫu là một request cho đúng sáu dòng đó.
   const { data: templates, error } = useApiQuery(
-    ["cv-templates"],
+    keys.cvTemplates(),
     () => documentsService.cvTemplates(),
-    { errorMessage: "Không tải được danh sách mẫu" },
+    { errorMessage: "Không tải được danh sách mẫu", staleTime: Infinity },
   );
 
   const selected = useMemo(

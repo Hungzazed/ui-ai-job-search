@@ -13,7 +13,8 @@ import {
   upsertDocument,
   useDocumentJob,
 } from "@/components/dashboard/document-job";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { keys } from "@/lib/query-keys";
 import { PageError } from "@/components/ui/alert";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
 import { ApplicationEmailResult } from "./application-email-result";
@@ -41,19 +42,15 @@ export function ApplicationEmailPanel({
   const job = useDocumentJob(loginNext);
   const [documentOffset, setDocumentOffset] = useState(0);
 
-  const load = useCallback(
+  const page = useApiQuery(
+    keys.documentList("APPLICATION_EMAIL", fixedJobId, documentOffset),
     () =>
       documentsService.list("APPLICATION_EMAIL", fixedJobId ?? undefined, {
         limit: DOCUMENT_PAGE_SIZE,
         offset: documentOffset,
       }),
-    [fixedJobId, documentOffset],
+    { errorMessage: "Không tải được kho mail ứng tuyển", keepPrevious: true },
   );
-
-  const page = useAsyncData(load, {
-    loginNext,
-    errorMessage: "Không tải được kho mail ứng tuyển",
-  });
 
   /**
    * Bản ghi đang bám theo cũng là một dòng trong lịch sử, và ở đây nó được suy

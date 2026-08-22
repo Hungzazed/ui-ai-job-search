@@ -1,9 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { matchesService } from "@/services";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { keys } from "@/lib/query-keys";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PageError } from "@/components/ui/alert";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
@@ -36,15 +37,13 @@ export function CoverLetterView() {
   // đó; vào từ menu bên trái thì mở tab dùng nhiều hơn.
   const [kind, setKind] = useState<Kind>(fixedJobId ? "letter" : "email");
 
-  const load = useCallback(
+  // Cùng khoá với màn "CV đã tạo": hai màn hỏi y hệt một danh sách, nên màn nào
+  // mở sau lấy từ cache thay vì gọi lại.
+  const page = useApiQuery(
+    keys.matchList(MATCH_LIMIT),
     () => matchesService.list({ limit: MATCH_LIMIT }),
-    [],
+    { errorMessage: "Không tải được danh sách công việc" },
   );
-
-  const page = useAsyncData(load, {
-    loginNext: LOGIN_NEXT,
-    errorMessage: "Không tải được danh sách công việc",
-  });
 
   if (page.error)
     return <PageError title="Không tải được dữ liệu" message={page.error} />;

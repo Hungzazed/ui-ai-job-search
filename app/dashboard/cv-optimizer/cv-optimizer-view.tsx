@@ -1,9 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { keys } from "@/lib/query-keys";
 import {
   documentsService,
   matchesService,
@@ -48,36 +49,42 @@ export function CvOptimizerView() {
 
   const [documentOffset, setDocumentOffset] = useState(0);
 
-  const load = useCallback(async () => {
-    const [matchPage, documentPage] = await Promise.all([
-      matchesService.list({ limit: MATCH_LIMIT }),
+  /*
+   * Hai truy vấn RIÊNG, không gộp một lần tải như trước.
+   *
+   * Danh sách vị trí ở đây giống hệt danh sách màn "Thư đã viết" - cùng khoá thì
+   * màn nào mở sau lấy miễn phí. Đo trên một phiên duyệt: gộp chung thì endpoint
+   * này bị gọi 4 lần, tách ra và dùng chung khoá thì còn 1.
+   *
+   * Tách ra còn cho phép xoá riêng kho tài liệu sau khi sinh CV, mà không kéo
+   * theo một lượt tải lại danh sách vị trí vốn không đổi.
+   */
+  const matchPage = useApiQuery(
+    keys.matchList(MATCH_LIMIT),
+    () => matchesService.list({ limit: MATCH_LIMIT }),
+    { errorMessage: "Không tải được danh sách công việc" },
+  );
+
+  const documentPage = useApiQuery(
+    keys.documentList("CV", fixedJobId, documentOffset),
+    () =>
       documentsService.list("CV", fixedJobId ?? undefined, {
         limit: DOCUMENT_PAGE_SIZE,
         offset: documentOffset,
       }),
-    ]);
-    return {
-      matches: matchPage.items,
-      documents: documentPage.items,
-      documentTotal: documentPage.total,
-    };
-  }, [fixedJobId, documentOffset]);
+    { errorMessage: "Không tải được kho CV", keepPrevious: true },
+  );
 
-  const page = useAsyncData(load, {
-    loginNext: LOGIN_NEXT,
-    errorMessage: "Không tải được dữ liệu trang tối ưu CV",
-  });
-
-  const error = page.error;
-  const matches = page.data?.matches ?? null;
+  const error = matchPage.error ?? documentPage.error;
+  const matches = matchPage.data?.items ?? null;
 
   // Suy ra lúc render, không chép vào state bằng effect — xem giải thích ở
   // `cover-letter-view.tsx`, hai màn dùng cùng một cách.
   const documents: DocumentRecord[] | null = useMemo(() => {
-    const list = page.data?.documents ?? null;
+    const list = documentPage.data?.items ?? null;
     if (!list) return null;
     return job.document ? upsertDocument(list, job.document) : list;
-  }, [page.data, job.document]);
+  }, [documentPage.data, job.document]);
 
   const handleGenerate = () => {
     job.start(() =>
@@ -130,7 +137,7 @@ export function CvOptimizerView() {
         page={{
           offset: documentOffset,
           limit: DOCUMENT_PAGE_SIZE,
-          total: page.data?.documentTotal ?? 0,
+          total: documentPage.data?.total ?? 0,
           onOffsetChange: setDocumentOffset,
         }}
         documents={documents}

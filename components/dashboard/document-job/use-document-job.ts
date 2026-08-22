@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
+import { invalidateAfter } from "@/lib/query-keys";
 import {
   documentsService,
   type DocumentRecord,
@@ -90,6 +92,7 @@ export function useDocumentJob(loginNext: string): DocumentJob {
 
   // `start` chạy ngoài useEffect nên không có hàm dọn dẹp nào chặn nó; cờ này
   // là chỗ duy nhất để nó biết component đã tháo mà thôi ghi state.
+  const queryClient = useQueryClient();
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
@@ -115,6 +118,10 @@ export function useDocumentJob(loginNext: string): DocumentJob {
 
         if (record.status === "DONE") {
           setProgress({ ...NOTHING, of: watch, document: record });
+          // Kho tài liệu vừa có thêm một dòng. Màn hình đang mở đã tự ghép bản
+          // ghi này vào danh sách, nhưng bản trong cache thì chưa - rời đi rồi
+          // quay lại trong 30 giây sẽ thấy nó biến mất.
+          invalidateAfter(queryClient, "createDocument");
           return;
         }
         if (record.status === "FAILED") {
@@ -169,7 +176,7 @@ export function useDocumentJob(loginNext: string): DocumentJob {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [watch, router, loginNext]);
+  }, [watch, router, loginNext, queryClient]);
 
   const start = useCallback(
     (create: () => Promise<QueuedDocument>) => {

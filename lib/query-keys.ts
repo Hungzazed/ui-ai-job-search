@@ -30,6 +30,14 @@ export const keys = {
   jobFilters: () => ["jobs", "filters"] as const,
   /** Chi tiết một tin. Nhóm RIÊNG với `jobs` vì nó gộp cả match và hồ sơ. */
   job: (jobId: string) => ["job", jobId] as const,
+  /**
+   * Chỉ bản ghi tin, KHÔNG kèm match và hồ sơ.
+   *
+   * Khoá riêng vì hình dạng dữ liệu khác hẳn `job()` - hai thứ khác hình mà
+   * chung khoá thì màn nào đọc sau cũng vỡ. Vẫn nằm dưới tiền tố `job` nên một
+   * lệnh xoá quét được cả hai.
+   */
+  jobRecord: (jobId: string) => ["job", jobId, "record"] as const,
 
   matches: () => ["matches"] as const,
   /** Thư đã viết và CV đã tạo hỏi CÙNG một danh sách này - cùng khoá, một request. */
@@ -78,6 +86,8 @@ const AFFECTED: Record<string, readonly (readonly string[])[]> = {
   createDocument: [keys.documents()],
   /** Chấm điểm lại đổi cả thẻ trong danh sách lẫn số trên Tổng quan. */
   scoreJob: [keys.matches(), keys.jobs(), ["job"], keys.dashboard()],
+  /** Bắt đầu hoặc trả lời một lượt agent thì lịch sử chạy có dòng mới. */
+  agentRun: [keys.agentRuns()],
 };
 
 export type WriteAction = keyof typeof AFFECTED;

@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowLeft, Mic, RotateCcw, Sparkles } from "lucide-react";
 import { apiErrorMessage } from "@/lib/axios";
 import { buildTranscript, pendingTurn } from "@/lib/interview-transcript";
 import { agentService, jobsService } from "@/services";
 import { useAgentRun } from "@/hooks/use-agent-run";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { invalidateAfter, keys } from "@/lib/query-keys";
 import { AgentStatusBadge } from "@/components/dashboard/agent-status-badge";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert, PageError } from "@/components/ui/alert";
@@ -40,22 +42,19 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
 
+  const queryClient = useQueryClient();
   const loginNext = `/dashboard/interview/${jobId}/mock`;
 
-  const loadJob = useCallback(() => jobsService.get(jobId), [jobId]);
-  const job = useAsyncData(loadJob, {
-    loginNext,
-    errorMessage: "Không tải được tin tuyển dụng",
+  const job = useApiQuery(keys.jobRecord(jobId), () => jobsService.get(jobId), {
+    errorMessage: "Không tải được thông tin công việc",
   });
-
-  const loadRuns = useCallback(
+  // Buổi ĐANG chạy do `useAgentRun` bên dưới hỏi lại theo nhịp; ở đây chỉ là
+  // câu hỏi "công việc này đã có buổi nào chưa", và câu đó cache được.
+  const history = useApiQuery(
+    keys.agentRunList({ jobId, workflow: WORKFLOW, limit: 1 }),
     () => agentService.list({ jobId, workflow: WORKFLOW, limit: 1 }),
-    [jobId],
+    { errorMessage: "Không tải được buổi luyện đã có" },
   );
-  const history = useAsyncData(loadRuns, {
-    loginNext,
-    errorMessage: "Không tải được buổi luyện đã có",
-  });
 
   /*
    * Buổi đang theo dõi được SUY RA, không giữ trong state riêng: buổi vừa bấm
@@ -74,13 +73,15 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
         const receipt = await action();
         setStartedId(receipt.runId);
         refresh();
+        // Danh sách buổi luyện ở màn Chuẩn bị phỏng vấn vừa có thêm một dòng.
+        invalidateAfter(queryClient, "agentRun");
       } catch (err) {
         setSendError(apiErrorMessage(err, fallback));
       } finally {
         setSending(false);
       }
     },
-    [refresh],
+    [refresh, queryClient],
   );
 
   const start = () =>

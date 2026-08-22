@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback } from "react";
 import Link from "next/link";
 import { ChevronRight, Mic } from "lucide-react";
 import { agentService } from "@/services";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { keys } from "@/lib/query-keys";
 import { AgentStatusBadge } from "@/components/dashboard/agent-status-badge";
 import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,14 +22,11 @@ const PAGE_SIZE = 8;
  * tìm mọi thứ liên quan tới phỏng vấn, và nó hiện KỂ CẢ khi chưa có bộ đề nào.
  */
 export function MockSessions() {
-  const load = useCallback(
+  const page = useApiQuery(
+    keys.agentRunList({ workflow: "interview", limit: PAGE_SIZE }),
     () => agentService.list({ workflow: "interview", limit: PAGE_SIZE }),
-    [],
+    { errorMessage: "Không tải được danh sách buổi luyện" },
   );
-  const page = useAsyncData(load, {
-    loginNext: "/login?next=/dashboard/interview",
-    errorMessage: "Không tải được danh sách buổi luyện",
-  });
 
   // Chưa có buổi nào thì không dựng gì cả: một thẻ rỗng chỉ chiếm chỗ trên màn
   // hình mà lối vào thật nằm ở trang chi tiết tin.

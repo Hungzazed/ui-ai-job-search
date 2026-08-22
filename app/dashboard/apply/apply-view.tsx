@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { RotateCcw } from "lucide-react";
 import { agentService, type AgentRunInput } from "@/services";
 import { useAgentRun } from "@/hooks/use-agent-run";
-import { useAsyncData } from "@/hooks/use-async-data";
+import { useApiQuery } from "@/hooks/use-api-query";
+import { invalidateAfter, keys } from "@/lib/query-keys";
 import { apiErrorMessage } from "@/lib/axios";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert, PageError } from "@/components/ui/alert";
@@ -28,6 +30,7 @@ const PAGE_SIZE = 10;
  * Nhờ vậy không có đường nào để màn hình nói khác với database.
  */
 export function ApplyView() {
+  const queryClient = useQueryClient();
   const [runId, setRunId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -35,14 +38,17 @@ export function ApplyView() {
 
   const { run, error, timedOut, refresh } = useAgentRun(runId, LOGIN_NEXT);
 
-  const load = useCallback(
+  /*
+   * LỊCH SỬ chạy thì cache được - nó chỉ đổi khi có lượt mới.
+   *
+   * Đừng nhầm nó với lượt ĐANG chạy: cái đó do `useAgentRun` hỏi lại theo nhịp
+   * và không được cache, vì nó tiến từng bước ngay dưới mắt người dùng.
+   */
+  const page = useApiQuery(
+    keys.agentRunList({ limit: PAGE_SIZE, offset }),
     () => agentService.list({ limit: PAGE_SIZE, offset }),
-    [offset],
+    { errorMessage: "Không tải được lịch sử chạy", keepPrevious: true },
   );
-  const page = useAsyncData(load, {
-    loginNext: LOGIN_NEXT,
-    errorMessage: "Không tải được lịch sử chạy",
-  });
 
   /**
    * Gửi một request GHI rồi bám theo lượt chạy.
@@ -58,14 +64,14 @@ export function ApplyView() {
         const receipt = await action();
         setRunId(receipt.runId);
         refresh();
-        page.reload();
+        invalidateAfter(queryClient, "agentRun");
       } catch (err) {
         setSendError(apiErrorMessage(err, fallback));
       } finally {
         setSending(false);
       }
     },
-    [refresh, page],
+    [refresh, queryClient],
   );
 
   const start = (input: AgentRunInput) =>

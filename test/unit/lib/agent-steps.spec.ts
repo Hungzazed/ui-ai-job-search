@@ -112,6 +112,41 @@ describe("summarizeStep", () => {
     expect(summary.preview).toContain("Kỹ năng · 85/100");
   });
 
+  /**
+   * `ask_user` trả về nguyên văn câu hỏi, mà model kèm cả bảng chấm điểm vào
+   * đó — đã thấy trên màn thật: dòng tóm tắt biến thành một dãy `|---|---|`
+   * dài hơn cả bước nó mô tả. Bản đầy đủ nằm ở ô trả lời ngay dưới.
+   */
+  test("câu hỏi của agent bị bỏ cú pháp Markdown ở dòng tóm tắt", () => {
+    const summary = summarizeStep(
+      step({
+        toolCalls: [{ tool: "ask_user", input: {} }],
+        toolResults: [
+          {
+            tool: "ask_user",
+            output: {
+              asked: [
+                "## Đánh giá phù hợp: Kế Toán Viên",
+                "| Chiều | Điểm |",
+                "|-------|------|",
+                "| Kỹ thuật | 80/100 |",
+                "**Tổng điểm: 78/100**",
+                "Bạn có muốn tôi soạn hồ sơ không?",
+              ].join("\n"),
+            },
+          },
+        ],
+      }),
+    );
+
+    expect(summary.outcome).not.toContain("|--");
+    expect(summary.outcome).not.toContain("##");
+    expect(summary.outcome).not.toContain("**");
+    expect(summary.outcome).toContain("Kỹ thuật · 80/100");
+    expect(summary.outcome).toContain("Bạn có muốn tôi soạn hồ sơ không?");
+    expect(summary.failed).toBe(false);
+  });
+
   /// Kết quả tool là JSON do model và tool sinh ra, nên hình dạng nào cũng có
   /// thể tới — không đầu vào nào được phép làm vỡ bảng tiến trình.
   test.each([null, "chuỗi", 42, []])(

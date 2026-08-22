@@ -64,8 +64,14 @@ function describeOutput(output: unknown): { line: string | null; failed: boolean
   const critique = text(output.critique);
   if (critique) return { line: "Đã nhận nhận xét phản biện", failed: false };
 
+  /*
+   * Câu hỏi của agent là Markdown, và nó hay kèm cả bảng chấm điểm vào đó. Ở
+   * dòng tóm tắt này thì BỎ cú pháp đi - bản đầy đủ, có bảng hẳn hoi, nằm ngay
+   * dưới trong ô trả lời. In nguyên văn thì người đọc nhận một dãy `|---|---|`
+   * chạy dài, đúng thứ đã thấy trên màn thật.
+   */
   const asked = text(output.asked);
-  if (asked) return { line: asked, failed: false };
+  if (asked) return { line: toPlainText(asked), failed: false };
 
   if (typeof output.pages === "number") {
     return { line: `PDF ${output.pages} trang`, failed: false };

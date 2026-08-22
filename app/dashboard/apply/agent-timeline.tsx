@@ -72,7 +72,10 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
               {step.outcome && (
                 <p
                   className={cn(
-                    "mt-1 text-xs",
+                    // Kẹp hai dòng: phần lớn kết quả là một câu ngắn, nhưng
+                    // `ask_user` trả về nguyên câu hỏi của model và nó dài
+                    // bằng cả một trang đánh giá.
+                    "mt-1 line-clamp-2 text-xs",
                     step.failed ? "text-rose-600" : "text-slate-500",
                   )}
                 >

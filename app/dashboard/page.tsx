@@ -12,8 +12,6 @@ import { ScoreBreakdown } from "./score-breakdown";
 import { TopMatches } from "./top-matches";
 
 export default function DashboardPage() {
-  // Người dùng đã được SessionProvider của layout tải sẵn — gọi lại `/auth/me`
-  // ở đây là một request thứ hai cho đúng dữ liệu đang nằm sẵn trong context.
   const { user, loading: loadingUser } = useSession();
   const { data, error } = useApiQuery(
     ["dashboard", "overview"],
@@ -22,13 +20,7 @@ export default function DashboardPage() {
   );
 
   if (error) return <PageError title="Không tải được dữ liệu" message={error} />;
-
-  // Chờ cả tên người dùng, không chỉ dữ liệu: hiện "Xin chào, bạn" rồi vài
-  // trăm mili giây sau đổi thành tên thật là một cú nháy không cần thiết.
   if (!data || loadingUser) return <DashboardSkeleton />;
-
-  // Hai từ cuối của họ tên: tiếng Việt đặt tên riêng ở cuối, nên gọi bằng hai
-  // từ đầu sẽ ra "Nguyễn Văn" — nghe như đang gọi họ chứ không gọi tên.
   const firstName = user?.name.split(" ").slice(-2).join(" ") ?? "bạn";
 
   return (
@@ -47,7 +39,6 @@ export default function DashboardPage() {
   );
 }
 
-/** Khung xám giữ đúng bố cục trang thật, để nội dung không nhảy khi tải xong. */
 function DashboardSkeleton() {
   return (
     <SkeletonPage>

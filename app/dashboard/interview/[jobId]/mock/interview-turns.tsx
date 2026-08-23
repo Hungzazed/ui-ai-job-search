@@ -38,9 +38,22 @@ export function InterviewTurnBlock({
           <p className="text-[0.6875rem] font-medium tracking-wide text-slate-500 uppercase">
             Người phỏng vấn
           </p>
-          <p className="mt-1 text-[0.9375rem] leading-relaxed font-medium text-slate-900">
-            {turn.question}
-          </p>
+          {/*
+            Vẽ bằng Markdown chứ không phải `<p>`, dù câu hỏi ĐÁNG LẼ chỉ là một
+            câu trơn.
+
+            Backend tách nhận xét khỏi câu hỏi bằng một vạch ngăn, nhưng việc đó
+            phụ thuộc model có tuân hay không — và đo được là không phải model
+            nào cũng tuân. Model bỏ qua vạch thì cả đoạn nhận xét dồn vào đây, và
+            `<p>` nuốt sạch xuống dòng, `**` hiện thô. Đã thấy đúng như vậy trên
+            màn hình: một khối 2.180 ký tự chạy liền một mạch.
+
+            Với một câu trơn thì Markdown vẽ ra y hệt `<p>`, nên không mất gì.
+          */}
+          <Markdown
+            text={turn.question}
+            className="mt-1 text-[0.9375rem] font-medium text-slate-900"
+          />
         </div>
 
         {turn.answer && (

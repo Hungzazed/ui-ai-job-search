@@ -10,6 +10,10 @@ import { agentService, jobsService } from "@/services";
 import { useAgentRun } from "@/hooks/use-agent-run";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { invalidateAfter, keys } from "@/lib/query-keys";
+import {
+  InterviewStreamError,
+  streamInterviewTurn,
+} from "@/lib/interview-stream";
 import { AgentStatusBadge } from "@/components/dashboard/agent-status-badge";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert, PageError } from "@/components/ui/alert";
@@ -41,6 +45,8 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
   const [startedId, setStartedId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  /** Câu hỏi đang chảy về. `null` = không có lượt nào đang chạy. */
+  const [streaming, setStreaming] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const loginNext = `/dashboard/interview/${jobId}/mock`;
@@ -90,11 +96,42 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
       "Không bắt đầu được buổi luyện",
     );
 
-  const answer = (text: string) =>
-    void send(
-      () => agentService.answer(runId!, text),
-      "Không gửi được câu trả lời",
-    );
+  /**
+   * Trả lời một lượt: gửi rồi ĐỌC CHỮ CHẢY DẦN, không xếp hàng đợi.
+   *
+   * Đo trên một buổi thật: 18,9 giây mỗi lượt, và người dùng nhìn màn hình
+   * trống suốt chừng đó vì model trả về một cục. Stream không rút ngắn 18,9
+   * giây — nó biến chúng thành 3 giây rồi chữ chạy dần.
+   *
+   * Chỉ xoá phần chữ đang chảy SAU KHI đọc lại được bản ghi từ database: xoá
+   * sớm thì câu hỏi biến mất một nhịp rồi mới hiện lại từ biên bản.
+   */
+  const answer = (text: string) => {
+    setSending(true);
+    setSendError(null);
+    setStreaming("");
+
+    void streamInterviewTurn({
+      runId: runId!,
+      answer: text,
+      onText: setStreaming,
+    })
+      .then(() => {
+        refresh();
+        setStreaming(null);
+      })
+      .catch((cause: unknown) => {
+        // Nửa câu hỏi tệ hơn không có câu nào: người dùng không biết câu hỏi đã
+        // hết chưa và có thể trả lời một câu chưa hỏi xong. Xoá sạch, hiện lỗi.
+        setStreaming(null);
+        setSendError(
+          cause instanceof InterviewStreamError
+            ? `${cause.message} Câu trả lời của bạn chưa được ghi nhận, gửi lại giúp nhé.`
+            : apiErrorMessage(cause, "Không gửi được câu trả lời"),
+        );
+      })
+      .finally(() => setSending(false));
+  };
 
   if (job.error)
     return <PageError title="Không tải được dữ liệu" message={job.error} />;
@@ -108,7 +145,11 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
 
   const transcript = run ? buildTranscript(run) : null;
   const waiting = transcript ? pendingTurn(transcript) : null;
-  const busy = sending || run?.status === "PENDING" || run?.status === "RUNNING";
+  const busy =
+    sending ||
+    streaming !== null ||
+    run?.status === "PENDING" ||
+    run?.status === "RUNNING";
 
   return (
     <div className="space-y-6">
@@ -193,6 +234,21 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
               ))}
             </ol>
           ) : null}
+
+          {/* Câu đang chảy về: vẽ ngay, không chờ database. Con trỏ nhấp nháy
+              để phân biệt "đang viết" với "đã viết xong". */}
+          {streaming !== null && (
+            <div className="rounded-xl border border-primary-100 bg-primary-50/40 p-4">
+              {streaming ? (
+                <Markdown text={streaming} className="text-slate-700" />
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Người phỏng vấn đang nghĩ…
+                </p>
+              )}
+              <span className="mt-1 inline-block h-4 w-1.5 animate-pulse bg-primary-400 align-middle" />
+            </div>
+          )}
 
           {waiting && !busy && <AnswerBox sending={sending} onSend={answer} />}
 

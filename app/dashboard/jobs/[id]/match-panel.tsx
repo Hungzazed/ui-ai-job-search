@@ -96,6 +96,11 @@ function SystemMatchCard({ system }: { system: SystemMatch | null }) {
                   chưa đủ dữ liệu
                 </span>
               )}
+              {check.via && (
+                <span className="ml-1 text-[11px] text-teal-600">
+                  qua từ tương đương: {check.via}
+                </span>
+              )}
             </span>
           </li>
         ))}

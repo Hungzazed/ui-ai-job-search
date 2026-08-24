@@ -110,11 +110,16 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
                     className="rounded-full bg-teal-50 px-2 py-0.5 font-mono text-[11px] font-semibold whitespace-nowrap text-teal-700"
                     title={
                       job.systemMatch.kind === "REQUIREMENTS"
-                        ? `Hồ sơ đáp ứng ${job.systemMatch.met}/${job.systemMatch.total} yêu cầu tin nêu ra`
+                        ? `Hồ sơ đáp ứng ${job.systemMatch.met}/${job.systemMatch.total} yêu cầu tin nêu ra (${job.systemMatch.percent}% có trọng số)`
                         : `Tin chưa được rút trích yêu cầu; đang đếm kỹ năng của bạn xuất hiện trong tin`
                     }
                   >
                     khớp {job.systemMatch.met}/{job.systemMatch.total}
+                    {job.systemMatch.kind === "REQUIREMENTS" && (
+                      <span className="ml-1 text-teal-600">
+                        · {job.systemMatch.percent}%
+                      </span>
+                    )}
                   </span>
                 )}
                 {job.hasAiScore && (

@@ -86,7 +86,7 @@ export function JobsView() {
   const queryClient = useQueryClient();
   const params = useSearchParams();
 
-  /** `?scored=1` = lối vào "Việc làm phù hợp": tin đã chấm và KHÔNG bị chấm POOR. */
+  /** `?scored=1` = lối vào "Việc làm phù hợp": tin hồ sơ đáp ứng đủ ngưỡng yêu cầu. */
   const scored = params.get("scored") === "1";
   const filter = useMemo(
     () => readFilter(new URLSearchParams(params.toString()), scored),
@@ -222,7 +222,7 @@ export function JobsView() {
         title={scored ? "Việc làm phù hợp" : "Tất cả việc làm"}
         subtitle={
           scored
-            ? `${page.data.total} việc làm AI đánh giá là đáng cân nhắc`
+            ? `${page.data.total} việc làm hồ sơ của bạn đáp ứng từ 50% yêu cầu trở lên`
             : `${page.data.total} tin khớp với bộ lọc hiện tại`
         }
       />

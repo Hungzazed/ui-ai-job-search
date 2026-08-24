@@ -118,6 +118,7 @@ export function toJobCardFromRecord(job: JobListItem): Job {
           kind: job.systemMatch.kind,
           met: job.systemMatch.met,
           total: job.systemMatch.total,
+          percent: job.systemMatch.score,
         }
       : null,
     hasAiScore: job.match?.status === "DONE",

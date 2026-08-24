@@ -14,13 +14,15 @@ export interface RequirementCheck {
   /** `null` = hồ sơ thiếu dữ liệu để kết luận, không tính vào mẫu số. */
   met: boolean | null;
   note?: string;
+  /** Khớp được nhờ danh bạ từ tương đương, không nhờ trùng chữ. */
+  via?: string;
 }
 
 /**
- * Đối chiếu hồ sơ với yêu cầu của tin. KHÔNG phải phần trăm phù hợp.
+ * Đối chiếu hồ sơ với yêu cầu của tin. `score` là tỉ lệ khớp có trọng số
+ * (bắt buộc 1, ưu tiên 0,5) và chính là con số lọc trang "Việc làm phù hợp".
  *
- * Tin liệt kê mọi thứ họ muốn còn hồ sơ chỉ khai vài thứ, nên tỉ lệ luôn bị
- * dìm — đã đo 2/14 trên một tin AI chấm 80. Hiện dạng đếm, đừng đổi ra %.
+ * Chỉ có nghĩa khi `kind` là `REQUIREMENTS`; nhánh `KEYWORDS` luôn trả 0.
  */
 export interface SystemMatch {
   /** `KEYWORDS` khi tin chưa được rút trích yêu cầu. */

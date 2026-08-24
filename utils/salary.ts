@@ -1,25 +1,21 @@
 import type { Job, SalaryRange } from "@/types";
-
-/**
- * Mức lương để hiển thị trên thẻ công việc.
- *
- * Ưu tiên con số; nếu tin không công bố số thì hiện đúng chữ mà portal ghi
- * ("Đăng nhập để xem mức lương", "Thương lượng"). KHÔNG bao giờ rơi về 0 —
- * "0 – 0 triệu/tháng" là một con số bịa, và người đọc không có cách nào biết
- * nó là bịa.
- */
 export function formatJobSalary(job: Pick<Job, "salary" | "salaryRaw">): string {
   if (job.salary) return formatSalary(job.salary);
   return job.salaryRaw?.trim() || "Lương thoả thuận";
 }
-
 export function formatSalary(salary: SalaryRange): string {
-  const format = (value: number) =>
+  const period = salary.period === "year" ? "/năm" : "/tháng";
+  const format =
     salary.currency === "VND"
-      ? `${value.toLocaleString("vi-VN")}`
-      : `$${value.toLocaleString("en-US")}`;
+      ? (value: number) =>
+          (value / 1_000_000).toLocaleString("vi-VN", {
+            maximumFractionDigits: 1,
+          })
+      : (value: number) => `$${value.toLocaleString("en-US")}`;
+  const unit = salary.currency === "VND" ? " triệu" : "";
 
-  const range = `${format(salary.min)} – ${format(salary.max)}`;
-  const unit = salary.currency === "VND" ? "triệu/tháng" : "k/tháng";
-  return `${range} ${unit}`;
+  if (salary.min === salary.max) {
+    return `${format(salary.min)}${unit}${period}`;
+  }
+  return `${format(salary.min)} – ${format(salary.max)}${unit}${period}`;
 }

@@ -1,22 +1,17 @@
 "use client";
 
 import type { Job } from "@/types";
-import { JobCard } from "@/components/dashboard/job-card";
+import { JobRow } from "@/components/dashboard/job-row";
 import { EmptyHint } from "@/components/ui/empty-state";
-
-/**
- * Lưới thẻ việc làm. CHỈ hiển thị.
- *
- * Trước đây component này còn tự lọc và sắp xếp mảng đã tải. Điều đó làm ô tìm
- * kiếm nói dối: nó chỉ tìm trong 50 tin đang nằm sẵn trên trình duyệt, nên gõ
- * tên một công ty có thật ở trang 3 vẫn ra "không tìm thấy". Cả ba việc đó giờ
- * chạy ở SQL và đi qua `JobFilterBar`.
- */
 export function JobList({
   jobs,
+  selectedId,
+  onSelect,
   onSavedChange,
 }: {
   jobs: Job[];
+  selectedId: string | null;
+  onSelect: (jobId: string) => void;
   onSavedChange?: (jobId: string, saved: boolean) => void;
 }) {
   if (jobs.length === 0) {
@@ -28,10 +23,16 @@ export function JobList({
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <ul className="divide-y divide-slate-100">
       {jobs.map((job) => (
-        <JobCard key={job.id} job={job} onSavedChange={onSavedChange} />
+        <JobRow
+          key={job.id}
+          job={job}
+          selected={job.id === selectedId}
+          onSelect={onSelect}
+          onSavedChange={onSavedChange}
+        />
       ))}
-    </div>
+    </ul>
   );
 }

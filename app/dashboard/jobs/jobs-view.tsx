@@ -8,46 +8,24 @@ import { jobsService } from "@/services";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { invalidateAfter, keys } from "@/lib/query-keys";
 import { toJobCardFromRecord } from "@/lib/adapters";
-import { PageHeader } from "@/components/dashboard/page-header";
 import {
   JobFilterBar,
+  SortSelect,
   type JobFilterValue,
 } from "@/components/dashboard/job-filter-bar";
+import { cn } from "@/utils";
 import { Alert } from "@/components/ui/alert";
+import { EmptyHint } from "@/components/ui/empty-state";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton, SkeletonGrid, SkeletonPage } from "@/components/ui/skeleton";
+import { JobDetailView } from "./[id]/job-detail-view";
 import { JobList } from "./job-list";
-
-/** Số tin mỗi trang. */
 const PAGE_SIZE = 20;
-
-/**
- * Chờ bao lâu sau phím cuối rồi mới gọi API.
- *
- * Không có nó thì gõ "backend" là bảy request, và sáu cái đầu đều vô ích. Đủ
- * ngắn để cảm giác vẫn tức thì.
- */
 const SEARCH_DEBOUNCE_MS = 500;
 
 const SORTS: JobSort[] = ["newest", "salary", "match"];
-
-/**
- * Thứ tự mặc định khác nhau giữa hai lối vào.
- *
- * "Việc làm phù hợp" mà sắp theo thời gian quét thì một tin vừa đủ điểm vẫn
- * đứng trên một tin rất hợp chỉ vì nó mới hơn — trong khi cả trang tồn tại là
- * để trả lời câu "tin nào hợp với tôi nhất".
- */
 const defaultSort = (scored: boolean): JobSort =>
   scored ? "match" : "newest";
-
-/**
- * Đọc bộ lọc TỪ URL.
- *
- * URL là nguồn sự thật duy nhất, không phải `useState`. Nhờ vậy một bộ lọc là
- * một đường link chia sẻ được, nút Back đưa về đúng kết quả trước đó, và tải
- * lại trang không mất gì - đúng cách mọi trang tuyển dụng hoạt động.
- */
 function readFilter(params: URLSearchParams, scored: boolean): JobFilterValue {
   const sort = params.get("sort");
   return {
@@ -59,23 +37,29 @@ function readFilter(params: URLSearchParams, scored: boolean): JobFilterValue {
     sort: SORTS.includes(sort as JobSort)
       ? (sort as JobSort)
       : defaultSort(scored),
+    saved: params.get("saved") === "1",
+    applied: params.get("applied") === "1",
+    subOccupation: params.getAll("subOccupation"),
   };
 }
-
-/** Chỉ ghi những gì khác mặc định, để URL sạch và dễ đọc. */
 function writeFilter(
   filter: JobFilterValue,
   offset: number,
   scored: boolean,
+  selected?: string | null,
 ): string {
   const params = new URLSearchParams();
   if (scored) params.set("scored", "1");
+  if (selected) params.set("job", selected);
   if (filter.q) params.set("q", filter.q);
   for (const code of filter.province) params.append("province", code);
   for (const code of filter.occupation) params.append("occupation", code);
+  for (const code of filter.subOccupation) params.append("subOccupation", code);
   if (filter.salaryMin) params.set("salaryMin", String(filter.salaryMin));
   if (filter.postedWithin)
     params.set("postedWithin", String(filter.postedWithin));
+  if (filter.saved) params.set("saved", "1");
+  if (filter.applied) params.set("applied", "1");
   if (filter.sort !== defaultSort(scored)) params.set("sort", filter.sort);
   if (offset) params.set("offset", String(offset));
   return params.toString();
@@ -85,27 +69,14 @@ export function JobsView() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const params = useSearchParams();
-
-  /** `?scored=1` = lối vào "Việc làm phù hợp": tin hồ sơ đáp ứng đủ ngưỡng yêu cầu. */
   const scored = params.get("scored") === "1";
   const filter = useMemo(
     () => readFilter(new URLSearchParams(params.toString()), scored),
     [params, scored],
   );
   const offset = Number(params.get("offset") ?? 0) || 0;
-
-  /**
-   * Ô tìm kiếm giữ state RIÊNG, tách khỏi URL.
-   *
-   * Đây là ngoại lệ duy nhất của quy tắc "URL là nguồn sự thật", và nó bắt
-   * buộc: đẩy từng phím lên URL sẽ đẻ ra một mục lịch sử cho mỗi ký tự, khiến
-   * nút Back phải bấm bảy lần mới thoát khỏi một từ khoá.
-   */
+  const selected = params.get("job");
   const [draftQuery, setDraftQuery] = useState(filter.q);
-
-  // Điều chỉnh state NGAY TRONG render thay vì trong một effect: nút Back đổi
-  // URL từ bên ngoài React, và đồng bộ bằng effect sẽ vẽ một lượt với ô tìm
-  // kiếm còn giữ từ khoá của trang trước.
   const [syncedQuery, setSyncedQuery] = useState(filter.q);
   if (syncedQuery !== filter.q) {
     setSyncedQuery(filter.q);
@@ -113,19 +84,18 @@ export function JobsView() {
   }
 
   const push = useCallback(
-    (next: JobFilterValue, nextOffset: number) => {
-      router.push(`/dashboard/jobs?${writeFilter(next, nextOffset, scored)}`, {
-        scroll: false,
-      });
+    (next: JobFilterValue, nextOffset: number, nextSelected?: string | null) => {
+      router.push(
+        `/dashboard/jobs?${writeFilter(next, nextOffset, scored, nextSelected)}`,
+        { scroll: false },
+      );
     },
     [router, scored],
   );
-
-  // Đổi bộ lọc thì về trang đầu: giữ offset cũ rất dễ ra một trang trống.
   const handleFilterChange = useCallback(
     (next: JobFilterValue) => {
       setDraftQuery(next.q);
-      push(next, 0);
+      push(next, 0, null);
     },
     [push],
   );
@@ -138,8 +108,6 @@ export function JobsView() {
     );
     return () => clearTimeout(timer);
   }, [draftQuery, filter, push]);
-
-  // Danh mục tỉnh và ngành là hằng số trong code, không phải dữ liệu người dùng.
   const filters = useApiQuery(keys.jobFilters(), jobsService.filters, {
     errorMessage: "Không tải được danh mục bộ lọc",
     staleTime: Infinity,
@@ -154,8 +122,13 @@ export function JobsView() {
         ...(filter.q ? { q: filter.q } : {}),
         ...(filter.province.length ? { province: filter.province } : {}),
         ...(filter.occupation.length ? { occupation: filter.occupation } : {}),
+        ...(filter.subOccupation.length
+          ? { subOccupation: filter.subOccupation }
+          : {}),
         ...(filter.salaryMin ? { salaryMin: filter.salaryMin } : {}),
         ...(filter.postedWithin ? { postedWithin: filter.postedWithin } : {}),
+        ...(filter.saved ? { saved: true } : {}),
+        ...(filter.applied ? { applied: true } : {}),
         sort: filter.sort,
         ...(scored ? { scored: true } : {}),
       }),
@@ -166,14 +139,20 @@ export function JobsView() {
   );
 
   if (page.errorStatus === 401) router.replace("/login?next=/dashboard/jobs");
+  const handleSelect = useCallback(
+    (jobId: string) => {
+      const wide =
+        typeof window !== "undefined" &&
+        window.matchMedia("(min-width: 1280px)").matches;
+      if (wide) {
+        push(filter, offset, jobId);
+        return;
+      }
+      router.push(`/dashboard/jobs/${jobId}`);
+    },
+    [filter, offset, push, router],
+  );
 
-  /**
-   * Đổi trạng thái lưu ngay trong cache của TanStack Query.
-   *
-   * Hỏng thì hoàn lại, để lần render sau khớp với sự thật ở máy chủ - nếu
-   * không, người dùng thấy "Đã lưu" nhưng tải lại trang thì mất, mà không hiểu
-   * vì sao.
-   */
   const handleSavedChange = useCallback(
     (jobId: string, saved: boolean) => {
       const apply = (value: boolean) =>
@@ -192,9 +171,6 @@ export function JobsView() {
 
       apply(saved);
       void (saved ? jobsService.save(jobId) : jobsService.unsave(jobId))
-        // Vá tại chỗ chỉ chữa được danh sách đang mở. Trang chi tiết giữ bản
-        // riêng ở khoá khác, nên phải xoá nó đi - không thì mở tin vừa lưu ra
-        // vẫn thấy nút "Lưu việc làm".
         .then(() => invalidateAfter(queryClient, "saveJob"))
         .catch(() => apply(!saved));
     },
@@ -217,39 +193,78 @@ export function JobsView() {
   }
 
   return (
-    <div>
-      <PageHeader
-        title={scored ? "Việc làm phù hợp" : "Tất cả việc làm"}
-        subtitle={
-          scored
-            ? `${page.data.total} việc làm hồ sơ của bạn đáp ứng từ 50% yêu cầu trở lên`
-            : `${page.data.total} tin khớp với bộ lọc hiện tại`
-        }
-      />
-
+    
+    <div className="flex flex-col xl:h-[calc(100dvh-7rem)]">
+      {/*
+        KHÔNG có tiêu đề trang ở đây.
+        Nó lặp lại đúng mục đang sáng trong sidebar, còn số tin thì header của
+        khung danh sách đã hiện — trong khi trang này không cuộn nên 85px đó bị
+        trừ thẳng vào vùng đọc, ở mọi phiên, mãi mãi.
+      */}
       <JobFilterBar
         value={{ ...filter, q: draftQuery }}
         filters={filters.data}
         onChange={handleFilterChange}
       />
+      <div className="grid min-h-0 flex-1 items-start gap-4 xl:grid-cols-[360px_minmax(0,1fr)] xl:overflow-hidden 2xl:grid-cols-[400px_minmax(0,1fr)]">
+        <div
+          data-testid="job-list-pane"
+          className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white xl:h-full"
+        >
+          
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-100 px-3.5 py-2">
+            <span className="text-xs text-slate-500">
+              {page.data.total} tin
+              {scored && (
+                <span className="text-primary-600 ml-1 font-medium">
+                  · khớp ≥50%
+                </span>
+              )}
+            </span>
+            <SortSelect
+              value={filter.sort}
+              onChange={(next) => push({ ...filter, sort: next }, 0, selected)}
+            />
+          </div>
+          <div
+            className={cn(
+              "min-h-0 flex-1 scrollbar-thin xl:overflow-y-auto",
+              page.loading && "opacity-50 transition-opacity",
+            )}
+          >
+            <JobList
+              jobs={page.data.items.map(toJobCardFromRecord)}
+              selectedId={selected}
+              onSelect={handleSelect}
+              onSavedChange={handleSavedChange}
+            />
+          </div>
 
-      {/* Mờ đi trong lúc tải trang kế, thay vì thay bằng khung xám: người dùng
-          vẫn đọc được kết quả cũ và không mất chỗ đang nhìn. */}
-      <div className={page.loading ? "opacity-50 transition-opacity" : undefined}>
-        <JobList
-          jobs={page.data.items.map(toJobCardFromRecord)}
-          onSavedChange={handleSavedChange}
-        />
+          <div className="shrink-0 border-t border-slate-100">
+            <Pagination
+              offset={offset}
+              limit={PAGE_SIZE}
+              total={page.data.total}
+              noun="tin"
+              disabled={page.loading}
+              onOffsetChange={(next) => push(filter, next, selected)}
+            />
+          </div>
+        </div>
+
+        <div
+          data-testid="job-detail-pane"
+          className="hidden min-w-0 scrollbar-thin xl:block xl:h-full xl:overflow-y-auto"
+        >
+          {selected ? (
+            <JobDetailView key={selected} jobId={selected} embedded />
+          ) : (
+            <EmptyHint className="rounded-2xl border-slate-200 bg-white p-16 text-center">
+              Chọn một việc làm ở danh sách bên trái để xem chi tiết.
+            </EmptyHint>
+          )}
+        </div>
       </div>
-
-      <Pagination
-        offset={offset}
-        limit={PAGE_SIZE}
-        total={page.data.total}
-        noun="tin"
-        disabled={page.loading}
-        onOffsetChange={(next) => push(filter, next)}
-      />
     </div>
   );
 }

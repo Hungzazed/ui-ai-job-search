@@ -73,4 +73,38 @@ html, body {
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: oklch(0.85 0.01 250) transparent;
+  /* Cuộn hết danh sách thì DỪNG, không đẩy tiếp sang trang đứng sau nó. */
+  overscroll-behavior: contain;
+}
+
+/*
+ * `scrollbar-width` là bản chuẩn nhưng Chromium chỉ hiểu từ 121; trước đó nó vẫn
+ * vẽ thanh cuộn hệ thống kèm hai nút mũi tên. Khối `::-webkit-` dưới đây là bản
+ * dự phòng cho đúng những trình duyệt đó, không phải bản trùng lặp.
+ */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-color: oklch(0.85 0.01 250);
+  /* Viền trong suốt cộng `content-box` tạo khoảng thở hai bên con trượt; thiếu
+     nó thì nó dán sát mép và trông như một vệt kẻ. */
+  background-clip: content-box;
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+  background-color: oklch(0.75 0.02 250);
+}
+
+/* Hai nút mũi tên đầu/cuối là thứ làm thanh cuộn trông cũ nhất. */
+.scrollbar-thin::-webkit-scrollbar-button {
+  display: none;
 }

@@ -9,14 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SectionCard } from "@/components/ui/section-card";
 import { cn } from "@/utils";
 import { SCORE_ROWS } from "./job-detail-constants";
-
-/**
- * Nói rõ điểm này chấm dựa trên cái gì.
- *
- * Người dùng upload CV rồi thấy điểm, và mặc định cho rằng máy chấm theo CV.
- * Thật ra nó chấm theo HỒ SƠ — nên khi kết quả trông sai, không có gì chỉ cho
- * họ chỗ cần sửa.
- */
 function ScoringBasis({ profile }: { profile: ProfileRecord | null }) {
   if (!profile) return null;
 
@@ -33,32 +25,46 @@ function ScoringBasis({ profile }: { profile: ProfileRecord | null }) {
     </p>
   );
 }
-
-/**
- * Đối chiếu hồ sơ với yêu cầu của tin, tính không cần model.
- *
- * Hiện dạng đếm chứ không phải phần trăm, và liệt kê từng dòng — đó là thứ điểm
- * AI không đưa ra được: nó kết luận chứ không chỉ ra thiếu gì.
- */
 function SystemMatchCard({ system }: { system: SystemMatch | null }) {
   if (!system || system.total === 0) return null;
-
-  const label =
-    system.kind === "REQUIREMENTS"
-      ? `Đáp ứng ${system.met}/${system.total} yêu cầu tin nêu ra`
-      : `Khớp ${system.met}/${system.total} kỹ năng trong hồ sơ`;
+  const count = (kind: "SKILL" | "NICE") => {
+    const rows = system.checks.filter((check) => check.kind === kind);
+    return { met: rows.filter((r) => r.met === true).length, total: rows.length };
+  };
+  const must = count("SKILL");
+  const nice = count("NICE");
+  if (system.kind !== "REQUIREMENTS") {
+    return (
+      <Card>
+        <CardContent className="text-sm text-slate-500">
+          Tin này chưa được phân tích yêu cầu nên chưa đối chiếu được với hồ sơ.
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <SectionCard
       compact
       title="Hệ thống đối chiếu"
-      description={
-        system.kind === "REQUIREMENTS"
-          ? "So yêu cầu của tin với hồ sơ, không gọi AI"
-          : "Tin này chưa được rút trích yêu cầu; tạm đếm từ khoá"
-      }
+      description="So yêu cầu của tin với hồ sơ, không gọi AI"
     >
-      <p className="mb-3 text-sm font-semibold text-slate-800">{label}</p>
+      <p className="text-sm font-semibold text-slate-800">
+        Khớp {system.score}% yêu cầu của tin
+      </p>
+
+      <p className="mt-1 mb-3 text-xs text-slate-500">
+        Đủ{" "}
+        <span className="font-semibold text-slate-700">
+          {must.met}/{must.total} bắt buộc
+        </span>
+        {nice.total > 0 && (
+          <>
+            {" · "}
+            {nice.met}/{nice.total} ưu tiên
+          </>
+        )}
+      </p>
 
       {system.eligibility === "FAIL" && (
         <p className="mb-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-900">
@@ -108,8 +114,6 @@ function SystemMatchCard({ system }: { system: SystemMatch | null }) {
     </SectionCard>
   );
 }
-
-/** Cột phải: điểm tổng, điểm từng chiều, và lối đi tiếp sang tối ưu CV. */
 export function MatchPanel({
   jobId,
   match,
@@ -196,33 +200,24 @@ export function MatchPanel({
           </CardContent>
         </Card>
       )}
-
-      {/* Mang jobId theo để hai trang kia không phải hỏi lại "cho công việc nào". */}
-      <div className="space-y-2">
-        <Link href={`/dashboard/cv-optimizer?jobId=${jobId}`} className="block">
+      <div className="flex flex-wrap gap-2">
+        <Link href={`/dashboard/cv-optimizer?jobId=${jobId}`} className="flex-1">
           <Button variant="secondary" className="w-full">
             <FileText className="size-4" />
-            Tối ưu CV cho tin này
+            Tối ưu CV
           </Button>
         </Link>
-        <Link href={`/dashboard/cover-letter?jobId=${jobId}`} className="block">
+        <Link href={`/dashboard/cover-letter?jobId=${jobId}`} className="flex-1">
           <Button variant="outline" className="w-full">
             <Mail className="size-4" />
-            Viết thư xin việc cho tin này
+            Thư xin việc
           </Button>
         </Link>
-        {/*
-          Lối vào buổi luyện đặt ở ĐÂY, cạnh hai nút kia, chứ không chỉ ở màn
-          Chuẩn bị phỏng vấn: bộ đề chỉ sinh ra khi đơn đã chuyển sang trạng thái
-          Phỏng vấn, mà luyện thì KHÔNG cần bộ đề — kịch bản tự soạn nếu chưa có.
-          Để lối vào duy nhất nằm sau bộ đề là khoá tính năng sau một điều kiện
-          nó không cần, và người dùng chưa có đơn nào ở vòng phỏng vấn thì không
-          có đường nào tới.
-        */}
-        <Link href={`/dashboard/interview/${jobId}/mock`} className="block">
+        
+        <Link href={`/dashboard/interview/${jobId}/mock`} className="flex-1">
           <Button variant="outline" className="w-full">
             <Mic className="size-4" />
-            Luyện phỏng vấn cho tin này
+            Luyện phỏng vấn
           </Button>
         </Link>
       </div>

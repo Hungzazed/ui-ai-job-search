@@ -14,9 +14,9 @@ export { JobSelect, JobSelectCard } from "./job-select-card";
 export { DocumentJobStatus } from "./document-job-status";
 export { DocumentSource } from "./document-source";
 export { DocumentStatusBadge } from "./document-status-badge";
+export { useDocumentJob } from "./use-document-job";
 export {
   upsertDocument,
-  useDocumentJob,
   type DocumentJob,
   type DocumentJobPhase,
-} from "./use-document-job";
+} from "./document-job.types";

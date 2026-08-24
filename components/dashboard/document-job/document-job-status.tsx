@@ -4,7 +4,7 @@ import { Hourglass, Loader2, RotateCcw } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { DocumentJob } from "./use-document-job";
+import type { DocumentJob } from "./document-job.types";
 
 const RUNNING_LABELS = {
   RUNNING: "AI đang soạn nội dung…",

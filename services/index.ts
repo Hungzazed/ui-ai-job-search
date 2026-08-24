@@ -12,6 +12,7 @@ export { profileDraftService } from "./profile-draft";
 export { scraperService } from "./scraper";
 export { skillsService } from "./skills";
 export { adminService } from "./admin";
+export { companiesService } from "./companies";
 
 export type {
   AuthResult,
@@ -65,6 +66,14 @@ export type {
   ProposedExperience,
   ProposedProject,
 } from "./profile-draft";
+export type {
+  BriefConfidence,
+  BriefQueued,
+  BriefSource,
+  CompanyBriefRecord,
+  CompanyBriefView,
+  CompanyVerdict,
+} from "./companies";
 export type { ScrapeRunRecord } from "./scraper";
 export type { SkillRecord } from "./skills";
 export type { AiFailureKind, AiFailureRecord, AiHealth, PurposeStats } from "./admin";

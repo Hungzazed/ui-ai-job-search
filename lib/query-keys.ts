@@ -38,6 +38,12 @@ export const keys = {
    * lệnh xoá quét được cả hai.
    */
   jobRecord: (jobId: string) => ["job", jobId, "record"] as const,
+  /**
+   * Bản tìm hiểu công ty của một tin. Nhóm RIÊNG chứ không nằm dưới `job`: nó
+   * hỏng thì phần mô tả công việc vẫn phải hiện bình thường, nên hai thứ không
+   * được chung một ô cache.
+   */
+  companyBrief: (jobId: string) => ["company-brief", jobId] as const,
 
   matches: () => ["matches"] as const,
   /** Thư đã viết và CV đã tạo hỏi CÙNG một danh sách này - cùng khoá, một request. */

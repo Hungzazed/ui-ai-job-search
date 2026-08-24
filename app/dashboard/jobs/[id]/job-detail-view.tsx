@@ -19,6 +19,7 @@ import { toJobCard } from "@/lib/adapters";
 import { Alert } from "@/components/ui/alert";
 import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
+import { CompanyBriefPanel } from "./company-brief-panel";
 import { JobDetailHeader } from "./job-detail-header";
 import { InsightList } from "./match-insights";
 import { MatchPanel } from "./match-panel";
@@ -214,14 +215,19 @@ export function JobDetailView({ jobId }: JobDetailViewProps) {
               nút bấm vào rồi báo lỗi tệ hơn là không có nút. */}
         </div>
 
-        <MatchPanel
-          jobId={jobId}
-          match={match}
-          profile={profile}
-          system={job.systemMatch}
-          onScore={handleScore}
-          scoring={scoring}
-        />
+        {/* Cột phải là chỗ ra quyết định "có nộp không", nên bản tìm hiểu công
+            ty đứng trên phần chấm điểm. */}
+        <div className="space-y-6">
+          <CompanyBriefPanel jobId={jobId} />
+          <MatchPanel
+            jobId={jobId}
+            match={match}
+            profile={profile}
+            system={job.systemMatch}
+            onScore={handleScore}
+            scoring={scoring}
+          />
+        </div>
       </div>
     </div>
   );

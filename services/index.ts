@@ -31,6 +31,7 @@ export type {
   JobListParams,
   JobSort,
   JobFilters,
+  OccupationOption,
   FilterOption,
   RequirementCheck,
   SystemMatch,

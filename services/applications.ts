@@ -26,10 +26,13 @@ export const applicationsService = {
 
   /**
    * Backend từ chối nếu công việc chưa được chấm điểm, hoặc chấm ra
-   * eligibility = FAIL. Tạo xong thì CV và thư xin việc tự vào hàng đợi.
+   * eligibility = FAIL. `skipDocuments=true` chỉ lưu lịch sử, không tự sinh CV.
+   * `cvDocumentId` ghi nhận CV nào được chọn.
    */
-  create: (jobId: string) =>
-    api.post<Application>("/applications", { jobId }).then((r) => r.data),
+  create: (jobId: string, options?: { skipDocuments?: boolean; cvDocumentId?: string }) =>
+    api
+      .post<Application>("/applications", { jobId, ...options })
+      .then((r) => r.data),
 
   /**
    * Backend chặn hai trạng thái HIRED và OFFER_DECLINED nếu đơn chưa từng ở

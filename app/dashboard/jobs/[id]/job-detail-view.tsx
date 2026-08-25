@@ -10,15 +10,16 @@ import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { invalidateAfter, keys } from "@/lib/query-keys";
 import {
-  applicationsService,
   jobsService,
   matchesService,
   profileService,
+  applicationsService,
 } from "@/services";
 import { toJobCard } from "@/lib/adapters";
 import { Alert } from "@/components/ui/alert";
 import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
+import { Toast } from "@/components/ui/toast";
 import { CompanyBriefPanel } from "./company-brief-panel";
 import { JobDetailHeader } from "./job-detail-header";
 import { InsightList } from "./match-insights";
@@ -39,25 +40,31 @@ interface JobDetailData {
 export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [applying, setApplying] = useState(false);
-  const [applyError, setApplyError] = useState<string | null>(null);
-  const [applied, setApplied] = useState(false);
   const [scoring, setScoring] = useState(false); 
   const [savePending, setSavePending] = useState<boolean | null>(null);
+  const [toast, setToast] = useState(false);
+  const [appliedId, setAppliedId] = useState<string | null>(null);
 
   const key = keys.job(jobId);
   const { data, error } = useApiQuery(
     key,
     async () => {
-      const [record, evaluation, current] = await Promise.all([
+      const [record, evaluation, current, appList] = await Promise.all([
         jobsService.get(jobId),
         matchesService.get(jobId).catch((err: unknown) => {
           if (apiErrorStatus(err) === 404) return null;
           throw err;
         }),
         profileService.get().catch(() => null),
+        applicationsService.list(undefined, { limit: 100, offset: 0 }).catch(() => null),
       ]);
-      return { job: record, match: evaluation, profile: current };
+      const existingApp = appList?.items.find((a: { jobId: string }) => a.jobId === jobId);
+      return {
+        job: record,
+        match: evaluation,
+        profile: current,
+        existingApplication: existingApp ?? null,
+      };
     },
     { errorMessage: "Không tải được thông tin công việc" },
   );
@@ -65,6 +72,7 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
   const job = data?.job ?? null;
   const match = data?.match ?? null;
   const profile = data?.profile ?? null;
+  const existingApplication = data?.existingApplication ?? null;
   const saved = savePending ?? job?.saved ?? false;
   const toggleSave = () => {
     const next = !saved;
@@ -102,21 +110,35 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
     })();
   };
 
+  const hasApplied = existingApplication !== null;
+
   const handleApply = async () => {
-    setApplying(true);
-    setApplyError(null);
+    if (hasApplied) {
+      if (job?.url) window.open(job.url, "_blank", "noopener");
+      return;
+    }
     try {
-      await applicationsService.create(jobId);
-      setApplied(true);
-      router.push("/dashboard/applications");
+      const result = await applicationsService.create(jobId, { skipDocuments: true });
+      setAppliedId(result.id);
+      invalidateAfter(queryClient, "applicationStatus");
+      if (job?.url) window.open(job.url, "_blank", "noopener");
+      setToast(true);
     } catch (err) {
       if (apiErrorStatus(err) === 401) {
         router.replace(`/login?next=/dashboard/jobs/${jobId}`);
         return;
       }
-      setApplyError(apiErrorMessage(err, "Không tạo được đơn ứng tuyển"));
-      setApplying(false);
+      if (job?.url) window.open(job.url, "_blank", "noopener");
     }
+  };
+
+  const handleMarkApplied = async () => {
+    if (!appliedId) return;
+    try {
+      await applicationsService.updateStatus(appliedId, "APPLIED");
+      invalidateAfter(queryClient, "applicationStatus");
+      setToast(false);
+    } catch {}
   };
 
   if (error) return <Alert tone="danger">{error}</Alert>;
@@ -138,16 +160,31 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <Toast
+          message={
+            <span>
+              Việc làm này đã được chuyển sang trạng thái Đang tiến hành trong{" "}
+              <button
+                type="button"
+                onClick={handleMarkApplied}
+                className="font-medium text-primary-600 underline hover:text-primary-700"
+              >
+                Đã nhấp vào ứng tuyển
+              </button>
+              .
+            </span>
+          }
+          onClose={() => setToast(false)}
+        />
+      )}
       <JobDetailHeader
         card={card}
         job={job}
         match={match}
         saved={saved}
         onToggleSave={toggleSave}
-        onApply={() => void handleApply()}
-        applying={applying}
-        applied={applied}
-        applyError={applyError}
+        onApply={handleApply}
       />
 
       <div

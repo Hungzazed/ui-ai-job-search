@@ -2,6 +2,7 @@ import type { ApplicationGroup, ApplicationStatus } from "@/types";
 
 /** Nhãn tiếng Việt cho mười trạng thái của backend. */
 export const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
+  VIEWED: "Đã xem",
   RANKED: "Chưa nộp",
   APPLIED: "Đã nộp",
   INTERVIEW: "Phỏng vấn",
@@ -18,6 +19,7 @@ export const APPLICATION_STATUS_VARIANTS: Record<
   ApplicationStatus,
   "info" | "warning" | "primary" | "danger" | "success"
 > = {
+  VIEWED: "info",
   RANKED: "info",
   APPLIED: "info",
   INTERVIEW: "primary",
@@ -67,6 +69,7 @@ export const APPLICATION_TABS: Array<{
  * tạo đơn mới cho cùng một công việc — thứ mà ràng buộc trùng đơn sẽ chặn.
  */
 export const NEXT_STATUSES: Record<ApplicationStatus, ApplicationStatus[]> = {
+  VIEWED: ["RANKED", "WITHDRAWN"],
   RANKED: ["APPLIED", "WITHDRAWN", "EXPIRED"],
   APPLIED: ["INTERVIEW", "REJECTED", "NO_RESPONSE", "WITHDRAWN"],
   INTERVIEW: ["OFFER", "REJECTED", "NO_RESPONSE", "WITHDRAWN"],

@@ -1,17 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { FileText } from "lucide-react";
+import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import type {
   Application,
   ApplicationGroup,
   ApplicationStatus,
 } from "@/types";
-import { apiErrorMessage } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { invalidateAfter, keys } from "@/lib/query-keys";
-import { applicationsService } from "@/services";
+import {
+  applicationsService,
+  documentsService,
+  profileDraftService,
+} from "@/services";
 import {
   APPLICATION_STATUS_LABELS,
   APPLICATION_STATUS_VARIANTS,
@@ -28,7 +34,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Toast } from "@/components/ui/toast";
 import { CountTabs } from "@/components/ui/tabs";
+import { CvPicker, type CvOption } from "@/components/dashboard/cv-picker";
 import {
   Table,
   TableBody,
@@ -44,6 +52,7 @@ type Filter = "all" | ApplicationGroup;
 const PAGE_SIZE = 20;
 
 export default function ApplicationsPage() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<Filter>("all");
   const [offset, setOffset] = useState(0);
@@ -51,6 +60,27 @@ export default function ApplicationsPage() {
   const [rowError, setRowError] = useState<{ id: string; message: string } | null>(
     null,
   );
+  const [pdfLoadingId, setPdfLoadingId] = useState<string | null>(null);
+  const [cvPickerOpen, setCvPickerOpen] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const [uploadedCv, setUploadedCv] = useState<CvOption | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    profileDraftService
+      .latest()
+      .then((draft) => {
+        if (draft && draft.status === "DONE") {
+          setUploadedCv({
+            id: draft.id,
+            label: draft.filename || "CV đã upload",
+            type: "uploaded",
+            filename: draft.filename || undefined,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Lọc ở phía backend chứ không lọc mảng đã tải: `counts` phải là tổng thật
   // trên toàn bộ đơn, không phải đếm lại sau khi đã lọc theo chính tab đang mở.
@@ -102,8 +132,55 @@ export default function ApplicationsPage() {
     }
   };
 
+  const openCvPdf = async (documentId: string) => {
+    setPdfLoadingId(documentId);
+    try {
+      const blob = await documentsService.pdf(documentId);
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      if (apiErrorStatus(err) === 401) {
+        router.replace("/login");
+        return;
+      }
+      setRowError({
+        id: documentId,
+        message: apiErrorMessage(err, "Không tạo được PDF"),
+      });
+    } finally {
+      setPdfLoadingId(null);
+    }
+  };
+
+  const handleCvSelected = async (option: CvOption) => {
+    if (!selectedAppId) return;
+    try {
+      await applicationsService.create(selectedAppId, {
+        skipDocuments: option.type === "uploaded",
+        cvDocumentId: option.type === "uploaded" ? option.id : undefined,
+      });
+      invalidateAfter(queryClient, "applicationStatus");
+      setToast("Đã cập nhật CV thành công");
+    } catch (err) {
+      setToast(apiErrorMessage(err, "Không cập nhật được CV"));
+    }
+    setCvPickerOpen(false);
+    setSelectedAppId(null);
+  };
+
   return (
     <div className="space-y-6">
+      {toast && <Toast message={toast} onClose={() => setToast(null)} />}
+      <CvPicker
+        open={cvPickerOpen}
+        onClose={() => {
+          setCvPickerOpen(false);
+          setSelectedAppId(null);
+        }}
+        onSelect={handleCvSelected}
+        uploadedCv={uploadedCv}
+      />
       <PageHeader
         title="Lịch sử ứng tuyển"
         subtitle="Theo dõi trạng thái từng đơn ứng tuyển của bạn"
@@ -130,6 +207,7 @@ export default function ApplicationsPage() {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead>Vị trí / Công ty</TableHead>
+                <TableHead className="hidden md:table-cell">CV đã nộp</TableHead>
                 <TableHead className="hidden md:table-cell">Ngày nộp</TableHead>
                 <TableHead className="hidden lg:table-cell">Địa điểm</TableHead>
                 <TableHead>Trạng thái</TableHead>
@@ -159,6 +237,44 @@ export default function ApplicationsPage() {
                         </p>
                       </div>
                     </div>
+                  </TableCell>
+                  <TableCell className="hidden whitespace-nowrap text-slate-500 md:table-cell">
+                    {(() => {
+                      const cvs = application.documents?.filter(
+                        (d) => d.kind === "CV" && d.status === "DONE",
+                      );
+                      if (!cvs?.length) {
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedAppId(application.id);
+                              setCvPickerOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-primary-600 hover:underline"
+                          >
+                            <FileText className="size-3 shrink-0" />
+                            Chưa chọn CV
+                          </button>
+                        );
+                      }
+                      const cv = cvs[0];
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => void openCvPdf(cv.id)}
+                          disabled={pdfLoadingId === cv.id}
+                          className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 hover:underline disabled:opacity-50"
+                          title={cvs.map((c) => c.title).join(", ")}
+                        >
+                          <FileText className="size-3 shrink-0" />
+                          {pdfLoadingId === cv.id
+                            ? "Đang tải…"
+                            : cv.title}
+                          {cvs.length > 1 && ` (+${cvs.length - 1})`}
+                        </button>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="hidden whitespace-nowrap text-slate-500 md:table-cell">
                     {/* Đơn ở trạng thái RANKED thì chưa nộp, nên chưa có ngày. */}

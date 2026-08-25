@@ -12,6 +12,7 @@
  * nguồn tự động cố đặt chúng.
  */
 export type ApplicationStatus =
+  | "VIEWED"
   | "RANKED"
   | "APPLIED"
   | "INTERVIEW"
@@ -29,6 +30,16 @@ export type ApplicationStatus =
  * hết chuyện. Backend nhận đúng những khoá này ở tham số `?group=`.
  */
 export type ApplicationGroup = "open" | "interview" | "offer" | "closed";
+
+export interface ApplicationDocument {
+  id: string;
+  jobId: string | null;
+  kind: "CV" | "COVER_LETTER" | "APPLICATION_EMAIL" | "FORM_ANSWER";
+  title: string;
+  status: string;
+  templateId: string;
+  generatedAt: string | null;
+}
 
 export interface Application {
   id: string;
@@ -49,6 +60,7 @@ export interface Application {
     salaryRaw: string | null;
     url: string;
   };
+  documents: ApplicationDocument[];
 }
 
 /**

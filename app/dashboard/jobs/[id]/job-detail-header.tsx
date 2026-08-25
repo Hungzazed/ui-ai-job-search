@@ -3,7 +3,6 @@
 import {
   Bookmark,
   Building2,
-  ExternalLink,
   MapPin,
   Sparkles,
   Wallet,
@@ -13,7 +12,6 @@ import type { JobRecord } from "@/services";
 import { cn, formatJobSalary } from "@/utils";
 import { CompanyLogo } from "@/components/dashboard/company-logo";
 import { JobTime } from "@/components/dashboard/job-time";
-import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { VERDICT_META } from "./job-detail-constants";
@@ -25,9 +23,8 @@ interface JobDetailHeaderProps {
   saved: boolean;
   onToggleSave: () => void;
   onApply: () => void;
-  applying: boolean;
-  applied: boolean;
-  applyError: string | null;
+  applying?: boolean;
+  applied?: boolean;
 }
 
 export function JobDetailHeader({
@@ -39,7 +36,6 @@ export function JobDetailHeader({
   onApply,
   applying,
   applied,
-  applyError,
 }: JobDetailHeaderProps) {
   const verdict = match?.verdict ? VERDICT_META[match.verdict] : null;
 
@@ -98,9 +94,7 @@ export function JobDetailHeader({
             className="w-full sm:w-auto"
             onClick={onApply}
             loading={applying}
-            // Backend từ chối tạo đơn cho công việc chưa chấm điểm, nên chặn
-            // ngay ở đây thay vì để người dùng bấm rồi nhận lỗi.
-            disabled={!match || applied}
+            disabled={applied}
           >
             <Sparkles className="size-4" />
             {applied ? "Đã tạo đơn" : "Ứng tuyển ngay"}
@@ -118,23 +112,8 @@ export function JobDetailHeader({
             />
             {saved ? "Đã lưu" : "Lưu việc làm"}
           </Button>
-          <a
-            href={job.url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-800"
-          >
-            <ExternalLink className="size-3.5" />
-            Xem tin gốc
-          </a>
         </div>
       </div>
-
-      {applyError && (
-        <Alert tone="danger" className="mt-4 p-3">
-          {applyError}
-        </Alert>
-      )}
     </div>
   );
 }

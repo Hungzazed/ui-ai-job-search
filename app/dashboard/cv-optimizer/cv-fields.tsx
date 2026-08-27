@@ -1,7 +1,8 @@
 "use client";
 
-import { X } from "@phosphor-icons/react/ssr";
+import { CaretRight, X } from "@phosphor-icons/react/ssr";
 import type { CvSectionKey } from "@/services";
+import { cn } from "@/utils";
 import { Input, Textarea } from "@/components/ui/form";
 
 export const SECTION_LABELS: Record<CvSectionKey, string> = {
@@ -43,7 +44,7 @@ export function LinesField({
         {label} <span className="text-slate-400">· mỗi dòng một ý</span>
       </span>
       <Textarea
-        rows={rows}
+        rows={Math.max(rows, value.length + 1)}
         value={value.join("\n")}
         onChange={(event) =>
           onChange(
@@ -132,3 +133,63 @@ export function EntryBox({
  * Component ĐƯỢC ĐIỀU KHIỂN - không giữ state riêng. Nhờ vậy khung xem trước và
  * nút Lưu ở component cha luôn nhìn thấy đúng một bản nháp duy nhất.
  */
+
+export function CollapsibleEntry({
+  title,
+  subtitle,
+  open,
+  onToggle,
+  onRemove,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  open: boolean;
+  onToggle: () => void;
+  onRemove: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border transition-colors",
+        open
+          ? "border-primary-300 bg-white"
+          : "border-slate-200 bg-slate-50/60 hover:border-slate-300",
+      )}
+    >
+      <div className="flex items-center gap-1.5 px-2.5 py-2">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
+        >
+          <CaretRight
+            className={cn(
+              "size-3.5 shrink-0 text-slate-400 transition-transform",
+              open && "rotate-90",
+            )}
+          />
+          <span className="truncate text-xs font-semibold text-slate-800">
+            {title.trim() || "(chưa đặt tên)"}
+          </span>
+          {subtitle?.trim() && (
+            <span className="truncate text-2xs text-slate-500">
+              · {subtitle}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Xoá mục này"
+          className="shrink-0 cursor-pointer rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+        >
+          <X className="size-3.5" />
+        </button>
+      </div>
+      {open && <div className="space-y-2 px-2.5 pb-2.5">{children}</div>}
+    </div>
+  );
+}

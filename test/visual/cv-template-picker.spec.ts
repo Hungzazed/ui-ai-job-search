@@ -20,8 +20,8 @@ test("kho chon mau CV hien sau khi mo mot CV da tao", async ({ page }) => {
     timeout: 30_000,
   });
 
-  await page.locator("main button").filter({ hasText: /^CV/ }).first().click();
-  await expect(page.getByRole("heading", { name: "Sửa CV" })).toBeVisible({
+  await page.locator("li button").filter({ hasText: /^CV/ }).first().click();
+  await expect(page.getByRole("heading", { name: /^Sửa CV/ })).toBeVisible({
     timeout: 30_000,
   });
 

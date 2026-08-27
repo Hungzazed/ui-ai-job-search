@@ -9,8 +9,8 @@ async function moCv(page: import("@playwright/test").Page) {
   await page.waitForURL(/\/dashboard/);
 
   await page.goto("/dashboard/cv-optimizer");
-  await page.locator("main button").filter({ hasText: /^CV/ }).first().click();
-  await expect(page.getByRole("heading", { name: "Sửa CV" })).toBeVisible({
+  await page.locator("li button").filter({ hasText: /^CV/ }).first().click();
+  await expect(page.getByRole("heading", { name: /^Sửa CV/ })).toBeVisible({
     timeout: 30_000,
   });
 }
@@ -38,28 +38,47 @@ test("an mot muc thi muc do bien khoi ban xem truoc", async ({ page }) => {
   const frame = page.frameLocator("iframe");
   await expect(frame.getByText("HỌC VẤN")).toBeVisible({ timeout: 15_000 });
 
-  await page
-    .getByRole("button", { name: "Ẩn mục này" })
-    .nth(3)
-    .click();
+  await page.getByRole("tab", { name: "Bố cục" }).click();
+  await page.getByRole("button", { name: "Ẩn Học vấn khỏi CV" }).click();
 
   await expect(frame.getByText("HỌC VẤN")).toBeHidden({ timeout: 15_000 });
+  await expect(
+    page.getByRole("button", { name: "Đưa Học vấn lại vào CV" }),
+  ).toBeVisible();
 });
 
 test("doi thu tu muc bang nut mui ten", async ({ page }) => {
   await moCv(page);
 
-  // Khoanh đúng panel sửa: màn hình còn một khối xem nội dung cũng dùng h3.
-  const tieuDe = page.locator(
-    "section:has(button[aria-label='Ẩn mục này']) h3",
-  );
+  await page.getByRole("tab", { name: "Bố cục" }).click();
+
+  const tieuDe = page.locator("div:has(> button[aria-label^='Ẩn']) > span");
   await expect(tieuDe.first()).toHaveText("Giới thiệu");
 
-  // Đưa mục thứ hai lên đầu.
-  await page.getByRole("button", { name: "Đưa lên trên" }).nth(1).click();
+  await page.getByRole("button", { name: "Đưa Năng lực chính lên trên" }).click();
 
   await expect(tieuDe.first()).toHaveText("Năng lực chính");
   await expect(tieuDe.nth(1)).toHaveText("Giới thiệu");
+});
+
+test("bam vao mot muc tren ban xem truoc thi o sua mo dung muc do", async ({
+  page,
+}) => {
+  await moCv(page);
+
+  const frame = page.frameLocator("iframe");
+  await expect(frame.getByText("HỌC VẤN")).toBeVisible({ timeout: 15_000 });
+
+  const hocVan = page.getByRole("button", { name: /^Học vấn/ });
+  await expect(hocVan).toHaveAttribute("aria-expanded", "false");
+
+  await frame.locator("[data-section='education']").click();
+
+  await expect(hocVan).toHaveAttribute("aria-expanded", "true");
+  await expect(page.getByRole("button", { name: /^Giới thiệu/ })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
 });
 
 test("chuyen sang tab Mau van dung chung mot khung xem truoc", async ({

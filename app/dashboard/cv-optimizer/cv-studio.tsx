@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
 import { Tabs } from "@/components/ui/tabs";
 import { CvEditor } from "./cv-editor";
+import { CvLayoutPanel } from "./cv-layout-panel";
 import { CvPreview } from "./cv-preview";
 import { CvTemplatePicker } from "./cv-template-picker";
 
@@ -31,6 +32,7 @@ const SECTION_KEYS: CvSectionKey[] = [
 
 const TABS = [
   { value: "noi-dung", label: "Nội dung" },
+  { value: "bo-cuc", label: "Bố cục" },
   { value: "mau", label: "Mẫu trình bày" },
 ];
 
@@ -92,8 +94,6 @@ export function CvStudio({
   record: DocumentRecord;
   onSaved: () => void;
 }) {
-  const [tab, setTab] = useState(TABS[0].value);
-
   const saved = useMemo(
     () => ({
       content: toDraft(record.content),
@@ -102,6 +102,11 @@ export function CvStudio({
       accent: record.templateOptions?.accent,
     }),
     [record],
+  );
+
+  const [tab, setTab] = useState(TABS[0].value);
+  const [openSection, setOpenSection] = useState<CvSectionKey | null>(
+    saved.layout.order.find((key) => !saved.layout.hidden.includes(key)) ?? null,
   );
 
   const [content, setContent] = useState(saved.content);
@@ -234,9 +239,12 @@ export function CvStudio({
             <CvEditor
               content={content}
               layout={layout}
+              openKey={openSection}
+              onOpenKeyChange={setOpenSection}
               onContentChange={setContent}
-              onLayoutChange={setLayout}
             />
+          ) : tab === "bo-cuc" ? (
+            <CvLayoutPanel layout={layout} onChange={setLayout} />
           ) : (
             <CvTemplatePicker
               templateId={templateId}
@@ -252,7 +260,14 @@ export function CvStudio({
         </div>
 
         <div className="lg:sticky lg:top-4 lg:self-start">
-          <CvPreview html={html} />
+          <CvPreview
+            html={html}
+            activeSection={tab === "noi-dung" ? openSection : null}
+            onSectionClick={(key) => {
+              setTab("noi-dung");
+              setOpenSection(key);
+            }}
+          />
         </div>
       </div>
     </SectionCard>

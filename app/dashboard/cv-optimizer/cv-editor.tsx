@@ -1,97 +1,103 @@
 "use client";
 
-import { SECTION_LABELS, swap } from "./cv-fields";
+import { CaretRight } from "@phosphor-icons/react/ssr";
+import type { CvContentInput, CvLayout, CvSectionKey } from "@/services";
+import { cn } from "@/utils";
+import { SECTION_LABELS } from "./cv-fields";
 import { SectionFields } from "./section-fields";
-import { CaretDown, CaretUp, Eye, EyeSlash } from "@phosphor-icons/react/ssr";
-import type {
-  CvContentInput,
-  CvLayout,
-  CvSectionKey,
-} from "@/services";
 
-/** Tên mục hiện cho người dùng. Phải khớp `SECTION_TITLES` phía backend. */
+function entryCount(
+  key: CvSectionKey,
+  content: CvContentInput,
+): string | null {
+  switch (key) {
+    case "profile":
+      return null;
+    case "competencies":
+      return `${content.coreCompetencies.length} ý`;
+    case "experience":
+      return String(content.experiences.length);
+    case "projects":
+      return String(content.projects.length);
+    case "education":
+      return String(content.educations.length);
+    case "skills":
+      return String(content.skillGroups.length);
+  }
+}
+
 export function CvEditor({
   content,
   layout,
+  openKey,
+  onOpenKeyChange,
   onContentChange,
-  onLayoutChange,
 }: {
   content: CvContentInput;
   layout: CvLayout;
+  openKey: CvSectionKey | null;
+  onOpenKeyChange: (key: CvSectionKey | null) => void;
   onContentChange: (value: CvContentInput) => void;
-  onLayoutChange: (value: CvLayout) => void;
 }) {
-  const move = (index: number, step: number) =>
-    onLayoutChange({ ...layout, order: swap(layout.order, index, index + step) });
-
-  const toggleHidden = (key: CvSectionKey) =>
-    onLayoutChange({
-      ...layout,
-      hidden: layout.hidden.includes(key)
-        ? layout.hidden.filter((item) => item !== key)
-        : [...layout.hidden, key],
-    });
+  const visible = layout.order.filter((key) => !layout.hidden.includes(key));
 
   return (
-    <div className="space-y-3">
-      {layout.order.map((key, index) => {
-        const hidden = layout.hidden.includes(key);
+    <div className="space-y-2">
+      {visible.map((key) => {
+        const open = openKey === key;
+        const count = entryCount(key, content);
+
         return (
           <section
             key={key}
-            className={
-              "rounded-lg border border-slate-200 p-3 " +
-              (hidden ? "bg-slate-50 opacity-60" : "bg-white")
-            }
+            className={cn(
+              "rounded-lg border transition-colors",
+              open
+                ? "border-primary-300 bg-white shadow-xs"
+                : "border-slate-200 bg-white hover:border-slate-300",
+            )}
           >
-            <header className="mb-2 flex items-center gap-1">
-              <h3 className="flex-1 text-sm font-semibold text-slate-800">
-                {SECTION_LABELS[key]}
-              </h3>
-              <button
-                type="button"
-                aria-label={hidden ? "Hiện mục này" : "Ẩn mục này"}
-                onClick={() => toggleHidden(key)}
-                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-              >
-                {hidden ? (
-                  <EyeSlash className="size-4.5" />
-                ) : (
-                  <Eye className="size-4.5" />
+            <button
+              type="button"
+              onClick={() => onOpenKeyChange(open ? null : key)}
+              aria-expanded={open}
+              className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left"
+            >
+              <CaretRight
+                className={cn(
+                  "size-4 shrink-0 text-slate-400 transition-transform",
+                  open && "rotate-90",
                 )}
-              </button>
-              <button
-                type="button"
-                aria-label="Đưa lên trên"
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30 disabled:hover:bg-transparent"
-              >
-                <CaretUp className="size-4.5" />
-              </button>
-              <button
-                type="button"
-                aria-label="Đưa xuống dưới"
-                disabled={index === layout.order.length - 1}
-                onClick={() => move(index, 1)}
-                className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30 disabled:hover:bg-transparent"
-              >
-                <CaretDown className="size-4.5" />
-              </button>
-            </header>
-
-            {!hidden && (
-              <SectionFields
-                sectionKey={key}
-                content={content}
-                onChange={onContentChange}
               />
+              <span className="text-sm font-semibold text-slate-800">
+                {SECTION_LABELS[key]}
+              </span>
+              {count && (
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-2xs text-slate-500">
+                  {count}
+                </span>
+              )}
+            </button>
+
+            {open && (
+              <div className="px-3 pb-3">
+                <SectionFields
+                  sectionKey={key}
+                  content={content}
+                  onChange={onContentChange}
+                />
+              </div>
             )}
           </section>
         );
       })}
+
+      {layout.hidden.length > 0 && (
+        <p className="pt-1 text-xs text-slate-500">
+          {layout.hidden.length} mục đang ẩn khỏi CV — mở tab{" "}
+          <span className="font-semibold text-slate-700">Bố cục</span> để bật lại.
+        </p>
+      )}
     </div>
   );
 }
-
-/** Các ô nhập của đúng một mục. */

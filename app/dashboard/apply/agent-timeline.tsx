@@ -39,7 +39,7 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
           <li key={step.index} className="flex gap-3">
             <span
               className={cn(
-                "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
+                "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-2xs font-semibold",
                 step.failed
                   ? "bg-rose-50 text-rose-600"
                   : "bg-slate-100 text-slate-500",
@@ -54,7 +54,7 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
                   step.tools.map((tool, position) => (
                     <span
                       key={`${step.index}-${position}-${tool}`}
-                      className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-600"
+                      className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-2xs text-slate-600"
                     >
                       {tool}
                     </span>
@@ -64,7 +64,7 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
                     Viết kết luận
                   </span>
                 )}
-                <span className="font-mono text-[11px] text-slate-400">
+                <span className="font-mono text-2xs text-slate-400">
                   {step.seconds}s
                 </span>
               </div>

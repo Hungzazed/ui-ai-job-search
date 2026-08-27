@@ -30,6 +30,15 @@ export interface CvContentInput {
     period: string;
     bullets: string[];
   }>;
+  projects: Array<{
+    name: string;
+    role: string;
+    organization: string;
+    period: string;
+    description: string;
+    bullets: string[];
+    tools: string[];
+  }>;
   educations: Array<{
     degree: string;
     institution: string;
@@ -39,11 +48,12 @@ export interface CvContentInput {
   skillGroups: Array<{ label: string; items: string[] }>;
 }
 
-/** Khoá của năm mục CV. Phải khớp `SECTION_KEYS` phía backend. */
+/** Khoá của sáu mục CV. Phải khớp `SECTION_KEYS` phía backend. */
 export type CvSectionKey =
   | "profile"
   | "competencies"
   | "experience"
+  | "projects"
   | "education"
   | "skills";
 
@@ -141,12 +151,14 @@ export const documentsService = {
   },
 
   /** Không có jobId thì sinh CV tổng quát; có thì sinh CV theo vị trí. */
-  createCv: (jobId?: string) =>
-    api.post<QueuedDocument>("/documents/cv", { jobId }).then((r) => r.data),
-
-  createCoverLetter: (jobId: string) =>
+  createCv: (jobId?: string, stream = false) =>
     api
-      .post<QueuedDocument>("/documents/cover-letter", { jobId })
+      .post<QueuedDocument>("/documents/cv", { jobId, stream })
+      .then((r) => r.data),
+
+  createCoverLetter: (jobId: string, stream = false) =>
+    api
+      .post<QueuedDocument>("/documents/cover-letter", { jobId, stream })
       .then((r) => r.data),
 
   /**

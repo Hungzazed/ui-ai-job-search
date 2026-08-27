@@ -28,6 +28,16 @@ export interface CvExperience {
   bullets: string[];
 }
 
+export interface CvProject {
+  name: string | null;
+  role: string | null;
+  organization: string | null;
+  period: string | null;
+  description: string | null;
+  bullets: string[];
+  tools: string[];
+}
+
 export interface CvEducation {
   degree: string | null;
   institution: string | null;
@@ -44,6 +54,7 @@ export interface CvContent {
   profileStatement: string | null;
   coreCompetencies: string[];
   experiences: CvExperience[];
+  projects: CvProject[];
   educations: CvEducation[];
   skillGroups: CvSkillGroup[];
 }
@@ -59,6 +70,20 @@ function parseExperience(value: unknown): CvExperience | null {
   };
   // Không có cả chức danh lẫn công ty thì khối này không nói lên điều gì.
   return experience.position || experience.company ? experience : null;
+}
+
+function parseCvProject(value: unknown): CvProject | null {
+  if (!isRecord(value)) return null;
+  const project: CvProject = {
+    name: text(value.name),
+    role: text(value.role),
+    organization: text(value.organization),
+    period: text(value.period),
+    description: text(value.description),
+    bullets: textList(value.bullets),
+    tools: textList(value.tools),
+  };
+  return project.name || project.bullets.length > 0 ? project : null;
 }
 
 function parseEducation(value: unknown): CvEducation | null {
@@ -85,6 +110,7 @@ export function parseCvContent(content: unknown): CvContent {
     profileStatement: text(root.profileStatement),
     coreCompetencies: textList(root.coreCompetencies),
     experiences: objectList(root.experiences, parseExperience),
+    projects: objectList(root.projects, parseCvProject),
     educations: objectList(root.educations, parseEducation),
     skillGroups: objectList(root.skillGroups, parseSkillGroup),
   };
@@ -99,6 +125,7 @@ export function isCvContentEmpty(cv: CvContent): boolean {
     !cv.profileStatement &&
     cv.coreCompetencies.length === 0 &&
     cv.experiences.length === 0 &&
+    cv.projects.length === 0 &&
     cv.educations.length === 0 &&
     cv.skillGroups.length === 0
   );

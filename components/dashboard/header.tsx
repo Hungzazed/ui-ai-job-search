@@ -44,7 +44,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             </p>
             {/* Vai trò thật từ backend, thay cho nhãn "Basic Tier" bịa ra:
                 hệ thống chỉ có hai vai trò USER và ADMIN, không có gói dịch vụ. */}
-            <p className="font-mono text-[11px] text-slate-400">
+            <p className="font-mono text-2xs text-slate-400">
               {user?.role === "ADMIN" ? "Quản trị viên" : "Người dùng"}
             </p>
           </div>

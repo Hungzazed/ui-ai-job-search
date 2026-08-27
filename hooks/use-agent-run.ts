@@ -9,7 +9,7 @@ import { agentService, type AgentRunRecord } from "@/services";
  * 4 giây, cùng nhịp với vòng hỏi trạng thái tài liệu. Một bước của agent mất
  * 5-60 giây nên nhịp này đủ dày để tiến trình trông như đang chạy.
  */
-const POLL_INTERVAL_MS = 4000;
+const POLL_INTERVAL_MS = 2000;
 
 /**
  * 165 lần × 4 giây = 11 phút, tức DÀI HƠN `AGENT_TIMEOUT_MS` 9 phút của backend.
@@ -18,7 +18,7 @@ const POLL_INTERVAL_MS = 4000;
  * trong khi agent vẫn đang chạy, và người dùng thấy "chờ quá lâu" cho một lượt
  * hai phút sau đó kết thúc bình thường.
  */
-const MAX_POLLS = 165;
+const MAX_POLLS = 330;
 
 export interface AgentRunView {
   run: AgentRunRecord | null;

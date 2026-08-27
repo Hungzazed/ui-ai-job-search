@@ -1,5 +1,7 @@
 "use client";
 
+import type { PartialCv } from "@/lib/cv-partial";
+import { ModelStreamError, streamModel } from "@/lib/model-stream";
 import type { DocumentJob, DocumentJobPhase } from "./document-job.types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -16,14 +18,14 @@ import {
  * 4 giây: đủ thưa để không nện backend suốt hai phút, đủ dày để người dùng
  * không có cảm giác màn hình đã đứng hình.
  */
-const POLL_INTERVAL_MS = 4000;
+const POLL_INTERVAL_MS = 2000;
 
 /**
  * 40 lần × 4 giây ≈ 2 phút 40 giây. Worker mất 30-90 giây khi mọi thứ bình
  * thường; vượt xa mốc này thì gần như chắc chắn là hàng đợi kẹt chứ không phải
  * model đang viết chậm, và hỏi thêm nữa cũng không đổi được gì.
  */
-const MAX_POLLS = 40;
+const MAX_POLLS = 80;
 
 /**
  * Một LƯỢT theo dõi. Định danh của nó là chính object này, không phải nội dung:
@@ -40,6 +42,7 @@ interface Progress {
   document: DocumentRecord | null;
   error: string | null;
   timedOut: boolean;
+  partial: PartialCv | null;
 }
 
 const NOTHING: Progress = {
@@ -47,6 +50,7 @@ const NOTHING: Progress = {
   document: null,
   error: null,
   timedOut: false,
+  partial: null,
 };
 
 /**
@@ -187,6 +191,47 @@ export function useDocumentJob(loginNext: string): DocumentJob {
     [router, loginNext],
   );
 
+  const startStream = useCallback(
+    (create: () => Promise<QueuedDocument>) => {
+      const opened: Watch = { kind: "starting" };
+      setWatch(opened);
+      setProgress({ ...NOTHING, of: opened });
+
+      void (async () => {
+        try {
+          const receipt = await create();
+          if (!mounted.current) return;
+
+          const document = await streamModel<DocumentRecord, PartialCv>({
+            path: `/documents/${receipt.documentId}/generate-stream`,
+            onPartial: (partial) => {
+              if (mounted.current)
+                setProgress((now) => ({ ...now, of: opened, partial }));
+            },
+          });
+          if (!mounted.current) return;
+          setProgress({ ...NOTHING, of: opened, document });
+          invalidateAfter(queryClient, "createDocument");
+        } catch (err) {
+          if (!mounted.current) return;
+          if (apiErrorStatus(err) === 401) {
+            router.replace(`/login?next=${loginNext}`);
+            return;
+          }
+          setProgress({
+            ...NOTHING,
+            of: opened,
+            error:
+              err instanceof ModelStreamError
+                ? err.message
+                : apiErrorMessage(err, "Không tạo được tài liệu"),
+          });
+        }
+      })();
+    },
+    [router, loginNext, queryClient],
+  );
+
   const open = useCallback((documentId: string) => {
     setWatch({ kind: "watching", documentId });
   }, []);
@@ -212,7 +257,9 @@ export function useDocumentJob(loginNext: string): DocumentJob {
     phase,
     document: current.document,
     error: current.error,
+    partial: current.partial,
     start,
+    startStream,
     open,
     recheck,
   };

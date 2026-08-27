@@ -78,7 +78,7 @@ function RegisterForm() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-2 text-center">
-          <span className="inline-flex size-11 items-center justify-center rounded-xl bg-slate-900 text-white">
+          <span className="inline-flex size-11 items-center justify-center bg-slab text-slab-ink rounded-xl">
             <Sparkles className="size-5" />
           </span>
           <h1 className="text-xl font-bold tracking-tight text-slate-900">

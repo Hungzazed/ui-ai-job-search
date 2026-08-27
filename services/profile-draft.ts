@@ -97,13 +97,15 @@ export interface CvUploadReceipt {
 }
 
 export const profileDraftService = {
-  uploadCv: (file: File) => {
+  uploadCv: (file: File, stream = false) => {
     const form = new FormData();
     form.append("file", file);
     return api
-      .post<CvUploadReceipt>("/profile-drafts/cv", form, {
-        headers: { "Content-Type": undefined },
-      })
+      .post<CvUploadReceipt>(
+        `/profile-drafts/cv${stream ? "?stream=true" : ""}`,
+        form,
+        { headers: { "Content-Type": undefined } },
+      )
       .then((r) => r.data);
   },
 

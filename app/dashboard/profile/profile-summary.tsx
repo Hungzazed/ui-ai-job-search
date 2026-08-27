@@ -72,7 +72,7 @@ export function ProfileSummary({
           <span className="font-mono text-xl font-bold text-slate-900">
             {profile.completion}%
           </span>
-          <span className="text-[10px] text-slate-400">hoàn thiện</span>
+          <span className="text-3xs text-slate-400">hoàn thiện</span>
         </ProgressCircle>
         <Progress value={profile.completion} className="w-full" />
         <p className="text-center text-xs leading-relaxed text-slate-400">

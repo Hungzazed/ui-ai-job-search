@@ -63,7 +63,7 @@ export function DocumentHistory({
                     <span className="block truncate text-xs font-medium text-slate-800">
                       {record.title}
                     </span>
-                    <span className="block font-mono text-[11px] text-slate-400">
+                    <span className="block font-mono text-2xs text-slate-400">
                       {formatDate(record.createdAt)}
                       {record.modelId ? ` · ${record.modelId}` : ""}
                     </span>

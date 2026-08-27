@@ -1,6 +1,7 @@
 "use client";
 
-import { FileText, Info, RotateCcw, Upload } from "lucide-react";
+import { Check, FileText, Info, Loader2, RotateCcw, Upload } from "lucide-react";
+import type { PartialProposal } from "@/lib/profile-partial";
 import { failureMessage, isWorthRetrying } from "@/lib/failure-message";
 import type { ProfileDraftRecord } from "@/services";
 import { Alert } from "@/components/ui/alert";
@@ -88,7 +89,21 @@ export function UploadCard({
   );
 }
 
-export function RunningCard({ draft }: { draft: ProfileDraftRecord | null }) {
+const LIVE_ROWS = [
+  { label: "Chức danh", of: (p: PartialProposal) => p.headline },
+  { label: "Tóm tắt bản thân", of: (p: PartialProposal) => p.summary },
+  { label: "Kỹ năng chính", of: (p: PartialProposal) => p.primarySkills?.length },
+  { label: "Kinh nghiệm", of: (p: PartialProposal) => p.experiences?.length },
+  { label: "Học vấn", of: (p: PartialProposal) => p.educations?.length },
+] as const;
+
+export function RunningCard({
+  draft,
+  partial,
+}: {
+  draft: ProfileDraftRecord | null;
+  partial?: PartialProposal | null;
+}) {
   // Số liệu trích xuất có NGAY từ lúc nộp, trước khi model chạy. Hiện luôn: một CV
   // 6 trang chỉ ra 400 ký tự là dấu hiệu rất rõ, và biết sớm thì đỡ chờ vô ích.
   const meta = draft?.evidence?.[0]?.meta;
@@ -97,15 +112,42 @@ export function RunningCard({ draft }: { draft: ProfileDraftRecord | null }) {
     <SectionCard
       title="Đang đọc CV"
       icon={Info}
-      description="Một lượt mất khoảng 40–90 giây. Bạn có thể rời trang, kết quả vẫn được lưu."
+      description="Kết quả hiện dần ngay khi AI đọc xong từng phần. Rời trang cũng không mất: lượt đọc được xếp lại vào hàng đợi."
     >
-      <div className="flex items-center gap-3">
-        <Skeleton className="h-9 w-9 shrink-0 animate-pulse rounded-lg" />
-        <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-3 w-2/3 animate-pulse" />
-          <Skeleton className="h-3 w-1/3 animate-pulse" />
+      {partial ? (
+        <ul className="space-y-2">
+          {LIVE_ROWS.map(({ label, of }) => {
+            const value = of(partial);
+            const done =
+              typeof value === "number" ? value > 0 : Boolean(value);
+            return (
+              <li key={label} className="flex items-center gap-2 text-sm">
+                {done ? (
+                  <Check className="size-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <Loader2 className="size-4 shrink-0 animate-spin text-slate-300" />
+                )}
+                <span className={done ? "text-slate-800" : "text-slate-400"}>
+                  {label}
+                </span>
+                {typeof value === "number" && value > 0 && (
+                  <span className="ml-auto text-xs font-semibold text-slate-500">
+                    {value} mục
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9 shrink-0 animate-pulse rounded-lg" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-3 w-2/3 animate-pulse" />
+            <Skeleton className="h-3 w-1/3 animate-pulse" />
+          </div>
         </div>
-      </div>
+      )}
 
       {meta && (
         <p className="mt-4 text-xs text-slate-500">

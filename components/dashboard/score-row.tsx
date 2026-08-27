@@ -26,7 +26,7 @@ export function ScoreBar({ label, weight, value }: ScoreBarProps) {
       <div className="mb-1.5 flex items-center justify-between text-sm">
         <span className="flex items-center gap-1.5 text-slate-600">
           {label}
-          <span className="font-mono text-[10px] text-slate-400">{weight}</span>
+          <span className="font-mono text-3xs text-slate-400">{weight}</span>
         </span>
         <span className="font-mono font-semibold text-slate-900">
           {asPercent(value)}
@@ -44,7 +44,7 @@ export function ScoreLine({ label, weight, value }: ScoreBarProps) {
       <span className="flex items-center gap-1.5 text-slate-600">
         <CheckCircle2 className="size-3.5 text-emerald-600" />
         {label}
-        <span className="font-mono text-[10px] text-slate-400">{weight}</span>
+        <span className="font-mono text-3xs text-slate-400">{weight}</span>
       </span>
       <span className="font-mono font-bold text-slate-900">
         {asPercent(value)}

@@ -107,7 +107,7 @@ export function DocumentSource({
       )}
 
       {open && source !== null && (
-        <pre className="max-h-96 overflow-auto rounded-xl border border-slate-200 bg-slate-900 p-4 font-mono text-[11px] leading-relaxed text-slate-100">
+        <pre className="max-h-96 overflow-auto rounded-xl border-slab-2 bg-slab text-slab-muted border p-4 font-mono text-2xs leading-relaxed">
           {source}
         </pre>
       )}

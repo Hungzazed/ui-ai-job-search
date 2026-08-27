@@ -32,7 +32,11 @@ export type JobListItem = JobMatchWithJob["job"] & {
   match: JobMatchState | null;
   systemMatch: SystemMatch | null;
 };
-export type JobRecord = JobListItem & { description: string };
+export type JobMatchDetail = Omit<JobMatchWithJob, "job">;
+export type JobRecord = Omit<JobListItem, "match"> & {
+  description: string;
+  match: JobMatchDetail | null;
+};
 export type JobSort = "newest" | "salary" | "match";
 export interface JobListParams {
   limit?: number;

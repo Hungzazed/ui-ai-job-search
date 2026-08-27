@@ -50,15 +50,15 @@ export function FieldRow({
             người dùng bỏ qua cả những cảnh báo thật.
           */}
           {row.isEmpty ? (
-            <Badge variant="neutral" className="text-[11px]">
+            <Badge variant="neutral" className="text-2xs">
               không tìm thấy
             </Badge>
           ) : row.unchanged ? (
-            <Badge variant="neutral" className="text-[11px]">
+            <Badge variant="neutral" className="text-2xs">
               giống hồ sơ hiện tại
             </Badge>
           ) : row.overwrites ? (
-            <Badge variant="warning" className="text-[11px]">
+            <Badge variant="warning" className="text-2xs">
               ghi đè
             </Badge>
           ) : null}
@@ -114,7 +114,7 @@ function ValueBlock({
           : "border-slate-200 bg-slate-50/60",
       )}
     >
-      <p className="mb-1 text-[11px] font-semibold tracking-wide text-slate-500 uppercase">
+      <p className="mb-1 text-2xs font-semibold tracking-wide text-slate-500 uppercase">
         {caption}
       </p>
       <ul className="space-y-0.5">
@@ -125,7 +125,7 @@ function ValueBlock({
         ))}
       </ul>
       {hidden > 0 && (
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-2xs text-slate-400">
           … và {hidden} dòng nữa
         </p>
       )}

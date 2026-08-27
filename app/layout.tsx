@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { QueryProvider } from "@/lib/query-client";
+import { FONT_SCALE_BOOTSTRAP } from "@/lib/font-scale";
+import { THEME_BOOTSTRAP } from "@/lib/theme";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,7 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={inter.variable}>
+    <html lang="vi" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+        <script dangerouslySetInnerHTML={{ __html: FONT_SCALE_BOOTSTRAP }} />
+      </head>
       {/*
         QueryProvider bọc ở layout GỐC chứ không ở layout dashboard: trang đăng
         nhập và đăng ký cũng gọi API, và một ngày nào đó chúng cũng sẽ muốn

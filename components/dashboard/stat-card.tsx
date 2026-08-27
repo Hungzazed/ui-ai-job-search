@@ -54,7 +54,7 @@ export function StatCard({
         </div>
         {progress !== undefined && (
           <ProgressCircle value={progress} size={48} strokeWidth={5}>
-            <span className="text-[11px] font-mono font-bold text-slate-900">{progress}%</span>
+            <span className="text-2xs font-mono font-bold text-slate-900">{progress}%</span>
           </ProgressCircle>
         )}
       </div>

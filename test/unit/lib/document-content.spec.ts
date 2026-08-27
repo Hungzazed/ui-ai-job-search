@@ -32,6 +32,7 @@ describe("parseCvContent", () => {
       profileStatement: null,
       coreCompetencies: [],
       experiences: [],
+      projects: [],
       educations: [],
       skillGroups: [],
     });
@@ -99,6 +100,66 @@ describe("parseCvContent", () => {
     });
   });
 
+  describe("dự án", () => {
+    test("giữ đủ bảy trường", () => {
+      const cv = parseCvContent({
+        projects: [
+          {
+            name: "Cổng tra cứu hóa đơn",
+            role: "Trưởng nhóm",
+            organization: "ATOM Solution",
+            period: "2025 - nay",
+            description: "Nền tảng đối soát hóa đơn điện tử.",
+            bullets: ["Xử lý 3.000 hóa đơn mỗi tháng."],
+            tools: ["NestJS", "PostgreSQL"],
+          },
+        ],
+      });
+
+      expect(cv.projects).toEqual([
+        {
+          name: "Cổng tra cứu hóa đơn",
+          role: "Trưởng nhóm",
+          organization: "ATOM Solution",
+          period: "2025 - nay",
+          description: "Nền tảng đối soát hóa đơn điện tử.",
+          bullets: ["Xử lý 3.000 hóa đơn mỗi tháng."],
+          tools: ["NestJS", "PostgreSQL"],
+        },
+      ]);
+    });
+
+    test("giữ dự án cá nhân không có tổ chức", () => {
+      const cv = parseCvContent({ projects: [{ name: "Blog cá nhân" }] });
+
+      expect(cv.projects).toHaveLength(1);
+      expect(cv.projects[0].organization).toBeNull();
+    });
+
+    test("bỏ khối không có cả tên lẫn gạch đầu dòng", () => {
+      const cv = parseCvContent({
+        projects: [{ period: "2025" }, { name: "MCP Server" }],
+      });
+
+      expect(cv.projects).toHaveLength(1);
+      expect(cv.projects[0].name).toBe("MCP Server");
+    });
+
+    test("CV cũ không có trường projects thì thành mảng rỗng", () => {
+      const cv = parseCvContent({ profileStatement: "Xin chào" });
+
+      expect(cv.projects).toEqual([]);
+    });
+
+    test("tools sai kiểu thì thành mảng rỗng, không ném", () => {
+      const cv = parseCvContent({
+        projects: [{ name: "MCP Server", tools: "NestJS" }],
+      });
+
+      expect(cv.projects[0].tools).toEqual([]);
+    });
+  });
+
   describe("nhóm kỹ năng", () => {
     /// Nhóm rỗng thì chỉ còn cái nhãn treo lơ lửng, không đáng một khối riêng.
     test("bỏ nhóm không có mục nào dù có nhãn", () => {
@@ -127,6 +188,9 @@ describe("parseCvContent", () => {
       .toBe(false);
     expect(isCvContentEmpty(parseCvContent({ coreCompetencies: ["React"] })))
       .toBe(false);
+    expect(
+      isCvContentEmpty(parseCvContent({ projects: [{ name: "MCP Server" }] })),
+    ).toBe(false);
   });
 });
 

@@ -70,7 +70,7 @@ export function PurposeTable({ rows }: { rows: AiHealth["byPurpose"] }) {
                 <p className="font-medium text-slate-900">
                   {purposeLabel(row.purpose)}
                 </p>
-                <p className="font-mono text-[11px] text-slate-400">
+                <p className="font-mono text-2xs text-slate-400">
                   {row.purpose}
                 </p>
               </TableCell>
@@ -174,7 +174,7 @@ export function RecentFailuresTable({
                   <TableCell className="text-xs">
                     {purposeLabel(record.purpose)}
                   </TableCell>
-                  <TableCell className="font-mono text-[11px] text-slate-500">
+                  <TableCell className="font-mono text-2xs text-slate-500">
                     {record.provider} · {record.modelId}
                   </TableCell>
                   <TableCell>

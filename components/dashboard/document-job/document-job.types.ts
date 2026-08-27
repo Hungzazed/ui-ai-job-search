@@ -1,3 +1,4 @@
+import type { PartialCv } from "@/lib/cv-partial";
 import { type DocumentRecord, type QueuedDocument } from "@/services";
 
 
@@ -13,8 +14,17 @@ export interface DocumentJob {
   /** Bản ghi mới nhất đọc được; null khi chưa kịp đọc lần nào. */
   document: DocumentRecord | null;
   error: string | null;
+  /** Phần CV model đã viết được tới lúc này; chỉ có ở đường `startStream`. */
+  partial: PartialCv | null;
   /** Gọi đường GHI rồi bám theo biên nhận `{queued, documentId}` trả về. */
   start: (create: () => Promise<QueuedDocument>) => void;
+  /**
+   * Như `start`, nhưng đọc kết quả CHẢY DẦN thay vì hỏi lại theo nhịp.
+   *
+   * Hàm `create` phải gọi đường tạo với cờ `stream: true`, nếu không worker
+   * cũng sinh cùng tài liệu đó - hai lượt gọi model cho một lần bấm.
+   */
+  startStream: (create: () => Promise<QueuedDocument>) => void;
   /** Mở lại một tài liệu đã có; nếu nó còn đang chạy thì cũng bám theo. */
   open: (documentId: string) => void;
   /** Đọc lại từ đầu mà không sinh tài liệu mới. Dùng sau khi hết hạn chờ. */

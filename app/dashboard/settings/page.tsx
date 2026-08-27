@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SectionCard } from "@/components/ui/section-card";
+import { DisplayCard } from "./display-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
@@ -82,6 +83,8 @@ export default function SettingsPage() {
         </SectionCard>
 
         <div className="space-y-4">
+          <DisplayCard />
+
           <SectionCard icon={Shield} title="Dữ liệu của bạn đi những đâu" compact>
             {/*
               Nói đúng sự thật thay vì một câu trấn an.

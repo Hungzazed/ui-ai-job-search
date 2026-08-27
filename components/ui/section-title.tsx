@@ -14,7 +14,7 @@ export function SectionTitle({
   return (
     <h3
       className={cn(
-        "mb-2 flex items-center gap-1.5 font-mono text-[11px] font-bold tracking-wider text-slate-500 uppercase",
+        "mb-2 flex items-center gap-1.5 font-mono text-2xs font-bold tracking-wider text-slate-500 uppercase",
         className,
       )}
     >

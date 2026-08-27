@@ -91,7 +91,7 @@ export function OccupationPicker({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-slab/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
@@ -124,7 +124,7 @@ export function OccupationPicker({
 
         <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
           <div className="scrollbar-thin overflow-y-auto border-r border-slate-100 py-2">
-            <p className="px-5 pb-1 text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+            <p className="px-5 pb-1 text-2xs font-semibold tracking-wide text-slate-400 uppercase">
               Nhóm ngành
             </p>
             {visibleGroups.map((group) => (
@@ -172,7 +172,7 @@ export function OccupationPicker({
           </div>
 
           <div className="scrollbar-thin overflow-y-auto py-2">
-            <p className="px-5 pb-1 text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+            <p className="px-5 pb-1 text-2xs font-semibold tracking-wide text-slate-400 uppercase">
               Nghề
             </p>
             {current?.subs?.length ? (

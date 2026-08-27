@@ -24,6 +24,7 @@ const SECTION_KEYS: CvSectionKey[] = [
   "profile",
   "competencies",
   "experience",
+  "projects",
   "education",
   "skills",
 ];
@@ -48,6 +49,15 @@ const toDraft = (raw: unknown): CvContentInput => {
       location: experience.location ?? "",
       period: experience.period ?? "",
       bullets: experience.bullets,
+    })),
+    projects: cv.projects.map((project) => ({
+      name: project.name ?? "",
+      role: project.role ?? "",
+      organization: project.organization ?? "",
+      period: project.period ?? "",
+      description: project.description ?? "",
+      bullets: project.bullets,
+      tools: project.tools,
     })),
     educations: cv.educations.map((education) => ({
       degree: education.degree ?? "",

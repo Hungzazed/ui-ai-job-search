@@ -15,23 +15,23 @@ export function DashboardHero({
   const { matchingJobs } = data;
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900 p-6 text-white shadow-xs sm:p-7">
+    <div className="rounded-xl border-slab-2 bg-slab text-slab-ink border p-6 shadow-xs sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-6">
         <div className="max-w-2xl space-y-2">
           <div className="flex items-center gap-2.5">
-            <Badge className="bg-primary-500/20 text-primary-300 ring-primary-400/30 font-mono text-[11px]">
+            <Badge className="bg-primary-500/20 text-primary-300 ring-primary-400/30 font-mono text-2xs">
               <Zap className="text-primary-400 mr-1 size-3" />
               AI Career Agent Dashboard
             </Badge>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+          <h1 className="text-slab-ink text-xl font-bold tracking-tight sm:text-2xl">
             Xin chào, {firstName} 👋
           </h1>
-          <p className="text-xs leading-relaxed text-slate-300 sm:text-sm">
+          <p className="text-slab-muted text-xs leading-relaxed sm:text-sm">
             {matchingJobs.total > 0 ? (
               <>
                 Hệ thống đã chấm{" "}
-                <span className="font-mono font-semibold text-white">
+                <span className="text-slab-ink font-mono font-semibold">
                   {matchingJobs.total} việc làm
                 </span>{" "}
                 phù hợp với hồ sơ của bạn. Mức độ hoàn thiện hồ sơ đạt{" "}
@@ -53,7 +53,7 @@ export function DashboardHero({
           <Link href="/dashboard/jobs">
             <Button
               variant="outline"
-              className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white"
+              className="border-slab-3 bg-slab-2 text-slab-muted hover:bg-slab-3 hover:text-slab-ink"
             >
               <Briefcase className="size-4" />
               Xem {matchingJobs.total} việc làm

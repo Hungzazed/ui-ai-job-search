@@ -26,7 +26,7 @@ interface JobCardProps {
 export function MatchBadge({ score }: { score: number | null }) {
   if (score === null) {
     return (
-      <Badge variant="neutral" className="shrink-0 text-[11px]">
+      <Badge variant="neutral" className="shrink-0 text-2xs">
         Chưa chấm điểm
       </Badge>
     );
@@ -36,7 +36,7 @@ export function MatchBadge({ score }: { score: number | null }) {
   return (
     <Badge
       className={cn(
-        "shrink-0 font-mono text-[11px] font-bold",
+        "shrink-0 font-mono text-2xs font-bold",
         tone.bg,
         tone.text,
       )}
@@ -107,7 +107,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
               <div className="flex shrink-0 flex-col items-end gap-1">
                 {job.systemMatch && job.systemMatch.total > 0 && (
                   <span
-                    className="rounded-full bg-teal-50 px-2 py-0.5 font-mono text-[11px] font-semibold whitespace-nowrap text-teal-700"
+                    className="rounded-full bg-teal-50 px-2 py-0.5 font-mono text-2xs font-semibold whitespace-nowrap text-teal-700"
                     title={
                       job.systemMatch.kind === "REQUIREMENTS"
                         ? `Hồ sơ đáp ứng ${job.systemMatch.met}/${job.systemMatch.total} yêu cầu tin nêu ra (${job.systemMatch.percent}% có trọng số)`
@@ -123,7 +123,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
                   </span>
                 )}
                 {job.hasAiScore && (
-                  <span className="text-[10px] whitespace-nowrap text-slate-400">
+                  <span className="text-3xs whitespace-nowrap text-slate-400">
                     đã có đánh giá AI
                   </span>
                 )}
@@ -141,7 +141,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
 
             <div className="mt-3 mb-4 flex flex-wrap gap-1.5">
               {job.tags.map((tag) => (
-                <Badge key={tag} variant="outline" className="text-[11px] text-slate-600 border-slate-200">
+                <Badge key={tag} variant="outline" className="text-2xs text-slate-600 border-slate-200">
                   {tag}
                 </Badge>
               ))}

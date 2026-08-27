@@ -4,7 +4,13 @@ import { Plus } from "lucide-react";
 import type { CvContentInput, CvSectionKey } from "@/services";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/form";
-import { EntryBox, Line, LinesField, replaceAt } from "./cv-fields";
+import {
+  EntryBox,
+  Line,
+  LinesField,
+  Paragraph,
+  replaceAt,
+} from "./cv-fields";
 
 export function SectionFields({
   sectionKey,
@@ -110,6 +116,93 @@ export function SectionFields({
     );
   }
 
+  if (sectionKey === "projects") {
+    const list = content.projects;
+    const update = (projects: CvContentInput["projects"]) =>
+      onChange({ ...content, projects });
+
+    return (
+      <div className="space-y-2">
+        {list.map((project, index) => (
+          <EntryBox
+            key={index}
+            onRemove={() => update(list.filter((_, at) => at !== index))}
+          >
+            <Line
+              label="Tên dự án"
+              value={project.name}
+              onChange={(name) =>
+                update(replaceAt(list, index, { ...project, name }))
+              }
+            />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Line
+                label="Vai trò"
+                value={project.role}
+                onChange={(role) =>
+                  update(replaceAt(list, index, { ...project, role }))
+                }
+              />
+              <Line
+                label="Tổ chức"
+                value={project.organization}
+                onChange={(organization) =>
+                  update(replaceAt(list, index, { ...project, organization }))
+                }
+              />
+            </div>
+            <Line
+              label="Thời gian"
+              value={project.period}
+              onChange={(period) =>
+                update(replaceAt(list, index, { ...project, period }))
+              }
+            />
+            <Paragraph
+              label="Dự án là gì"
+              value={project.description}
+              onChange={(description) =>
+                update(replaceAt(list, index, { ...project, description }))
+              }
+            />
+            <LinesField
+              label="Đã làm gì"
+              rows={6}
+              value={project.bullets}
+              onChange={(bullets) =>
+                update(replaceAt(list, index, { ...project, bullets }))
+              }
+            />
+            <LinesField
+              label="Công cụ"
+              value={project.tools}
+              onChange={(tools) =>
+                update(replaceAt(list, index, { ...project, tools }))
+              }
+            />
+          </EntryBox>
+        ))}
+        <AddButton
+          label="Thêm dự án"
+          onClick={() =>
+            update([
+              ...list,
+              {
+                name: "",
+                role: "",
+                organization: "",
+                period: "",
+                description: "",
+                bullets: [],
+                tools: [],
+              },
+            ])
+          }
+        />
+      </div>
+    );
+  }
+
   if (sectionKey === "education") {
     const list = content.educations;
     const update = (educations: CvContentInput["educations"]) =>
@@ -166,6 +259,8 @@ export function SectionFields({
       </div>
     );
   }
+
+  if (sectionKey !== "skills") return null;
 
   const list = content.skillGroups;
   const update = (skillGroups: CvContentInput["skillGroups"]) =>

@@ -24,6 +24,7 @@ export function UploadCvView() {
     applied,
     rows,
     running,
+    partial,
     upload,
     retry,
     apply,
@@ -58,7 +59,7 @@ export function UploadCvView() {
       {loading ? (
         <Skeleton className="h-48 animate-pulse" />
       ) : running ? (
-        <RunningCard draft={draft} />
+        <RunningCard draft={draft} partial={partial} />
       ) : draft?.status === "FAILED" ? (
         <FailedCard
           draft={draft}

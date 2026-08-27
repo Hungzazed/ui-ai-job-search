@@ -1,5 +1,7 @@
 "use client";
 
+import { streamModel } from "@/lib/model-stream";
+import { UpskillProgress, type UpskillPartial } from "./upskill-progress";
 import { ReportBody } from "./report-body";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -34,8 +36,8 @@ const LATEST_KEY = ["upskill", "latest"];
  * hình dạng vòng hỏi này; chúng nên gộp thành một hook chung khi
  * `use-document-job` được viết lại (xem nợ đã ghi trong eslint.config.mjs).
  */
-const POLL_INTERVAL_MS = 4000;
-const MAX_POLLS = 40;
+const POLL_INTERVAL_MS = 2000;
+const MAX_POLLS = 80;
 
 export function UpskillView() {
   const router = useRouter();
@@ -44,6 +46,7 @@ export function UpskillView() {
   const [error, setError] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [step, setStep] = useState(0);
 
   const mounted = useRef(true);
   useEffect(() => {
@@ -89,6 +92,23 @@ export function UpskillView() {
     setGenerating(true);
     setRefusal(null);
     setError(null);
+    setStep(0);
+
+    try {
+      const done = await streamModel<UpskillReportRecord, UpskillPartial>({
+        path: "/upskill/generate-stream",
+        onPartial: (partial) => {
+          if (mounted.current && typeof partial.step === "number")
+            setStep(partial.step);
+        },
+      });
+      if (!mounted.current) return;
+      putReport(done);
+      setGenerating(false);
+      return;
+    } catch {
+      // Stream hỏng thì rơi về đường hàng đợi: nó CÓ chuỗi model dự phòng.
+    }
 
     let reportId: string;
     try {
@@ -208,10 +228,7 @@ export function UpskillView() {
           </div>
 
           {generating ? (
-            <Alert tone="info">
-              Đang tổng hợp báo cáo mới. Một lượt mất khoảng 30–90 giây; nội dung
-              bên dưới vẫn là bản cũ cho tới khi bản mới xong.
-            </Alert>
+            <UpskillProgress report={report} step={step} />
           ) : null}
 
           <ReportBody report={report} />

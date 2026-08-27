@@ -1,7 +1,14 @@
 import Link from "next/link";
-import { FileText, Mail, Mic, RotateCw, Sparkles } from "lucide-react";
-import type { JobMatchWithJob } from "@/types";
-import type { ProfileRecord, SystemMatch } from "@/services";
+import {
+  Check,
+  FileText,
+  Loader2,
+  Mail,
+  Mic,
+  RotateCw,
+  Sparkles,
+} from "lucide-react";
+import type { JobMatchDetail, ProfileRecord, SystemMatch } from "@/services";
 import { AIMatchProgress } from "@/components/dashboard/ai-match-progress";
 import { ScoreBar } from "@/components/dashboard/score-row";
 import { Button } from "@/components/ui/button";
@@ -9,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SectionCard } from "@/components/ui/section-card";
 import { cn } from "@/utils";
 import { SCORE_ROWS } from "./job-detail-constants";
+import type { PartialEvaluation } from "@/lib/match-stream";
 function ScoringBasis({ profile }: { profile: ProfileRecord | null }) {
   if (!profile) return null;
 
@@ -19,13 +27,25 @@ function ScoringBasis({ profile }: { profile: ProfileRecord | null }) {
   return (
     <p className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500">
       Chấm theo hồ sơ của bạn: <span className="text-slate-700">{parts.join(" · ")}</span>{" "}
-      <Link href="/dashboard/profile" className="font-medium underline">
+      <Link
+        href="/dashboard/profile"
+        className="font-medium whitespace-nowrap underline"
+      >
         Sửa hồ sơ
       </Link>
     </p>
   );
 }
-function SystemMatchCard({ system }: { system: SystemMatch | null }) {
+/** Mẫu số dưới mức này thì tỉ lệ nói dối nhiều hơn nói thật. */
+const MIN_SCORABLE = 3;
+
+function SystemMatchCard({
+  system,
+  profile,
+}: {
+  system: SystemMatch | null;
+  profile: ProfileRecord | null;
+}) {
   if (!system || system.total === 0) return null;
   const count = (kind: "SKILL" | "NICE") => {
     const rows = system.checks.filter((check) => check.kind === kind);
@@ -33,6 +53,9 @@ function SystemMatchCard({ system }: { system: SystemMatch | null }) {
   };
   const must = count("SKILL");
   const nice = count("NICE");
+  const location = system.checks.find((check) => check.kind === "LOCATION");
+  const farAway = location?.met === false;
+  const scorable = system.total >= MIN_SCORABLE;
   if (system.kind !== "REQUIREMENTS") {
     return (
       <Card>
@@ -49,22 +72,39 @@ function SystemMatchCard({ system }: { system: SystemMatch | null }) {
       title="Hệ thống đối chiếu"
       description="So yêu cầu của tin với hồ sơ, không gọi AI"
     >
-      <p className="text-sm font-semibold text-slate-800">
-        Khớp {system.score}% yêu cầu của tin
-      </p>
+      {farAway && (
+        <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <span className="font-semibold">
+            {location?.label?.replace(/^Địa điểm:\s*/, "Công ty ở ")}
+          </span>
+          {profile?.location ? ` — hồ sơ bạn ghi ${profile.location}` : ""}
+        </p>
+      )}
 
-      <p className="mt-1 mb-3 text-xs text-slate-500">
-        Đủ{" "}
-        <span className="font-semibold text-slate-700">
-          {must.met}/{must.total} bắt buộc
-        </span>
-        {nice.total > 0 && (
-          <>
-            {" · "}
-            {nice.met}/{nice.total} ưu tiên
-          </>
-        )}
-      </p>
+      {scorable ? (
+        <>
+          <p className="text-sm font-semibold text-slate-800">
+            Khớp {system.score}% yêu cầu chuyên môn
+          </p>
+
+          <p className="mt-1 mb-3 text-xs text-slate-500">
+            Đủ{" "}
+            <span className="font-semibold text-slate-700">
+              {must.met}/{must.total} bắt buộc
+            </span>
+            {nice.total > 0 && (
+              <>
+                {" · "}
+                {nice.met}/{nice.total} ưu tiên
+              </>
+            )}
+          </p>
+        </>
+      ) : (
+        <p className="mt-1 mb-3 text-xs text-slate-500">
+          Tin này chỉ nêu {system.total} yêu cầu, chưa đủ để tính tỉ lệ.
+        </p>
+      )}
 
       {system.eligibility === "FAIL" && (
         <p className="mb-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-900">
@@ -72,11 +112,11 @@ function SystemMatchCard({ system }: { system: SystemMatch | null }) {
         </p>
       )}
 
-      <ul className="space-y-1.5">
+      <ul className="columns-[15rem] gap-x-6">
         {system.checks.map((check) => (
           <li
             key={`${check.kind}-${check.label}`}
-            className="flex items-start gap-2 text-sm"
+            className="mb-1.5 flex break-inside-avoid items-start gap-2 text-sm"
             title={check.note}
           >
             <span
@@ -95,15 +135,20 @@ function SystemMatchCard({ system }: { system: SystemMatch | null }) {
             >
               {check.label}
               {check.kind === "NICE" && (
-                <span className="ml-1 text-[11px] text-slate-400">ưu tiên</span>
+                <span className="ml-1 text-2xs text-slate-400">ưu tiên</span>
               )}
               {check.met === null && (
-                <span className="ml-1 text-[11px] text-amber-600">
+                <span className="ml-1 text-2xs text-amber-600">
                   chưa đủ dữ liệu
                 </span>
               )}
+              {check.kind === "LOCATION" && check.note && (
+                <span className="ml-1 text-2xs text-slate-500">
+                  {check.note}
+                </span>
+              )}
               {check.via && (
-                <span className="ml-1 text-[11px] text-teal-600">
+                <span className="ml-1 text-2xs text-teal-600">
                   qua từ tương đương: {check.via}
                 </span>
               )}
@@ -114,91 +159,149 @@ function SystemMatchCard({ system }: { system: SystemMatch | null }) {
     </SectionCard>
   );
 }
+const LIVE_ROWS = [
+  { label: "Điều kiện dự tuyển", of: (p: PartialEvaluation) => p.eligibility?.verdict },
+  { label: "Kỹ năng chuyên môn", of: (p: PartialEvaluation) => p.technical?.score },
+  { label: "Kinh nghiệm làm việc", of: (p: PartialEvaluation) => p.experience?.score },
+  { label: "Nhận xét tổng hợp", of: (p: PartialEvaluation) => p.recommendation },
+] as const;
+
+function LiveScoringCard({ partial }: { partial: PartialEvaluation | null }) {
+  return (
+    <SectionCard
+      compact
+      title="Đang chấm điểm"
+      description="Kết quả hiện dần ngay khi AI viết ra"
+    >
+      <ul className="space-y-2">
+        {LIVE_ROWS.map(({ label, of }) => {
+          const value = partial ? of(partial) : undefined;
+          const done = value !== undefined && value !== null && value !== "";
+          return (
+            <li key={label} className="flex items-center gap-2 text-sm">
+              {done ? (
+                <Check className="size-4 shrink-0 text-emerald-600" />
+              ) : (
+                <Loader2 className="size-4 shrink-0 animate-spin text-slate-300" />
+              )}
+              <span className={done ? "text-slate-800" : "text-slate-400"}>
+                {label}
+              </span>
+              {typeof value === "number" && (
+                <span className="ml-auto font-semibold text-slate-800">
+                  {value}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </SectionCard>
+  );
+}
+
 export function MatchPanel({
   jobId,
   match,
+  partial,
   profile,
   system,
   onScore,
   scoring,
 }: {
   jobId: string;
-  match: JobMatchWithJob | null;
+  match: JobMatchDetail | null;
+  partial: PartialEvaluation | null;
   profile: ProfileRecord | null;
   system: SystemMatch | null;
   onScore: (force: boolean) => void;
   scoring: boolean;
 }) {
-  return (
-    <div className="space-y-6">
-      <SystemMatchCard system={system} />
-      {match ? (
-        <>
-          {match.overallScore !== null && (
-            <Card className="p-6">
-              <AIMatchProgress value={match.overallScore} />
-              {match.stale && (
-                <div className="mt-4 rounded-md bg-amber-50 px-3 py-2.5">
-                  <p className="text-xs leading-relaxed text-amber-900">
-                    Điểm này chấm <strong>trước khi bạn sửa hồ sơ</strong> nên có
-                    thể không còn đúng.
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-2"
-                    loading={scoring}
-                    onClick={() => onScore(true)}
-                  >
-                    {!scoring && <RotateCw className="size-3.5" />}
-                    Chấm lại theo hồ sơ hiện tại
-                  </Button>
-                </div>
-              )}
-              <ScoringBasis profile={profile} />
-            </Card>
-          )}
+  const scoreCard =
+    match && match.overallScore !== null ? (
+      <Card className="p-6">
+        <AIMatchProgress value={match.overallScore} />
+        {match.stale && (
+          <div className="mt-4 rounded-md bg-amber-50 px-3 py-2.5">
+            <p className="text-xs leading-relaxed text-amber-900">
+              Điểm này chấm <strong>trước khi bạn sửa hồ sơ</strong> nên có thể
+              không còn đúng.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-2"
+              loading={scoring}
+              onClick={() => onScore(true)}
+            >
+              {!scoring && <RotateCw className="size-3.5" />}
+              Chấm lại theo hồ sơ hiện tại
+            </Button>
+          </div>
+        )}
+        <ScoringBasis profile={profile} />
+      </Card>
+    ) : null;
 
-          <SectionCard
-            compact
-            title="Chi tiết đánh giá AI"
-            description="Mức độ khớp từng chiều, kèm trọng số trong điểm tổng"
+  const detailCard = match ? (
+    <SectionCard
+      compact
+      title="Chi tiết đánh giá AI"
+      description="Mức độ khớp từng chiều, kèm trọng số trong điểm tổng"
+    >
+      {SCORE_ROWS.map(({ key, label, weight }) => (
+        <ScoreBar key={key} label={label} weight={weight} value={match[key]} />
+      ))}
+    </SectionCard>
+  ) : (
+    <Card>
+      <CardContent className="flex items-start gap-2.5 text-sm text-slate-600">
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-slate-400" />
+        <div>
+          <p className="font-semibold text-slate-800">
+            Chưa chấm điểm phù hợp cho công việc này
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-slate-500">
+            Mỗi đêm hệ thống chỉ chấm sẵn vài tin khớp nhất với hồ sơ của bạn.
+            Tin này chưa nằm trong số đó — chấm ngay nếu bạn quan tâm.
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3"
+            loading={scoring}
+            onClick={() => onScore(false)}
           >
-            {SCORE_ROWS.map(({ key, label, weight }) => (
-              <ScoreBar
-                key={key}
-                label={label}
-                weight={weight}
-                value={match[key]}
-              />
-            ))}
-          </SectionCard>
+            {!scoring && <Sparkles className="size-3.5" />}
+            Chấm điểm tin này
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const paired = Boolean(system && system.total > 0) && scoreCard !== null;
+
+  return (
+    <div className="@container space-y-6">
+      {paired ? (
+        <>
+          <div className="grid items-start gap-6 @3xl:grid-cols-2">
+            <SystemMatchCard system={system} profile={profile} />
+            <div className="space-y-6">
+              {scoring && <LiveScoringCard partial={partial} />}
+              {scoreCard}
+            </div>
+          </div>
+          {detailCard}
         </>
       ) : (
-        <Card>
-          <CardContent className="flex items-start gap-2.5 text-sm text-slate-600">
-            <Sparkles className="mt-0.5 size-4 shrink-0 text-slate-400" />
-            <div>
-              <p className="font-semibold text-slate-800">
-                Chưa chấm điểm phù hợp cho công việc này
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Mỗi đêm hệ thống chỉ chấm sẵn vài tin khớp nhất với hồ sơ của
-                bạn. Tin này chưa nằm trong số đó — chấm ngay nếu bạn quan tâm.
-              </p>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-3"
-                loading={scoring}
-                onClick={() => onScore(false)}
-              >
-                {!scoring && <Sparkles className="size-3.5" />}
-                Chấm điểm tin này
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <>
+          {scoring && <LiveScoringCard partial={partial} />}
+          {scoreCard}
+          {detailCard}
+          <SystemMatchCard system={system} profile={profile} />
+        </>
       )}
       <div className="flex flex-wrap gap-2">
         <Link href={`/dashboard/cv-optimizer?jobId=${jobId}`} className="flex-1">
@@ -213,7 +316,7 @@ export function MatchPanel({
             Thư xin việc
           </Button>
         </Link>
-        
+
         <Link href={`/dashboard/interview/${jobId}/mock`} className="flex-1">
           <Button variant="outline" className="w-full">
             <Mic className="size-4" />

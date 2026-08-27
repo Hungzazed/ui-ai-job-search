@@ -1,5 +1,6 @@
 "use client";
 
+import { LetterLiveProgress, type PartialLetter } from "./letter-live-progress";
 import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import type { JobMatchWithJob } from "@/types";
@@ -68,7 +69,9 @@ export function CoverLetterPanel({
 
   const handleGenerate = () => {
     if (!jobId) return;
-    job.start(() => documentsService.createCoverLetter(jobId));
+    job.startStream(() =>
+      documentsService.createCoverLetter(jobId, true),
+    );
   };
 
   if (page.error)
@@ -123,6 +126,10 @@ export function CoverLetterPanel({
       )}
 
       <DocumentJobStatus job={job} onRegenerate={handleGenerate} />
+
+      {isGenerating && (
+        <LetterLiveProgress partial={job.partial as PartialLetter | null} />
+      )}
 
       {job.phase === "done" && record && (
         <CoverLetterResult record={record} loginNext={loginNext} />

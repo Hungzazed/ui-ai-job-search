@@ -27,6 +27,7 @@ export type {
 export type {
   CreateJobInput,
   JobRecord,
+  JobMatchDetail,
   JobListItem,
   JobListParams,
   JobSort,

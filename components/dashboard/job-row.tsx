@@ -88,7 +88,7 @@ export function JobRow({
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-slate-500">
             <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5">
               <MapPin className="size-3 text-slate-400" />
               <LocationText location={job.location} />
@@ -107,7 +107,7 @@ export function JobRow({
               )}
           </div>
 
-          <JobTime time={job.postedAt} className="text-[11px] text-slate-400" />
+          <JobTime time={job.postedAt} className="text-2xs text-slate-400" />
         </div>
       </div>
     </li>

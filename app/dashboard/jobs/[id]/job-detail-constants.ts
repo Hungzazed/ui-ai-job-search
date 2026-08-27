@@ -1,7 +1,7 @@
 import type { JobMatchWithJob } from "@/types";
 
 /**
- * Chỉ HAI trong bốn chiều có trọng số được `GET /matches/:jobId` trả về.
+ * Chỉ HAI trong bốn chiều có trọng số được `GET /jobs/:id` trả về.
  *
  * "Hành vi & văn hoá" (15%) và "Định hướng nghề nghiệp" (30%) có trong khung
  * đánh giá nhưng endpoint này không trả, nên không được vẽ ra: một thanh tiến

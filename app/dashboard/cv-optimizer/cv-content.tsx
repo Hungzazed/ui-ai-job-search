@@ -1,4 +1,10 @@
-import { GraduationCap, Layers, Sparkles, Target } from "lucide-react";
+import {
+  FolderKanban,
+  GraduationCap,
+  Layers,
+  Sparkles,
+  Target,
+} from "lucide-react";
 import type { CvContent } from "@/lib/document-content";
 import { Badge } from "@/components/ui/badge";
 import { SectionTitle } from "@/components/ui/section-title";
@@ -61,7 +67,7 @@ export function CvContentView({ cv }: { cv: CvContent }) {
                 <p className="text-sm font-semibold text-slate-900">
                   {experience.position ?? experience.company}
                 </p>
-                <p className="font-mono text-[11px] text-slate-500">
+                <p className="font-mono text-2xs text-slate-500">
                   {joinParts([
                     experience.position ? experience.company : null,
                     experience.location,
@@ -87,6 +93,57 @@ export function CvContentView({ cv }: { cv: CvContent }) {
         </section>
       )}
 
+      {cv.projects.length > 0 && (
+        <section>
+          <SectionTitle
+            icon={<FolderKanban className="size-3.5" />}
+            label="Dự án"
+          />
+          <div className="space-y-4">
+            {cv.projects.map((project, index) => (
+              <div
+                key={`${project.name ?? ""}-${index}`}
+                className="border-l-2 border-slate-200 pl-3.5"
+              >
+                <p className="text-sm font-semibold text-slate-900">
+                  {project.name}
+                </p>
+                <p className="font-mono text-2xs text-slate-500">
+                  {joinParts([
+                    project.role,
+                    project.organization,
+                    project.period,
+                  ])}
+                </p>
+                {project.description && (
+                  <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                    {project.description}
+                  </p>
+                )}
+                {project.bullets.length > 0 && (
+                  <ul className="mt-2 space-y-1.5">
+                    {project.bullets.map((bullet) => (
+                      <li
+                        key={bullet}
+                        className="flex gap-2 text-xs leading-relaxed text-slate-600"
+                      >
+                        <span className="mt-1.5 size-1 shrink-0 rounded-full bg-slate-400" />
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {project.tools.length > 0 && (
+                  <p className="mt-1.5 text-xs text-slate-500">
+                    Công cụ: {project.tools.join(", ")}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {cv.educations.length > 0 && (
         <section>
           <SectionTitle
@@ -99,7 +156,7 @@ export function CvContentView({ cv }: { cv: CvContent }) {
                 <p className="text-sm font-medium text-slate-900">
                   {education.degree ?? education.institution}
                 </p>
-                <p className="font-mono text-[11px] text-slate-500">
+                <p className="font-mono text-2xs text-slate-500">
                   {joinParts([
                     education.degree ? education.institution : null,
                     education.period,
@@ -129,12 +186,12 @@ export function CvContentView({ cv }: { cv: CvContent }) {
                 className="flex flex-wrap items-center gap-2"
               >
                 {group.label && (
-                  <span className="font-mono text-[11px] font-semibold text-slate-500">
+                  <span className="font-mono text-2xs font-semibold text-slate-500">
                     {group.label}:
                   </span>
                 )}
                 {group.items.map((item) => (
-                  <Badge key={item} variant="outline" className="text-[11px]">
+                  <Badge key={item} variant="outline" className="text-2xs">
                     {item}
                   </Badge>
                 ))}

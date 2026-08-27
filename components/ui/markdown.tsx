@@ -103,7 +103,7 @@ export function Markdown({
             return (
               <pre
                 key={index}
-                className="overflow-x-auto rounded-lg bg-slate-900 p-3 font-mono text-[11px] text-slate-100"
+                className="overflow-x-auto rounded-lg bg-slab text-slab-muted p-3 font-mono text-2xs"
               >
                 {block.text}
               </pre>

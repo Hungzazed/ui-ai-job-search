@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { PartialProposal } from "@/lib/profile-partial";
+import { ModelStreamError, streamModel } from "@/lib/model-stream";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import {
   defaultSelection,
@@ -22,8 +24,8 @@ const LOGIN_NEXT = "/login?next=/dashboard/profile/upload";
 /// Đường đọc CV đặt timeout 180 giây (`SYNTHESIS_TIMEOUT_MS`), nên 3 giây × 70 lần
 /// = 210 giây, rộng hơn một chút để còn kịp nhận trạng thái FAILED do chính backend
 /// ghi thay vì tự bỏ cuộc trước rồi hiện một câu chung chung.
-const POLL_MS = 3_000;
-const MAX_POLLS = 70;
+const POLL_MS = 2_000;
+const MAX_POLLS = 105;
 
 /// Toàn bộ trạng thái và tác vụ của màn đọc CV. Tách khỏi phần render để mỗi
 /// bên đọc được riêng: một bên là máy trạng thái, bên kia chỉ là bố cục.
@@ -37,6 +39,7 @@ export function useCvUpload() {
   const [error, setError] = useState<string | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
+  const [partial, setPartial] = useState<PartialProposal | null>(null);
   const [uploading, setUploading] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [retrying, setRetrying] = useState(false);
@@ -141,12 +144,30 @@ export function useCvUpload() {
     setApplied(false);
 
     try {
-      const receipt = await profileDraftService.uploadCv(file);
+      const receipt = await profileDraftService.uploadCv(file, true);
       if (!mounted.current) return;
       // Đọc lại ngay để có bản ghi đầy đủ (biên nhận chỉ có draftId và số liệu).
       setDraft(await profileDraftService.get(receipt.draftId));
       setFile(null);
-      void waitForDraft(receipt.draftId);
+
+      try {
+        const done = await streamModel<ProfileDraftRecord, PartialProposal>({
+          path: `/profile-drafts/${receipt.draftId}/synthesize-stream`,
+          onPartial: (value) => {
+            if (mounted.current) setPartial(value);
+          },
+        });
+        if (mounted.current) setDraft(done);
+      } catch (streamError) {
+        if (!mounted.current) return;
+        setError(
+          streamError instanceof ModelStreamError
+            ? streamError.message
+            : "Không đọc được CV",
+        );
+      } finally {
+        if (mounted.current) setPartial(null);
+      }
     } catch (err) {
       if (!mounted.current) return;
       if (apiErrorStatus(err) === 401) {
@@ -235,6 +256,7 @@ export function useCvUpload() {
     applying,
     applied,
     rows,
+    partial,
     running,
     upload,
     retry,

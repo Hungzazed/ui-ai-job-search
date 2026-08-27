@@ -32,7 +32,7 @@ function StarPart({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
   return (
     <div>
-      <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+      <p className="text-2xs font-semibold tracking-wide text-slate-400 uppercase">
         {label}
       </p>
       <p className="mt-0.5 text-sm leading-relaxed text-slate-700">{value}</p>

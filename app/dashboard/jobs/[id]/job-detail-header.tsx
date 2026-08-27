@@ -7,8 +7,8 @@ import {
   Sparkles,
   Wallet,
 } from "lucide-react";
-import type { Job, JobMatchWithJob } from "@/types";
-import type { JobRecord } from "@/services";
+import type { Job } from "@/types";
+import type { JobMatchDetail, JobRecord } from "@/services";
 import { cn, formatJobSalary } from "@/utils";
 import { CompanyLogo } from "@/components/dashboard/company-logo";
 import { JobTime } from "@/components/dashboard/job-time";
@@ -19,7 +19,7 @@ import { VERDICT_META } from "./job-detail-constants";
 interface JobDetailHeaderProps {
   card: Job;
   job: JobRecord;
-  match: JobMatchWithJob | null;
+  match: JobMatchDetail | null;
   saved: boolean;
   onToggleSave: () => void;
   onApply: () => void;

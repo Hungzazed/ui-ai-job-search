@@ -1,5 +1,7 @@
 "use client";
 
+import { BriefLiveProgress, type PartialBrief } from "./brief-live-progress";
+import { streamModel } from "@/lib/model-stream";
 import { BriefBody, Signals } from "./company-brief-body";
 import { useState } from "react";
 import { Building2, RefreshCw } from "lucide-react";
@@ -13,10 +15,9 @@ import { Alert } from "@/components/ui/alert";
 
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 /** Một lượt tìm hiểu đi qua ba câu tìm kiếm, năm trang và một lời gọi model. */
-const POLL_MS = 5_000;
+const POLL_MS = 2_500;
 
 interface CompanyBriefPanelProps {
   jobId: string;
@@ -40,6 +41,7 @@ export function CompanyBriefPanel({ jobId }: CompanyBriefPanelProps) {
     undefined,
   );
   const [requestError, setRequestError] = useState<string | null>(null);
+  const [partial, setPartial] = useState<PartialBrief | null>(null);
 
   const { data, error, reload } = useApiQuery(
     keys.companyBrief(jobId),
@@ -58,12 +60,29 @@ export function CompanyBriefPanel({ jobId }: CompanyBriefPanelProps) {
   async function research(force: boolean) {
     setRequestError(null);
     setPendingSince(brief?.updatedAt ?? null);
+    setPartial(null);
     try {
-      await companiesService.refreshForJob(jobId, force);
+      await streamModel<unknown, PartialBrief>({
+        path: `/companies/brief/by-job/${jobId}/stream`,
+        onPartial: setPartial,
+        force,
+      });
+      setPendingSince(undefined);
       reload();
     } catch (err: unknown) {
-      setPendingSince(undefined);
-      setRequestError(apiErrorMessage(err, "Không xếp được lượt tìm hiểu"));
+      /*
+       * Stream hỏng thì quay về đường hàng đợi: nó CÓ chuỗi model dự phòng,
+       * còn stream thì token đầu tiên rời đi là hết đường lùi.
+       */
+      try {
+        await companiesService.refreshForJob(jobId, force);
+        reload();
+      } catch {
+        setPendingSince(undefined);
+        setRequestError(apiErrorMessage(err, "Không xếp được lượt tìm hiểu"));
+      }
+    } finally {
+      setPartial(null);
     }
   }
 
@@ -77,7 +96,7 @@ export function CompanyBriefPanel({ jobId }: CompanyBriefPanelProps) {
     >
       {requestError && <Alert tone="danger">{requestError}</Alert>}
 
-      {!brief && waiting && <Skeleton className="h-24 w-full" />}
+      {!brief && waiting && <BriefLiveProgress partial={partial} />}
 
       {!brief && !waiting && (
         <div className="space-y-3">

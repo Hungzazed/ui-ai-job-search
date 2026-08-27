@@ -64,7 +64,7 @@ export function AgentHistory({
                     <span className="block truncate text-xs font-medium text-slate-800">
                       /{run.workflow} · {run._count.steps} bước
                     </span>
-                    <span className="block font-mono text-[11px] text-slate-400">
+                    <span className="block font-mono text-2xs text-slate-400">
                       {formatDate(run.createdAt)}
                       {run.modelId ? ` · ${run.modelId}` : ""}
                     </span>

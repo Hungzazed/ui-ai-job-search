@@ -78,7 +78,7 @@ export function Sidebar() {
         </div>
         <div className="leading-tight">
           <p className="text-sm font-bold tracking-tight text-slate-900">AI Career Agent</p>
-          <p className="text-[11px] font-mono font-medium text-slate-400">Multi-Agent v1.0</p>
+          <p className="text-2xs font-mono font-medium text-slate-400">Multi-Agent v1.0</p>
         </div>
       </div>
 
@@ -136,7 +136,7 @@ export function Sidebar() {
           <p className="truncate text-xs font-semibold text-slate-900">
             {loading ? "Đang tải…" : (user?.name ?? "Chưa đăng nhập")}
           </p>
-          <p className="truncate font-mono text-[11px] text-slate-400">
+          <p className="truncate font-mono text-2xs text-slate-400">
             {user?.email ?? ""}
           </p>
         </div>

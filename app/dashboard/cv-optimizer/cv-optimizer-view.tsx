@@ -1,5 +1,6 @@
 "use client";
 
+import { CvLiveProgress } from "./cv-live-progress";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
@@ -87,8 +88,8 @@ export function CvOptimizerView() {
   }, [documentPage.data, job.document]);
 
   const handleGenerate = () => {
-    job.start(() =>
-      documentsService.createCv(jobId === NO_JOB ? undefined : jobId),
+    job.startStream(() =>
+      documentsService.createCv(jobId === NO_JOB ? undefined : jobId, true),
     );
   };
 
@@ -128,6 +129,8 @@ export function CvOptimizerView() {
       />
 
       <DocumentJobStatus job={job} onRegenerate={handleGenerate} />
+
+      {isGenerating && <CvLiveProgress partial={job.partial} />}
 
       {job.phase === "done" && record && (
         <CvResult record={record} onTemplateSaved={job.recheck} />

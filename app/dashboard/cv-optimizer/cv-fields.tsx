@@ -8,6 +8,7 @@ export const SECTION_LABELS: Record<CvSectionKey, string> = {
   profile: "Giới thiệu",
   competencies: "Năng lực chính",
   experience: "Kinh nghiệm",
+  projects: "Dự án",
   education: "Học vấn",
   skills: "Kỹ năng",
 };
@@ -73,6 +74,31 @@ export function Line({
         {label}
       </span>
       <Input value={value} onChange={(event) => onChange(event.target.value)} />
+    </label>
+  );
+}
+
+export function Paragraph({
+  label,
+  value,
+  rows = 2,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  rows?: number;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-xs font-medium text-slate-600">
+        {label}
+      </span>
+      <Textarea
+        rows={rows}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
     </label>
   );
 }

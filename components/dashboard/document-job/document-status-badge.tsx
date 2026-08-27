@@ -20,7 +20,7 @@ export function DocumentStatusBadge({ status }: { status: WorkStatus }) {
     <Badge
       variant={STATUS_VARIANTS[status]}
       dot
-      className="font-mono text-[11px]"
+      className="font-mono text-2xs"
     >
       {STATUS_LABELS[status]}
     </Badge>

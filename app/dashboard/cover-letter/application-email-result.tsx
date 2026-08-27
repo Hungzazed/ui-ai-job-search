@@ -81,7 +81,7 @@ export function ApplicationEmailResult({ record }: { record: DocumentRecord }) {
       <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">
+            <p className="text-2xs font-semibold tracking-wide text-slate-400 uppercase">
               Tiêu đề mail
             </p>
             <p className="mt-1 text-sm font-semibold text-slate-900">

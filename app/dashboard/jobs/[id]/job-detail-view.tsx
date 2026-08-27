@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { FileText } from "lucide-react";
-import type { JobMatchWithJob } from "@/types";
-import type { JobRecord, ProfileRecord } from "@/services";
+import type { JobMatchDetail, JobRecord, ProfileRecord } from "@/services";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { invalidateAfter, keys } from "@/lib/query-keys";
@@ -24,7 +23,12 @@ import { CompanyBriefPanel } from "./company-brief-panel";
 import { JobDetailHeader } from "./job-detail-header";
 import { InsightList } from "./match-insights";
 import { MatchPanel } from "./match-panel";
-const SCORE_POLL_MS = 5_000;
+import {
+  MatchStreamError,
+  streamMatchEvaluation,
+  type PartialEvaluation,
+} from "@/lib/match-stream";
+const SCORE_POLL_MS = 2_500;
 const SCORE_TIMEOUT_MS = 180_000;
 
 interface JobDetailViewProps {
@@ -33,14 +37,15 @@ interface JobDetailViewProps {
 }
 interface JobDetailData {
   job: JobRecord;
-  match: JobMatchWithJob | null;
+  match: JobMatchDetail | null;
   profile: ProfileRecord | null;
 }
 
 export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [scoring, setScoring] = useState(false); 
+  const [scoring, setScoring] = useState(false);
+  const [partial, setPartial] = useState<PartialEvaluation | null>(null);
   const [savePending, setSavePending] = useState<boolean | null>(null);
   const [toast, setToast] = useState(false);
   const [appliedId, setAppliedId] = useState<string | null>(null);
@@ -49,19 +54,15 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
   const { data, error } = useApiQuery(
     key,
     async () => {
-      const [record, evaluation, current, appList] = await Promise.all([
+      const [record, current, appList] = await Promise.all([
         jobsService.get(jobId),
-        matchesService.get(jobId).catch((err: unknown) => {
-          if (apiErrorStatus(err) === 404) return null;
-          throw err;
-        }),
         profileService.get().catch(() => null),
         applicationsService.list(undefined, { limit: 100, offset: 0 }).catch(() => null),
       ]);
       const existingApp = appList?.items.find((a: { jobId: string }) => a.jobId === jobId);
       return {
         job: record,
-        match: evaluation,
+        match: record.match,
         profile: current,
         existingApplication: existingApp ?? null,
       };
@@ -84,28 +85,50 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
       })
       .catch(() => setSavePending(!next));
   };
+  const applyMatch = (next: JobMatchDetail) =>
+    queryClient.setQueryData(key, (current: JobDetailData | undefined) =>
+      current ? { ...current, match: next } : current,
+    );
+
+  const scoreByQueue = async (force: boolean) => {
+    await matchesService.evaluate(jobId, force);
+    const started = Date.now();
+    while (Date.now() - started < SCORE_TIMEOUT_MS) {
+      await new Promise((done) => setTimeout(done, SCORE_POLL_MS));
+      const next = await matchesService.get(jobId).catch(() => null);
+      if (next && next.status !== "PENDING" && next.status !== "RUNNING") {
+        applyMatch(next as JobMatchDetail);
+        return;
+      }
+    }
+  };
+
   const handleScore = (force: boolean) => {
     setScoring(true);
+    setPartial(null);
     void (async () => {
       try {
-        await matchesService.evaluate(jobId, force);
-        const started = Date.now();
-        while (Date.now() - started < SCORE_TIMEOUT_MS) {
-          await new Promise((done) => setTimeout(done, SCORE_POLL_MS));
-          const next = await matchesService.get(jobId).catch(() => null);
-          if (next && next.status !== "PENDING" && next.status !== "RUNNING") {
-            queryClient.setQueryData(
-              key,
-              (current: JobDetailData | undefined) =>
-                current ? { ...current, match: next } : current,
-            );
-            break;
-          }
-        }
+        const match = await streamMatchEvaluation({
+          jobId,
+          force,
+          onPartial: setPartial,
+        });
+        applyMatch(match as unknown as JobMatchDetail);
       } catch (err) {
-        if (apiErrorStatus(err) === 401) router.replace(`/login?next=/dashboard/jobs/${jobId}`);
+        if (apiErrorStatus(err) === 401) {
+          router.replace(`/login?next=/dashboard/jobs/${jobId}`);
+          return;
+        }
+        try {
+          await scoreByQueue(force);
+        } catch (fallbackError) {
+          if (apiErrorStatus(fallbackError) === 401)
+            router.replace(`/login?next=/dashboard/jobs/${jobId}`);
+        }
+        if (!(err instanceof MatchStreamError)) throw err;
       } finally {
         setScoring(false);
+        setPartial(null);
       }
     })();
   };
@@ -197,6 +220,7 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
           <MatchPanel
             jobId={jobId}
             match={match}
+            partial={partial}
             profile={profile}
             system={job.systemMatch}
             onScore={handleScore}
@@ -240,6 +264,7 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
             <MatchPanel
               jobId={jobId}
               match={match}
+            partial={partial}
               profile={profile}
               system={job.systemMatch}
               onScore={handleScore}

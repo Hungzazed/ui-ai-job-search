@@ -71,7 +71,7 @@ export function toSalaryRange(job: RawSalary): SalaryRange | null {
 /** Phần dùng chung của hai bộ chuyển đổi — mọi thứ trừ điểm phù hợp. */
 function toCardBase(
   job: JobMatchWithJob["job"],
-): Omit<Job, "aiMatch" | "systemMatch" | "hasAiScore"> {
+): Omit<Job, "aiMatch" | "systemMatch" | "hasAiScore" | "strengths"> {
   return {
     id: job.id,
     company: job.company,
@@ -99,6 +99,7 @@ export function toJobCard(match: JobMatchWithJob): Job {
     // "chưa chấm" phải đọc khác hẳn "0%".
     aiMatch: match.overallScore,
     systemMatch: null,
+    strengths: match.strengths.slice(0, 2),
     hasAiScore: match.status === "DONE",
   };
 }
@@ -113,6 +114,7 @@ export function toJobCardFromRecord(job: JobListItem): Job {
   return {
     ...toCardBase(job),
     aiMatch: null,
+    strengths: [],
     systemMatch: job.systemMatch
       ? {
           kind: job.systemMatch.kind,

@@ -6,7 +6,7 @@ import { AdminView } from "./admin-view";
 export const metadata: Metadata = {
   // Khớp tiêu đề hiện trên trang: nó không chỉ còn là sức khoẻ gateway nữa mà
   // gồm cả bảng điều khiển quét tin.
-  title: "Bảng điều khiển vận hành — AI Career Agent",
+  title: "Bảng điều khiển vận hành — Careelot",
 };
 
 export default function AdminPage() {

@@ -3,11 +3,12 @@
 import type { ReactNode } from "react";
 import { MagicWand } from "@phosphor-icons/react/ssr";
 import type { JobMatchWithJob } from "@/types";
-import { Label, Select } from "@/components/ui/form";
+import { Label } from "@/components/ui/form";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { SectionCard } from "@/components/ui/section-card";
 
 interface JobSelectProps {
-  /** Id của thẻ `select`, phải khác nhau giữa các ô để nhãn trỏ đúng chỗ. */
+  /** Id của nút mở danh sách, phải khác nhau giữa các ô để nhãn trỏ đúng chỗ. */
   selectId: string;
   matches: JobMatchWithJob[];
   value: string;
@@ -44,19 +45,23 @@ export function JobSelect({
   return (
     <div className="min-w-64 flex-1">
       <Label htmlFor={selectId}>Công việc</Label>
-      <Select
+      <SelectMenu
         id={selectId}
+        variant="field"
+        label={emptyOptionLabel}
         value={value}
         disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        <option value="">{emptyOptionLabel}</option>
-        {matches.map((match) => (
-          <option key={match.jobId} value={match.jobId}>
-            {match.job.title} — {match.job.company}
-          </option>
-        ))}
-      </Select>
+        onChange={onChange}
+        searchPlaceholder="Tìm vị trí hoặc công ty…"
+        options={[
+          { value: "", label: emptyOptionLabel },
+          ...matches.map((match) => ({
+            value: match.jobId,
+            label: match.job.title,
+            hint: match.job.company,
+          })),
+        ]}
+      />
       {hint && <p className="mt-1.5 text-xs text-slate-500">{hint}</p>}
     </div>
   );

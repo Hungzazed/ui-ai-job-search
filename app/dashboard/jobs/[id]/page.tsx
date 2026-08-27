@@ -5,7 +5,7 @@ import { JobDetailView } from "./job-detail-view";
 // export metadata từ client component. Toàn bộ phần tải dữ liệu nằm ở
 // JobDetailView.
 export const metadata: Metadata = {
-  title: "Chi tiết việc làm — AI Career Agent",
+  title: "Chi tiết việc làm — Careelot",
 };
 
 interface JobDetailPageProps {

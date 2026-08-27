@@ -1,4 +1,4 @@
-# Design — AI Career Agent
+# Design — Careelot
 
 A locked design system for this app. Every page redesign reads this file before emitting code. Do not regenerate per page — extend or amend this file when the system needs to grow.
 
@@ -65,6 +65,20 @@ Kiểm tra đã làm: font phủ **đủ 186/186 ký tự tiếng Việt** (hoa 
 - Mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace (used for scores, percentages, KPI counts, match badges)
 - Display tracking: -0.025em
 
+## Thanh bên thu gọn được
+
+Trạng thái nằm ở `data-sidebar` trên thẻ `<html>`, lưu vào `localStorage` key `aijob:sidebar`, đặt bởi `SIDEBAR_BOOTSTRAP` **trước lần vẽ đầu tiên** — cùng lý do với chủ đề và cỡ chữ: nếu để `useEffect` xử lý thì người đã thu gọn sẽ thấy thanh bên bung 256px rồi co lại 72px ở mọi lần tải trang, kéo theo cả vùng nội dung giật.
+
+Bề ngang đi qua biến `--sidebar-width` (16rem ↔ 4.5rem). Cả `<aside>` lẫn phần đệm trái của vùng nội dung cùng đọc biến này, nên chúng không thể lệch nhau.
+
+### Vì sao nhãn MỜ đi chứ không `display:none`
+
+Bố cục bên trong thanh bên **giữ nguyên bề ngang 16rem**, khung ngoài `overflow-hidden` xén dần. Bản đầu tiên dùng `collapsed:hidden` cộng `justify-center` và chữ biến mất tức thì trong khi khung đang co — chuyển động của bề ngang trở nên vô nghĩa vì mọi thứ bên trong đã nhảy vị trí xong từ trước.
+
+Hai chiều lệch pha có chủ ý, khai ở `[data-sidebar-label]` trong `globals.css`: thu gọn thì chữ tắt trong 90ms không trễ; mở ra thì chữ đợi 130ms cho khung nới xong mới hiện.
+
+Biến thể `collapsed:` **chỉ áp từ 64rem trở lên**. Dưới ngưỡng đó thanh bên là ngăn kéo trượt ra, luôn đủ 16rem — không có biến thể theo màn hình thì ngăn kéo trên điện thoại sẽ mất sạch nhãn.
+
 ## Spacing
 4-point named scale (`--spacing-xs`, `--spacing-sm`, `--spacing-md`, `--spacing-lg`, `--spacing-xl`)
 
@@ -81,7 +95,7 @@ Kiểm tra đã làm: font phủ **đủ 186/186 ký tự tiếng Việt** (hoa 
 - Secondary CTA: Crisp border (`border border-rule bg-paper hover:bg-paper-2`)
 
 ## What pages MUST share
-- The wordmark / logotype (`AI Career Agent`)
+- The wordmark / logotype (`Careelot`)
 - The accent color and its placement (<= 5% per viewport)
 - The display + body + mono fonts
 - Hairline borders (`border-slate-200/80` or `border-rule`)

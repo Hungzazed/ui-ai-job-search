@@ -1,4 +1,4 @@
-# Frontend — AI Career Agent
+# Frontend — Careelot
 
 Next.js 16 + React 19 + Tailwind 4. Đây là giao diện của backend NestJS ở repo `ai-job-search`; **không có API route nào ở đây** — trình duyệt gọi thẳng backend qua axios.
 

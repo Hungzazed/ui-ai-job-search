@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Check, MagnifyingGlass, X } from "@phosphor-icons/react/ssr";
 import type { OccupationOption } from "@/services";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/utils";
+import { cn, fold } from "@/utils";
 
 interface OccupationPickerProps {
   open: boolean;
@@ -14,13 +14,6 @@ interface OccupationPickerProps {
   onApply: (next: { groups: string[]; subs: string[] }) => void;
   onClose: () => void;
 }
-
-const fold = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/đ/g, "d")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
 
 export function OccupationPicker({
   open,

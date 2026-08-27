@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FileText, Percent } from "@phosphor-icons/react/ssr";
 import type { DashboardOverview } from "@/types";
 import { AIMatchProgress } from "@/components/dashboard/ai-match-progress";
-import { ScoreLine } from "@/components/dashboard/score-row";
+import { ScoreBar } from "@/components/dashboard/score-row";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -43,6 +43,10 @@ export function ScoreBreakdown({
    */
   const overall = todayScore.overall;
 
+  const weakest = SCORE_ROWS.filter(
+    (row) => todayScore[row.key] !== null,
+  ).sort((a, b) => todayScore[a.key]! - todayScore[b.key]!)[0];
+
   return (
     <Card className="border-slate-200/90 bg-white">
       <CardHeader className="border-b border-slate-100 pb-3">
@@ -58,7 +62,7 @@ export function ScoreBreakdown({
             : `Trung bình ${todayScore.sampleSize} lần chấm gần nhất`}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col items-center gap-4 pt-4">
+      <CardContent className="pt-4">
         {/*
           Chưa có lần chấm nào thì KHÔNG vẽ vòng tròn.
 
@@ -79,16 +83,12 @@ export function ScoreBreakdown({
             </p>
           </div>
         ) : (
-          <>
-            <AIMatchProgress
-              value={overall}
-              size={130}
-              strokeWidth={9}
-            />
+          <div className="grid items-center gap-6 lg:grid-cols-[190px_1fr_210px]">
+            <AIMatchProgress value={overall} size={130} strokeWidth={9} />
 
-            <div className="w-full space-y-2 border-t border-slate-100 pt-3">
+            <div className="grid gap-x-8 gap-y-3.5 sm:grid-cols-2">
               {SCORE_ROWS.map((row) => (
-                <ScoreLine
+                <ScoreBar
                   key={row.key}
                   label={row.label}
                   weight={row.weight}
@@ -97,18 +97,29 @@ export function ScoreBreakdown({
               ))}
             </div>
 
-            {/*
-              Nhãn cũ là "Tối ưu CV cho JD này" — sai cả khi CÓ dữ liệu: thẻ này là
-              trung bình của `sampleSize` lần chấm gần nhất, không phải một JD, và
-              link đi tới CV Optimizer chung chứ không mang theo việc nào.
-            */}
-            <Link href="/dashboard/cv-optimizer" className="mt-1 w-full">
-              <Button variant="secondary" className="w-full">
-                <FileText className="size-4.5" />
-                Mở CV Optimizer
-              </Button>
-            </Link>
-          </>
+            <div>
+              {/*
+                Nhãn cũ là "Tối ưu CV cho JD này" — sai cả khi CÓ dữ liệu: thẻ này là
+                trung bình của `sampleSize` lần chấm gần nhất, không phải một JD, và
+                link đi tới CV Optimizer chung chứ không mang theo việc nào.
+              */}
+              <Link href="/dashboard/cv-optimizer" className="w-full">
+                <Button variant="secondary" className="w-full">
+                  <FileText className="size-4.5" />
+                  Mở CV Optimizer
+                </Button>
+              </Link>
+              {weakest && (
+                <p className="mt-2 text-center text-2xs leading-relaxed text-slate-500">
+                  Thấp nhất là{" "}
+                  <span className="font-semibold text-slate-700">
+                    {weakest.label}
+                  </span>{" "}
+                  — bắt đầu từ đó
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>

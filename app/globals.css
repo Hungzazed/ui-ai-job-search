@@ -11,7 +11,7 @@
 }
 
 /*
-  Hallmark Design System · AI Career Agent
+  Hallmark Design System · Careelot
   - Genre: modern-minimal
   - Theme: Royal Blue · Bright White · Dark Gray
   - Macrostructure: Workbench
@@ -151,6 +151,36 @@ html, body {
 /* Hai nút mũi tên đầu/cuối là thứ làm thanh cuộn trông cũ nhất. */
 .scrollbar-thin::-webkit-scrollbar-button {
   display: none;
+}
+
+:root {
+  --sidebar-width: 16rem;
+}
+
+@media (width >= 64rem) {
+  :root[data-sidebar="collapsed"] {
+    --sidebar-width: 4.5rem;
+  }
+}
+
+@custom-variant collapsed {
+  @media (width >= 64rem) {
+    &:where(:root[data-sidebar="collapsed"] *) {
+      @slot;
+    }
+  }
+}
+
+[data-sidebar-label] {
+  transition: opacity 150ms ease 130ms;
+}
+
+@media (width >= 64rem) {
+  :root[data-sidebar="collapsed"] [data-sidebar-label] {
+    opacity: 0;
+    transition-delay: 0ms;
+    transition-duration: 90ms;
+  }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));

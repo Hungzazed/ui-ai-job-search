@@ -62,6 +62,7 @@ export interface Job {
   salaryRaw?: string | null;
   tags: string[];
   postedAt: JobTimestamp;
+  strengths: string[];
   /**
    * null nghĩa là CHƯA CHẤM, không phải chấm được 0 điểm.
    *

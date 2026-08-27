@@ -21,3 +21,16 @@ export function isJsonText(text: string): boolean {
     return false;
   }
 }
+
+/**
+ * Bỏ dấu tiếng Việt và hạ chữ thường, để gõ không dấu vẫn tìm ra.
+ *
+ * Đổi `đ` trước rồi mới tách dấu: `đ` là một ký tự riêng chứ không phải `d` ghép
+ * thêm dấu, nên NFD không tách nó ra được.
+ */
+export const fold = (value: string): string =>
+  value
+    .toLowerCase()
+    .replace(/đ/g, "d")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");

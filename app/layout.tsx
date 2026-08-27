@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Google_Sans_Flex } from "next/font/google";
 import { QueryProvider } from "@/lib/query-client";
 import { FONT_SCALE_BOOTSTRAP } from "@/lib/font-scale";
+import { SIDEBAR_BOOTSTRAP } from "@/lib/sidebar";
 import { THEME_BOOTSTRAP } from "@/lib/theme";
 import "./globals.css";
 
@@ -13,9 +14,9 @@ const googleSans = Google_Sans_Flex({
 });
 
 export const metadata: Metadata = {
-  title: "AI Career Agent — Hệ thống hỗ trợ tìm việc & tối ưu CV bằng AI",
+  title: "Careelot — Hệ thống hỗ trợ tìm việc & tối ưu CV bằng AI",
   description:
-    "Dashboard ứng dụng AI Career Agent: phân tích AI match, tối ưu CV, cover letter và theo dõi quy trình ứng tuyển.",
+    "Dashboard ứng dụng Careelot: phân tích AI match, tối ưu CV, cover letter và theo dõi quy trình ứng tuyển.",
 };
 
 export default function RootLayout({
@@ -28,6 +29,7 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: FONT_SCALE_BOOTSTRAP }} />
+        <script dangerouslySetInnerHTML={{ __html: SIDEBAR_BOOTSTRAP }} />
       </head>
       {/*
         QueryProvider bọc ở layout GỐC chứ không ở layout dashboard: trang đăng

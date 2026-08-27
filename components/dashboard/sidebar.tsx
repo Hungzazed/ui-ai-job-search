@@ -3,41 +3,10 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import {
-  Briefcase,
-  ChatText,
-  ClockCounterClockwise,
-  Envelope,
-  FileText,
-  Gear,
-  GraduationCap,
-  Lightning,
-  Robot,
-  SignOut,
-  Sparkle,
-  SquaresFour,
-  Stack,
-  User,
-} from "@phosphor-icons/react/ssr";
+import { Lightning, SignOut, Sparkle } from "@phosphor-icons/react/ssr";
 import { cn, personInitials } from "@/utils";
 import { useSession } from "@/components/dashboard/session";
-
-const navItems = [
-  { label: "Tổng quan", href: "/dashboard", icon: SquaresFour, exact: true },
-  { label: "Hồ sơ của tôi", href: "/dashboard/profile", icon: User },
-  { label: "Việc làm phù hợp", href: "/dashboard/jobs?scored=1", icon: Briefcase },
-  { label: "Tất cả việc làm", href: "/dashboard/jobs", icon: Stack },
-  { label: "CV đã tạo", href: "/dashboard/cv-optimizer", icon: FileText },
-  { label: "Thư đã viết", href: "/dashboard/cover-letter", icon: Envelope },
-  { label: "Ứng tuyển tự động", href: "/dashboard/apply", icon: Robot },
-  { label: "Lịch sử ứng tuyển", href: "/dashboard/applications", icon: ClockCounterClockwise },
-  { label: "Chuẩn bị phỏng vấn", href: "/dashboard/interview", icon: ChatText },
-  { label: "Lộ trình học", href: "/dashboard/upskill", icon: GraduationCap },
-  // Nhãn phải khớp tiêu đề trang ("Tài khoản"). Trước đây sidebar ghi "Thiết
-  // lập" trong khi trang hiện "Tài khoản" — người dùng bấm một chữ rồi đọc thấy
-  // chữ khác, và đó là kiểu lệch chỉ lộ ra khi xem màn hình thật.
-  { label: "Tài khoản", href: "/dashboard/settings", icon: Gear },
-];
+import { navItems } from "@/components/dashboard/nav-items";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -70,26 +39,29 @@ export function Sidebar() {
   }, [pathname, searchParams]);
 
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white">
+    <aside className="flex h-full w-(--sidebar-width) shrink-0 flex-col overflow-hidden border-r border-slate-200/80 bg-white transition-[width] duration-200 ease-out">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-5 py-4.5 border-b border-slate-100">
-        <div className="flex size-9 items-center justify-center rounded-lg bg-primary-600 text-white shadow-xs">
-          <Sparkle className="size-5" />
+      <div className="flex w-64 shrink-0 items-center gap-2.5 border-b border-slate-100 px-5 py-4.5">
+        <div className="text-primary-600 flex size-7 shrink-0 items-center justify-center">
+          <Sparkle className="size-6" weight="fill" />
         </div>
-        <div className="leading-tight">
-          <p className="text-sm font-bold tracking-tight text-slate-900">AI Career Agent</p>
-          <p className="text-2xs font-mono font-medium text-slate-400">Multi-Agent v1.0</p>
-        </div>
+        <p
+          data-sidebar-label
+          className="truncate text-lg font-bold tracking-tight text-slate-900"
+        >
+          Careelot
+        </p>
       </div>
 
       {/* Navigation */}
-      <nav className="scrollbar-thin flex-1 space-y-1 overflow-y-auto px-3 py-3">
+      <nav className="scrollbar-thin w-64 flex-1 space-y-1 overflow-y-auto px-3 py-3">
         {navItems.map(({ label, href, icon: Icon }) => {
           const active = href === activeHref;
           return (
             <Link
               key={href}
               href={href}
+              title={label}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all duration-150",
                 active
@@ -101,25 +73,32 @@ export function Sidebar() {
               {/* Trước đây có một Badge "24" viết cứng cạnh "Việc làm phù hợp",
                   hiện đúng con số đó cho mọi tài khoản bất kể thực tế có bao
                   nhiêu. Số thật đã có ở màn Tổng quan, lấy từ backend. */}
-              <span className="truncate">{label}</span>
+              <span data-sidebar-label className="truncate">
+                {label}
+              </span>
             </Link>
           );
         })}
 
-        <div className="!mt-4 border-t border-slate-100/90 pt-3">
-          <Link
-            href="/admin"
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all duration-150",
-              pathname.startsWith("/admin")
-                ? "bg-primary-50 text-primary-900 font-semibold border-l-2 border-primary-600 pl-2.5"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
-            )}
-          >
-            <Lightning className="size-4.5 shrink-0 text-slate-400" />
-            Admin Control Panel
-          </Link>
-        </div>
+        {user?.role === "ADMIN" && (
+          <div className="!mt-4 border-t border-slate-100/90 pt-3">
+            <Link
+              href="/admin"
+              title="Admin Control Panel"
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium transition-all duration-150",
+                pathname.startsWith("/admin")
+                  ? "bg-primary-50 text-primary-900 font-semibold border-l-2 border-primary-600 pl-2.5"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+              )}
+            >
+              <Lightning className="size-4.5 shrink-0 text-slate-400" />
+              <span data-sidebar-label className="truncate">
+                Admin Control Panel
+              </span>
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* Ở đây từng có thẻ "Nâng cấp Pro Agent" hứa "CV tối ưu không giới hạn &
@@ -128,11 +107,11 @@ export function Sidebar() {
           tại — quảng cáo cả ba thứ đó là hứa suông. */}
 
       {/* Profile card */}
-      <div className="flex items-center gap-2.5 border-t border-slate-100 px-4 py-3">
+      <div className="flex shrink-0 items-center gap-2.5 border-t border-slate-100 px-4 py-3 collapsed:flex-col collapsed:gap-2 collapsed:px-2">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-200/80 bg-slate-100 text-xs font-bold text-slate-800">
           {loading ? "…" : personInitials(user?.name)}
         </div>
-        <div className="min-w-0 flex-1 leading-tight">
+        <div className="min-w-0 flex-1 leading-tight collapsed:hidden">
           <p className="truncate text-xs font-semibold text-slate-900">
             {loading ? "Đang tải…" : (user?.name ?? "Chưa đăng nhập")}
           </p>

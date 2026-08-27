@@ -42,7 +42,7 @@ export function MatchBadge({ score }: { score: number | null }) {
       )}
     >
       <Sparkle className="size-3.5 mr-0.5" />
-      {score}% Match
+      {score}% phù hợp
     </Badge>
   );
 }
@@ -67,22 +67,10 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
     onSavedChange?.(job.id, next);
   };
 
-  // Máy chủ đã trả lời đúng thứ người dùng vừa bấm thì bỏ ý muốn đi, để những
-  // lần đổi sau từ nơi khác vẫn tới được thẻ này.
   if (pending !== null && pending === job.saved) setPending(null);
 
-  /*
-   * `h-full flex flex-col` ở Card, `flex-1` xuống tới cột nội dung, `mt-auto` ở
-   * hàng nút — cả chuỗi này chỉ để hàng nút của các thẻ CẠNH NHAU nằm cùng một
-   * độ cao.
-   *
-   * Lưới kéo mọi thẻ cao bằng nhau, nhưng nội dung thì không đều: tên công ty dài
-   * ngắn khác nhau, tiêu đề một hoặc hai dòng, thẻ tag có thể không có. Không đẩy
-   * hàng nút xuống đáy thì ba nút "Tối ưu & Ứng tuyển" cạnh nhau lệch nhau vài
-   * chục pixel. Lỗi này vốn đã có ở cỡ 2xl từ trước, chỉ chưa ai xem tới.
-   */
   return (
-    <Card className="group flex h-full flex-col transition-all duration-150 hover:border-slate-300 hover:shadow-xs">
+    <Card className="group @container flex h-full flex-col transition-all duration-150 hover:border-slate-300 hover:shadow-xs">
       <CardContent className="flex flex-1 flex-col p-4.5">
         <div className="flex flex-1 gap-3.5">
           <CompanyLogo
@@ -94,7 +82,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
           />
 
           <div className="flex min-w-0 flex-1 flex-col">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-col gap-1.5 @xs:flex-row @xs:items-start @xs:justify-between @xs:gap-2">
               <div className="min-w-0">
                 <p className="text-xs font-medium text-slate-400">{job.company}</p>
                 <Link
@@ -104,7 +92,8 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
                   {job.title}
                 </Link>
               </div>
-              <div className="flex shrink-0 flex-col items-end gap-1">
+              <div className="flex shrink-0 flex-wrap items-center gap-1 @xs:flex-col @xs:items-end">
+                {job.aiMatch !== null && <MatchBadge score={job.aiMatch} />}
                 {job.systemMatch && job.systemMatch.total > 0 && (
                   <span
                     className="rounded-full bg-teal-50 px-2 py-0.5 font-mono text-2xs font-semibold whitespace-nowrap text-teal-700"
@@ -122,7 +111,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
                     )}
                   </span>
                 )}
-                {job.hasAiScore && (
+                {job.hasAiScore && job.aiMatch === null && (
                   <span className="text-3xs whitespace-nowrap text-slate-400">
                     đã có đánh giá AI
                   </span>
@@ -139,6 +128,13 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
               <JobTime time={job.postedAt} />
             </div>
 
+            {job.strengths.length > 0 && (
+              <p className="mt-2.5 rounded-md bg-slate-50 px-2.5 py-1.5 text-2xs leading-relaxed text-slate-600">
+                <span className="font-semibold text-emerald-700">Vì sao hợp: </span>
+                {job.strengths.join(" · ")}
+              </p>
+            )}
+
             <div className="mt-3 mb-4 flex flex-wrap gap-1.5">
               {job.tags.map((tag) => (
                 <Badge key={tag} variant="outline" className="text-2xs text-slate-600 border-slate-200">
@@ -147,13 +143,21 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
               ))}
             </div>
 
-            <div className="mt-auto flex items-center justify-between border-t border-slate-100/90 pt-3">
-              <Button size="sm" variant="outline" onClick={toggleSave} aria-label="Lưu việc làm">
+            <div className="mt-auto flex flex-col items-stretch gap-2 border-t border-slate-100/90 pt-3 @xs:flex-row @xs:items-center @xs:justify-between">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={toggleSave}
+                aria-label="Lưu việc làm"
+                className="w-full justify-center @xs:w-auto"
+              >
                 <Bookmark className={cn("size-4", saved && "fill-primary-600 text-primary-600")} />
                 {saved ? "Đã lưu" : "Lưu"}
               </Button>
-              <Link href={`/dashboard/jobs/${job.id}`}>
-                <Button size="sm" variant="primary">Tối ưu & Ứng tuyển</Button>
+              <Link href={`/dashboard/jobs/${job.id}`} className="w-full @xs:w-auto">
+                <Button size="sm" variant="primary" className="w-full justify-center">
+                  Tối ưu & Ứng tuyển
+                </Button>
               </Link>
             </div>
           </div>

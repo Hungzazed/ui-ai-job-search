@@ -24,4 +24,4 @@ export {
   type ScoreTone,
   type ToneClasses,
 } from "./score";
-export { isJsonText, joinList, parseList, toJsonText } from "./text";
+export { fold, isJsonText, joinList, parseList, toJsonText } from "./text";

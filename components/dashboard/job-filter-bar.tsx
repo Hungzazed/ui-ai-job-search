@@ -22,6 +22,7 @@ import type {
 } from "@/services";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/ui/search-input";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { OccupationPicker } from "@/components/dashboard/occupation-picker";
 import { cn, formatCount } from "@/utils";
 
@@ -173,7 +174,7 @@ export function JobFilterBar({
             </span>
           )}
         </TriggerButton>
-        <SingleSelect
+        <SelectMenu
           label="Mọi mức lương"
           icon={Money}
           value={value.salaryMin}
@@ -187,7 +188,7 @@ export function JobFilterBar({
           ]}
         />
 
-        <SingleSelect
+        <SelectMenu
           label="Mọi thời điểm"
           icon={CalendarDots}
           value={value.postedWithin}
@@ -299,7 +300,7 @@ export function SortSelect({
   onChange: (next: JobSort) => void;
 }) {
   return (
-    <SingleSelect
+    <SelectMenu
       label="Sắp xếp"
       icon={SortDescending}
       align="right"
@@ -388,72 +389,6 @@ function TriggerButton({
     </button>
   );
 }
-function SingleSelect<T extends string | number>({
-  label,
-  icon,
-  value,
-  options,
-  onChange,
-  align = "left",
-  className,
-}: {
-  label: string;
-  icon: PhosphorIcon;
-  value: T;
-  options: { value: T; label: string }[];
-  onChange: (next: T) => void;
-  align?: "left" | "right";
-  className?: string;
-}) {
-  const { open, setOpen, root } = useDropdown();
-  const current = options.find((option) => option.value === value);
-  const active = value !== options[0]?.value;
-
-  return (
-    <div ref={root} className={cn("relative", className)}>
-      <TriggerButton
-        className="w-full"
-        icon={icon}
-        label={current?.label ?? label}
-        active={active}
-        open={open}
-        onClick={() => setOpen((state) => !state)}
-      />
-
-      {open && (
-        <div
-          className={cn(
-            "absolute top-11 z-20 w-max min-w-full max-w-72 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg",
-            align === "right" ? "right-0" : "left-0",
-          )}
-        >
-          {options.map((option) => (
-            <button
-              key={String(option.value)}
-              type="button"
-              onClick={() => {
-                onChange(option.value);
-                setOpen(false);
-              }}
-              className={cn(
-                "flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors hover:bg-slate-50",
-                option.value === value
-                  ? "text-primary-700 font-medium"
-                  : "text-slate-700",
-              )}
-            >
-              {option.label}
-              {option.value === value && (
-                <Check className="text-primary-600 size-4.5 shrink-0" />
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 function MultiSelect({
   label,
   icon: Icon,

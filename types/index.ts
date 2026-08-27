@@ -1,5 +1,5 @@
 /* =========================================================
-   AI Career Agent — Data Models
+   Careelot — Data Models
 
    File này chỉ TÁI XUẤT, không định nghĩa gì. Nhờ vậy `import ... from
    "@/types"` ở khắp nơi vẫn chạy nguyên như cũ, còn khi cần sửa một kiểu thì

@@ -48,6 +48,8 @@ export interface CvContentInput {
   skillGroups: Array<{ label: string; items: string[] }>;
 }
 
+export type CvLanguage = "vi" | "en";
+
 /** Khoá của sáu mục CV. Phải khớp `SECTION_KEYS` phía backend. */
 export type CvSectionKey =
   | "profile"
@@ -90,6 +92,7 @@ export interface DocumentRecord {
   templateOptions: { accent?: string } | null;
   /** Thứ tự mục và mục ẩn. `null` nghĩa là chưa đụng tới. */
   layout: CvLayout | null;
+  language: "VI" | "EN";
   modelId: string | null;
   generatedAt: string | null;
   error: string | null;
@@ -151,9 +154,9 @@ export const documentsService = {
   },
 
   /** Không có jobId thì sinh CV tổng quát; có thì sinh CV theo vị trí. */
-  createCv: (jobId?: string, stream = false) =>
+  createCv: (jobId?: string, stream = false, language: CvLanguage = "vi") =>
     api
-      .post<QueuedDocument>("/documents/cv", { jobId, stream })
+      .post<QueuedDocument>("/documents/cv", { jobId, stream, language })
       .then((r) => r.data),
 
   createCoverLetter: (jobId: string, stream = false) =>

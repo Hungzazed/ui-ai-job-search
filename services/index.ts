@@ -49,6 +49,7 @@ export type {
   ApplicationEmailInput,
   CvContentInput,
   CvLayout,
+  CvLanguage,
   CvSectionKey,
   CvTemplate,
   DocumentKind,

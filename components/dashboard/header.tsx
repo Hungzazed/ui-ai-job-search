@@ -62,15 +62,6 @@ export function Header({ onMenuClick }: HeaderProps) {
         </h1>
       )}
 
-      {/*
-        Ô tìm kiếm ở đây là THẬT, khác hẳn cái đã bị gỡ khỏi chỗ này trước đây:
-        nó đẩy thẳng sang `/dashboard/jobs?q=`, tham số mà backend đã hỗ trợ.
-        Bản cũ không có handler, không có state, và còn quảng cáo phím tắt "/"
-        mà không chỗ nào trong ứng dụng lắng nghe.
-
-        Chuông thông báo và nhãn "Agent Engine: Active" thì KHÔNG quay lại: hệ
-        thống không có thông báo, và sức khoẻ gateway đo được thật nằm ở màn Admin.
-      */}
       <form onSubmit={submit} className="relative min-w-0 flex-1 sm:max-w-md">
         <MagnifyingGlass className="pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-slate-400" />
         <Input
@@ -83,12 +74,6 @@ export function Header({ onMenuClick }: HeaderProps) {
       </form>
 
       <div className="ml-auto flex shrink-0 items-center gap-2.5">
-        {/*
-          Nhãn vai trò chỉ hiện với ADMIN. "Người dùng" là thứ người đang đăng
-          nhập đã biết; giữ lại cho quản trị viên thì nó thành lời nhắc rằng họ
-          đang thao tác bằng quyền cao. Danh tính đầy đủ (tên, email, đăng xuất)
-          nằm ở chân sidebar, không lặp lại ở đây.
-        */}
         {user?.role === "ADMIN" && (
           <span className="hidden rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-2xs font-semibold text-amber-900 sm:inline">
             Quản trị viên

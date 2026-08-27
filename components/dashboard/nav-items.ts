@@ -29,13 +29,6 @@ export const navItems = [
   { label: "Tài khoản", href: "/dashboard/settings", icon: Gear },
 ];
 
-/**
- * Tên mục khớp DÀI NHẤT, và chỉ xét mục KHÔNG có query.
- *
- * "Việc làm phù hợp" và "Tất cả việc làm" cùng trỏ `/dashboard/jobs`, chỉ khác
- * `?scored=1`. Header không đọc query nên hai mục sẽ hoà nhau; lấy mục không có
- * query cho ra tên của cả khu vực, đúng với mọi biến thể lọc bên dưới nó.
- */
 export function pageTitle(pathname: string): string {
   const matched = navItems
     .filter((item) => !item.href.includes("?"))

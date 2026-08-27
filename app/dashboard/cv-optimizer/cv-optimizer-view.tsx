@@ -9,8 +9,10 @@ import { keys } from "@/lib/query-keys";
 import {
   documentsService,
   matchesService,
+  type CvLanguage,
   type DocumentRecord,
 } from "@/services";
+import { cn } from "@/utils";
 import { isCvContentEmpty, parseCvContent } from "@/lib/document-content";
 import { PageHeader } from "@/components/dashboard/page-header";
 import {
@@ -45,6 +47,7 @@ const NO_JOB = "";
 export function CvOptimizerView() {
   const fixedJobId = useSearchParams().get("jobId");
   const [jobId, setJobId] = useState<string>(fixedJobId ?? NO_JOB);
+  const [language, setLanguage] = useState<CvLanguage>("vi");
 
   const job = useDocumentJob(LOGIN_NEXT);
 
@@ -89,7 +92,11 @@ export function CvOptimizerView() {
 
   const handleGenerate = () => {
     job.startStream(() =>
-      documentsService.createCv(jobId === NO_JOB ? undefined : jobId, true),
+      documentsService.createCv(
+        jobId === NO_JOB ? undefined : jobId,
+        true,
+        language,
+      ),
     );
   };
 
@@ -121,10 +128,44 @@ export function CvOptimizerView() {
         disabled={isGenerating || Boolean(fixedJobId)}
         emptyOptionLabel="CV tổng quát (không nhắm vị trí nào)"
         action={
-          <Button onClick={handleGenerate} loading={isGenerating}>
-            <Sparkle className="size-4.5" />
-            {isGenerating ? "Đang tạo…" : "Tạo CV bằng AI"}
-          </Button>
+          <div className="flex flex-wrap items-end gap-3">
+            <div role="group" aria-labelledby="cv-language-label">
+              <span
+                id="cv-language-label"
+                className="mb-1.5 block text-sm font-medium text-slate-700"
+              >
+                Ngôn ngữ CV
+              </span>
+              <div className="flex h-10 items-center rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+                {(
+                  [
+                    ["vi", "Tiếng Việt"],
+                    ["en", "English"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    disabled={isGenerating}
+                    aria-pressed={language === value}
+                    onClick={() => setLanguage(value)}
+                    className={cn(
+                      "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                      language === value
+                        ? "bg-primary-50 text-primary-700"
+                        : "text-slate-500 hover:text-slate-800",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Button onClick={handleGenerate} loading={isGenerating}>
+              <Sparkle className="size-4.5" />
+              {isGenerating ? "Đang tạo…" : "Tạo CV bằng AI"}
+            </Button>
+          </div>
         }
       />
 

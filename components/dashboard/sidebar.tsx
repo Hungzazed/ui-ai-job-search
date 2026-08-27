@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Lightning, SignOut, Sparkle } from "@phosphor-icons/react/ssr";
+import { Lightning, SignOut } from "@phosphor-icons/react/ssr";
 import { cn, personInitials } from "@/utils";
 import { useSession } from "@/components/dashboard/session";
 import { navItems } from "@/components/dashboard/nav-items";
+import { BrandLogo } from "@/components/dashboard/brand-logo";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -41,16 +42,8 @@ export function Sidebar() {
   return (
     <aside className="flex h-full w-(--sidebar-width) shrink-0 flex-col overflow-hidden border-r border-slate-200/80 bg-white transition-[width] duration-200 ease-out">
       {/* Brand */}
-      <div className="flex w-64 shrink-0 items-center gap-2.5 border-b border-slate-100 px-5 py-4.5">
-        <div className="text-primary-600 flex size-7 shrink-0 items-center justify-center">
-          <Sparkle className="size-6" weight="fill" />
-        </div>
-        <p
-          data-sidebar-label
-          className="truncate text-lg font-bold tracking-tight text-slate-900"
-        >
-          Careelot
-        </p>
+      <div className="flex h-[65px] w-64 shrink-0 items-center border-b border-slate-100 pl-6">
+        <BrandLogo className="h-[30.52px] w-[106.58px] shrink-0" />
       </div>
 
       {/* Navigation */}

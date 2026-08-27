@@ -192,7 +192,14 @@ export function CvStudio({
     <SectionCard
       compact
       icon={Layout}
-      title="Sửa CV"
+      title={
+        <span className="flex items-center gap-2">
+          Sửa CV
+          <span className="rounded-full border border-slate-200 px-2 py-0.5 text-2xs font-medium text-slate-500">
+            {record.language === "EN" ? "English" : "Tiếng Việt"}
+          </span>
+        </span>
+      }
       description="Sửa thoải mái — chỉ khi bấm “Lưu thay đổi” mới ghi lại"
       className="border-slate-200/90"
       contentClassName="space-y-4"

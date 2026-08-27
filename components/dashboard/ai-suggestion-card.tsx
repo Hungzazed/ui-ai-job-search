@@ -1,5 +1,12 @@
-import type { LucideIcon } from "lucide-react";
-import { ArrowRight, FileText, Handshake, Lightbulb, Sparkles, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  FileText,
+  Handshake,
+  Lightbulb,
+  Sparkle,
+  TrendUp,
+} from "@phosphor-icons/react/ssr";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import type { AiSuggestion } from "@/types";
 import { Card } from "@/components/ui/card";
@@ -7,12 +14,12 @@ import { cn } from "@/utils";
 
 const typeMeta: Record<
   AiSuggestion["type"],
-  { icon: LucideIcon; bg: string; text: string }
+  { icon: PhosphorIcon; bg: string; text: string }
 > = {
   cv: { icon: FileText, bg: "bg-primary-50", text: "text-primary-700" },
   skill: { icon: Lightbulb, bg: "bg-amber-50", text: "text-amber-700" },
   network: { icon: Handshake, bg: "bg-sky-50", text: "text-sky-700" },
-  apply: { icon: TrendingUp, bg: "bg-emerald-50", text: "text-emerald-700" },
+  apply: { icon: TrendUp, bg: "bg-emerald-50", text: "text-emerald-700" },
 };
 
 interface AISuggestionCardProps {
@@ -25,7 +32,7 @@ export function AISuggestionCard({ suggestions }: AISuggestionCardProps) {
       <div className="flex items-center justify-between px-5 pt-5 pb-2 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <div className="flex size-7 items-center justify-center rounded-md bg-primary-50 text-primary-700">
-            <Sparkles className="size-4" />
+            <Sparkle className="size-4.5" />
           </div>
           <h3 className="text-sm font-semibold tracking-tight text-slate-900">
             Gợi ý tối ưu
@@ -52,7 +59,7 @@ export function AISuggestionCard({ suggestions }: AISuggestionCardProps) {
           const body = (
             <>
               <div className={cn("flex size-8 shrink-0 items-center justify-center rounded-md border border-slate-200/60", meta.bg, meta.text)}>
-                <Icon className="size-4" />
+                <Icon className="size-4.5" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
@@ -65,7 +72,7 @@ export function AISuggestionCard({ suggestions }: AISuggestionCardProps) {
                   {/* Mũi tên chỉ xuất hiện khi có chỗ để đi tới. Trước đây nó hiện
                       trên mọi thẻ, kể cả thẻ không dẫn đi đâu. */}
                   {suggestion.href && (
-                    <ArrowRight className="size-3 shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <ArrowRight className="size-3.5 shrink-0 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
                   )}
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-slate-500">{suggestion.description}</p>

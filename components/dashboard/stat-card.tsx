@@ -1,5 +1,5 @@
-import type { LucideIcon } from "lucide-react";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "@phosphor-icons/react/ssr";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { ProgressCircle } from "@/components/ui/progress-circle";
@@ -23,7 +23,7 @@ interface StatCardAction {
 
 interface StatCardProps {
   title: string;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   iconClassName?: string;
   value: string;
   subtitle?: string;
@@ -48,7 +48,7 @@ export function StatCard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-slate-600">
           <div className={cn("flex size-8 items-center justify-center rounded-lg bg-slate-100/80 text-slate-700 border border-slate-200/60", iconClassName)}>
-            <Icon className="size-4" />
+            <Icon className="size-4.5" />
           </div>
           <span className="text-xs font-semibold tracking-tight text-slate-600 uppercase">{title}</span>
         </div>
@@ -74,7 +74,7 @@ export function StatCard({
           className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary-600 transition-colors hover:text-primary-700 group"
         >
           {action.label}
-          <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
       )}
     </Card>

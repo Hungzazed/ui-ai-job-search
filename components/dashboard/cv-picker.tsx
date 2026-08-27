@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Sparkles, Upload } from "lucide-react";
+import { Sparkle, Upload } from "@phosphor-icons/react/ssr";
 import { cn } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -68,7 +68,7 @@ export function CvPicker({
                   : "bg-slate-100 text-slate-500",
               )}
             >
-              <Upload className="size-5" />
+              <Upload className="size-5.5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium text-slate-900">CV đã upload</p>
@@ -103,7 +103,7 @@ export function CvPicker({
                 : "bg-slate-100 text-slate-500",
             )}
           >
-            <Sparkles className="size-5" />
+            <Sparkle className="size-5.5" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-slate-900">

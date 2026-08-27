@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import { cn } from "@/utils";
 
 interface EmptyStateProps {
-  icon?: LucideIcon;
+  icon?: PhosphorIcon;
   title: string;
   description?: ReactNode;
   /** Nút dẫn người dùng tới việc tiếp theo làm được. */
@@ -32,7 +32,7 @@ export function EmptyState({
         className,
       )}
     >
-      {Icon && <Icon className="size-8 text-slate-300" />}
+      {Icon && <Icon className="size-8.5 text-slate-300" />}
       <p className="text-sm font-semibold text-slate-700">{title}</p>
       {description && (
         <p className="max-w-md text-xs leading-relaxed text-slate-500">

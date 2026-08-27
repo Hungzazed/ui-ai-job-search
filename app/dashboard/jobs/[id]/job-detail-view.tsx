@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
+import { FileText } from "@phosphor-icons/react/ssr";
 import type { JobMatchDetail, JobRecord, ProfileRecord } from "@/services";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";

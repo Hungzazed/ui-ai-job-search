@@ -1,6 +1,10 @@
 "use client";
 
-import { Hourglass, Loader2, RotateCcw } from "lucide-react";
+import {
+  ArrowCounterClockwise,
+  CircleNotch,
+  Hourglass,
+} from "@phosphor-icons/react/ssr";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -32,7 +36,7 @@ export function DocumentJobStatus({
     return (
       <Card className="border-primary-200 bg-primary-50/40 p-5">
         <div className="flex items-start gap-3.5">
-          <Loader2 className="text-primary-600 mt-0.5 size-5 shrink-0 animate-spin" />
+          <CircleNotch className="text-primary-600 mt-0.5 size-5.5 shrink-0 animate-spin" />
           <div className="space-y-1">
             <p className="text-primary-900 text-sm font-semibold">
               {status === "RUNNING"
@@ -63,7 +67,7 @@ export function DocumentJobStatus({
         title="Quá lâu, hãy tải lại trang"
         actions={
           <Button variant="outline" size="sm" onClick={job.recheck}>
-            <RotateCcw className="size-3.5" />
+            <ArrowCounterClockwise className="size-4" />
             Đọc lại trạng thái
           </Button>
         }
@@ -81,7 +85,7 @@ export function DocumentJobStatus({
         title="Tạo tài liệu thất bại"
         actions={
           <Button variant="outline" size="sm" onClick={onRegenerate}>
-            <RotateCcw className="size-3.5" />
+            <ArrowCounterClockwise className="size-4" />
             Thử lại
           </Button>
         }

@@ -1,6 +1,6 @@
 "use client";
 
-import { History } from "lucide-react";
+import { ClockCounterClockwise } from "@phosphor-icons/react/ssr";
 import type { AgentRunSummary } from "@/services";
 import {
   Card,
@@ -34,7 +34,7 @@ export function AgentHistory({
     <Card className="border-slate-200/90">
       <CardHeader className="border-b border-slate-100 pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
-          <History className="size-4 text-slate-400" />
+          <ClockCounterClockwise className="size-4.5 text-slate-400" />
           Lượt chạy trước
         </CardTitle>
         <CardDescription className="text-xs">

@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Google_Sans_Flex } from "next/font/google";
 import { QueryProvider } from "@/lib/query-client";
 import { FONT_SCALE_BOOTSTRAP } from "@/lib/font-scale";
 import { THEME_BOOTSTRAP } from "@/lib/theme";
 import "./globals.css";
 
-const inter = Inter({
+const googleSans = Google_Sans_Flex({
   subsets: ["latin", "vietnamese"],
-  variable: "--font-inter",
+  axes: ["opsz"],
+  variable: "--font-google-sans",
   display: "swap",
 });
 
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={inter.variable} suppressHydrationWarning>
+    <html lang="vi" className={googleSans.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <script dangerouslySetInnerHTML={{ __html: FONT_SCALE_BOOTSTRAP }} />

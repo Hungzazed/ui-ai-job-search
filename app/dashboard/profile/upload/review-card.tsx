@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, FileText, Info, TriangleAlert } from "lucide-react";
+import {
+  CheckCircle,
+  FileText,
+  Info,
+  Warning,
+} from "@phosphor-icons/react/ssr";
 import type { ApplicableField, ProposalRow } from "@/lib/profile-draft-content";
 import { isProposalEmpty } from "@/lib/profile-draft-content";
 import { profileDraftService, type ProfileDraftRecord } from "@/services";
@@ -45,7 +50,7 @@ export function ReviewCard({
   return (
     <div className="space-y-4">
       {applied && (
-        <Alert tone="success" title="Đã cập nhật hồ sơ" icon={CheckCircle2}>
+        <Alert tone="success" title="Đã cập nhật hồ sơ" icon={CheckCircle}>
           Những trường bạn chọn đã được ghi vào hồ sơ.{" "}
           <Link
             href="/dashboard/profile"
@@ -74,7 +79,7 @@ export function ReviewCard({
                 rel="noreferrer"
               >
                 <Button size="sm" variant="outline">
-                  <FileText className="size-3.5" />
+                  <FileText className="size-4" />
                   Xem CV gốc
                 </Button>
               </a>
@@ -111,7 +116,7 @@ export function ReviewCard({
             )}
           </p>
           <Button onClick={onApply} disabled={selected.length === 0 || applying}>
-            <CheckCircle2 className="size-4" />
+            <CheckCircle className="size-4.5" />
             {applying ? "Đang áp dụng…" : "Áp dụng vào hồ sơ"}
           </Button>
         </div>
@@ -120,7 +125,7 @@ export function ReviewCard({
       {(draft.proposal?.missing.length ?? 0) > 0 && (
         <SectionCard
           title="AI không tìm thấy trong CV"
-          icon={TriangleAlert}
+          icon={Warning}
           iconClassName="bg-amber-50 text-amber-700"
           description="Những phần này phải tự điền ở màn Hồ sơ — hệ thống cố ý không đoán chúng."
           compact

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mic, Sparkles } from "lucide-react";
+import { Microphone, Sparkle } from "@phosphor-icons/react/ssr";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 
@@ -112,7 +112,7 @@ export function InterviewView() {
       ) : preps.length === 0 ? (
         <Card>
           <EmptyState
-            icon={Sparkles}
+            icon={Sparkle}
             title="Chưa có bộ câu hỏi nào"
             description={
               <>
@@ -205,7 +205,7 @@ export function InterviewView() {
                     className="ml-auto"
                   >
                     <Button variant="outline" size="sm">
-                      <Mic className="size-3.5" />
+                      <Microphone className="size-4" />
                       Phỏng vấn thử
                     </Button>
                   </Link>

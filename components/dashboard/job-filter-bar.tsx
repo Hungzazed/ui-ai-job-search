@@ -2,18 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  ArrowDownWideNarrow,
-  Banknote,
   Bookmark,
   Briefcase,
-  CalendarClock,
+  CalendarDots,
+  CaretDown,
   Check,
-  ChevronDown,
   MapPin,
-  SendHorizontal,
+  Money,
+  PaperPlaneRight,
+  SortDescending,
   X,
-  type LucideIcon,
-} from "lucide-react";
+} from "@phosphor-icons/react/ssr";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import type {
   FilterOption,
   JobFilters,
@@ -155,7 +155,7 @@ export function JobFilterBar({
         />
         <Toggle
           label="Đã ứng tuyển"
-          icon={SendHorizontal}
+          icon={PaperPlaneRight}
           active={value.applied}
           onClick={() => set("applied", !value.applied)}
         />
@@ -175,7 +175,7 @@ export function JobFilterBar({
         </TriggerButton>
         <SingleSelect
           label="Mọi mức lương"
-          icon={Banknote}
+          icon={Money}
           value={value.salaryMin}
           onChange={(next) => set("salaryMin", next)}
           options={[
@@ -189,7 +189,7 @@ export function JobFilterBar({
 
         <SingleSelect
           label="Mọi thời điểm"
-          icon={CalendarClock}
+          icon={CalendarDots}
           value={value.postedWithin}
           onChange={(next) => set("postedWithin", next)}
           options={[
@@ -264,7 +264,7 @@ function Toggle({
   onClick,
 }: {
   label: string;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   active: boolean;
   onClick: () => void;
 }) {
@@ -283,7 +283,7 @@ function Toggle({
       
       <Icon
         className={cn(
-          "size-4 shrink-0",
+          "size-4.5 shrink-0",
           active ? "text-primary-500" : "text-slate-400",
         )}
       />
@@ -301,7 +301,7 @@ export function SortSelect({
   return (
     <SingleSelect
       label="Sắp xếp"
-      icon={ArrowDownWideNarrow}
+      icon={SortDescending}
       align="right"
       value={value}
       options={SORT_OPTIONS}
@@ -326,7 +326,7 @@ function Chip({ label, onRemove }: { label: string; onRemove: () => void }) {
         aria-label={`Bỏ lọc ${label}`}
         className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-white/70"
       >
-        <X className="size-3" />
+        <X className="size-3.5" />
       </button>
     </span>
   );
@@ -355,7 +355,7 @@ function TriggerButton({
   className,
   children,
 }: {
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   label: string;
   active: boolean;
   open: boolean;
@@ -378,13 +378,13 @@ function TriggerButton({
     >
       <Icon
         className={cn(
-          "size-4 shrink-0",
+          "size-4.5 shrink-0",
           active ? "text-primary-500" : "text-slate-400",
         )}
       />
       {label}
       {children}
-      <ChevronDown className="size-4 shrink-0 text-slate-400" />
+      <CaretDown className="size-4.5 shrink-0 text-slate-400" />
     </button>
   );
 }
@@ -398,7 +398,7 @@ function SingleSelect<T extends string | number>({
   className,
 }: {
   label: string;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   value: T;
   options: { value: T; label: string }[];
   onChange: (next: T) => void;
@@ -444,7 +444,7 @@ function SingleSelect<T extends string | number>({
             >
               {option.label}
               {option.value === value && (
-                <Check className="text-primary-600 size-4 shrink-0" />
+                <Check className="text-primary-600 size-4.5 shrink-0" />
               )}
             </button>
           ))}
@@ -466,7 +466,7 @@ function MultiSelect({
   searchPlaceholder,
 }: {
   label: string;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   className?: string;
   
   align?: "left" | "right";
@@ -533,7 +533,7 @@ function MultiSelect({
                           : "border-slate-300",
                       )}
                     >
-                      {checked && <Check className="size-3" />}
+                      {checked && <Check className="size-3.5" />}
                     </span>
                     <span className="flex-1 truncate text-slate-700">
                       {option.name}

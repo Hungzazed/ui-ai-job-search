@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ExternalLink, X } from "lucide-react";
+import { ArrowSquareOut, Check, X } from "@phosphor-icons/react/ssr";
 import type { BriefSource, CompanyBriefRecord } from "@/services";
 import { VERDICT_LABELS } from "@/lib/company-brief";
 import { Alert } from "@/components/ui/alert";
@@ -80,8 +80,8 @@ function PointList({ items, tone }: { items: string[]; tone: "good" | "bad" }) {
           <Icon
             className={
               tone === "good"
-                ? "mt-0.5 size-4 shrink-0 text-emerald-600"
-                : "mt-0.5 size-4 shrink-0 text-rose-500"
+                ? "mt-0.5 size-4.5 shrink-0 text-emerald-600"
+                : "mt-0.5 size-4.5 shrink-0 text-rose-500"
             }
           />
           <span>{item}</span>
@@ -128,7 +128,7 @@ function SourceList({ brief }: { brief: CompanyBriefRecord }) {
                   rel="noopener noreferrer nofollow"
                   className="inline-flex items-start gap-1.5 text-sm text-primary-700 hover:underline"
                 >
-                  <ExternalLink className="mt-0.5 size-3.5 shrink-0" />
+                  <ArrowSquareOut className="mt-0.5 size-4 shrink-0" />
                   <span>
                     {labelOf(source)}
                     <span className="text-slate-500"> — {source.usedFor}</span>

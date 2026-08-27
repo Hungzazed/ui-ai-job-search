@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark, MapPin } from "lucide-react";
+import { Bookmark, MapPin } from "@phosphor-icons/react/ssr";
 import type { Job } from "@/types";
 import { CompanyLogo } from "@/components/dashboard/company-logo";
 import { JobTime } from "@/components/dashboard/job-time";
@@ -81,7 +81,7 @@ export function JobRow({
             >
               <Bookmark
                 className={cn(
-                  "size-4",
+                  "size-4.5",
                   saved && "fill-primary-600 text-primary-600",
                 )}
               />
@@ -90,7 +90,7 @@ export function JobRow({
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-slate-500">
             <span className="inline-flex items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5">
-              <MapPin className="size-3 text-slate-400" />
+              <MapPin className="size-3.5 text-slate-400" />
               <LocationText location={job.location} />
             </span>
             <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono font-medium text-slate-700">

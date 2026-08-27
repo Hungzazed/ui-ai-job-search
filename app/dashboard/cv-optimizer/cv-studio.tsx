@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, Download, LayoutTemplate } from "lucide-react";
+import { Check, Download, Layout } from "@phosphor-icons/react/ssr";
 import {
   documentsService,
   type CvContentInput,
@@ -191,7 +191,7 @@ export function CvStudio({
   return (
     <SectionCard
       compact
-      icon={LayoutTemplate}
+      icon={Layout}
       title="Sửa CV"
       description="Sửa thoải mái — chỉ khi bấm “Lưu thay đổi” mới ghi lại"
       className="border-slate-200/90"
@@ -199,11 +199,11 @@ export function CvStudio({
       actions={
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={handleDownload}>
-            <Download className="size-4" />
+            <Download className="size-4.5" />
             Tải PDF
           </Button>
           <Button size="sm" onClick={handleSave} loading={saving} disabled={!dirty}>
-            <Check className="size-4" />
+            <Check className="size-4.5" />
             {dirty ? "Lưu thay đổi" : "Đã lưu"}
           </Button>
         </div>

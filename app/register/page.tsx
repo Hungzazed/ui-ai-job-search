@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertCircle, Sparkles, UserPlus } from "lucide-react";
+import { Sparkle, UserPlus, WarningCircle } from "@phosphor-icons/react/ssr";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/form";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
@@ -79,9 +79,9 @@ function RegisterForm() {
       <div className="w-full max-w-sm space-y-6">
         <div className="space-y-2 text-center">
           <span className="inline-flex size-11 items-center justify-center bg-slab text-slab-ink rounded-xl">
-            <Sparkles className="size-5" />
+            <Sparkle className="size-5.5" />
           </span>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-xl font-semibold tracking-tight text-slate-900">
             Tạo tài khoản
           </h1>
           <p className="text-sm text-slate-500">
@@ -168,13 +168,13 @@ function RegisterForm() {
               role="alert"
               className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-xs text-red-700"
             >
-              <AlertCircle className="mt-px size-4 shrink-0" />
+              <WarningCircle className="mt-px size-4.5 shrink-0" />
               {error}
             </p>
           )}
 
           <Button type="submit" className="w-full" loading={loading}>
-            {!loading && <UserPlus className="size-4" />}
+            {!loading && <UserPlus className="size-4.5" />}
             Tạo tài khoản
           </Button>
         </form>

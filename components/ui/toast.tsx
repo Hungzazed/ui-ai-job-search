@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle, X } from "lucide-react";
+import { CheckCircle, X } from "@phosphor-icons/react/ssr";
 import { cn } from "@/utils";
 
 interface ToastProps {
@@ -28,7 +28,7 @@ export function Toast({ message, onClose, duration = 8000 }: ToastProps) {
         visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
       )}
     >
-      <CheckCircle className="size-5 shrink-0 text-green-500" />
+      <CheckCircle className="size-5.5 shrink-0 text-green-500" />
       <p className="text-sm text-slate-700">{message}</p>
       <button
         type="button"
@@ -38,7 +38,7 @@ export function Toast({ message, onClose, duration = 8000 }: ToastProps) {
         }}
         className="ml-2 shrink-0 rounded-lg p-1 text-slate-400 hover:bg-slate-100"
       >
-        <X className="size-4" />
+        <X className="size-4.5" />
       </button>
     </div>
   );

@@ -1,6 +1,12 @@
 "use client";
 
-import { CircleHelp, Lightbulb, MessageSquare, RefreshCw, ShieldAlert } from "lucide-react";
+import {
+  ArrowsClockwise,
+  ChatText,
+  Lightbulb,
+  Question,
+  ShieldWarning,
+} from "@phosphor-icons/react/ssr";
 import { failureMessage, isWorthRetrying } from "@/lib/failure-message";
 import { type InterviewPrepRecord } from "@/services";
 import { isInterviewPrepEmpty, parseStarAnswers, parseToughQuestions } from "@/lib/interview-content";
@@ -94,7 +100,7 @@ export function PrepDetail({
             disabled={retrying}
             onClick={() => void onRetry()}
           >
-            <RefreshCw className={cn("size-4", retrying && "animate-spin")} />
+            <ArrowsClockwise className={cn("size-4.5", retrying && "animate-spin")} />
             {retrying ? "Đang xếp lại vào hàng đợi…" : "Thử lại"}
           </Button>
         )}
@@ -125,7 +131,7 @@ export function PrepDetail({
     <div className="space-y-4">
       {starAnswers.length > 0 && (
         <SectionCard
-          icon={MessageSquare}
+          icon={ChatText}
           title="Câu chuyện theo khung STAR"
           description="Dựng từ kinh nghiệm có thật trong hồ sơ của bạn, không phải ví dụ mẫu."
         >
@@ -159,7 +165,7 @@ export function PrepDetail({
 
       {toughQuestions.length > 0 && (
         <SectionCard
-          icon={ShieldAlert}
+          icon={ShieldWarning}
           title="Câu hỏi khó"
           description="Ưu tiên những câu đào vào khoảng trống thật giữa hồ sơ và tin tuyển dụng."
         >
@@ -187,7 +193,7 @@ export function PrepDetail({
 
       {prep.likelyProbes.length > 0 && (
         <SectionCard
-          icon={ShieldAlert}
+          icon={ShieldWarning}
           title="Chỗ họ nhiều khả năng sẽ đào sâu"
           description="Những điểm hồ sơ còn mỏng so với yêu cầu. Chuẩn bị trước thì không bị bất ngờ."
         >
@@ -207,7 +213,7 @@ export function PrepDetail({
 
       {prep.questionsToAsk.length > 0 && (
         <SectionCard
-          icon={CircleHelp}
+          icon={Question}
           title="Câu bạn nên hỏi lại"
           description="Cụ thể cho công ty và vị trí này, không phải câu hỏi chung chung."
         >

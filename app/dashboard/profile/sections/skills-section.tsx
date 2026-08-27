@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
+import { Sparkle } from "@phosphor-icons/react/ssr";
 import { ListField } from "@/components/ui/field";
 import { SectionCard } from "@/components/ui/section-card";
 import type { DraftFieldSpec, ProfileSectionProps } from "../profile-draft";
@@ -37,7 +37,7 @@ const FIELDS: DraftFieldSpec[] = [
 export function SkillsSection({ draft, update }: ProfileSectionProps) {
   return (
     <SectionCard
-      icon={Sparkles}
+      icon={Sparkle}
       title="Kỹ năng & lĩnh vực đã làm"
       description="Đây là dữ liệu nặng ký nhất khi chấm chiều Kỹ năng chuyên môn và Kinh nghiệm làm việc"
     >

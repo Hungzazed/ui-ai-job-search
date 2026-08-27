@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useDraftState } from "@/hooks/use-draft-state";
-import { ClipboardPaste, Sparkles } from "lucide-react";
+import { Clipboard, Sparkle } from "@phosphor-icons/react/ssr";
 import type { JobMatchWithJob } from "@/types";
 import type { ApplicationEmailInput } from "@/services";
 import { JobSelect } from "@/components/dashboard/document-job";
@@ -74,7 +74,7 @@ export function ApplicationEmailSourceCard({
   return (
     <SectionCard
       compact
-      icon={ClipboardPaste}
+      icon={Clipboard}
       iconClassName="size-4"
       title="Tin tuyển dụng"
       description="Mail luôn viết cho một vị trí cụ thể. Dán mô tả công việc bạn copy được, hoặc chọn một tin hệ thống đã có."
@@ -160,7 +160,7 @@ export function ApplicationEmailSourceCard({
           loading={disabled}
           disabled={source === "pick" ? !jobId : !pasteReady}
         >
-          <Sparkles className="size-4" />
+          <Sparkle className="size-4.5" />
           {disabled ? "Đang viết…" : "Viết mail ứng tuyển"}
         </Button>
       </div>

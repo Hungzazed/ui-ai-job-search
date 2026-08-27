@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, RefreshCw, Radar } from "lucide-react";
+import { ArrowsClockwise, Broadcast, Play } from "@phosphor-icons/react/ssr";
 import { apiErrorMessage } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { keys } from "@/lib/query-keys";
@@ -110,7 +110,7 @@ export function ScrapePanel() {
 
   return (
     <SectionCard
-      icon={Radar}
+      icon={Broadcast}
       title="Quét tin tuyển dụng"
       description="Chạy ngay lượt quét hằng đêm thay vì đợi tới 23:00. Gọi đúng hàm mà cron gọi, nên đây cũng là phép thử thật của đường tự động."
       actions={
@@ -122,11 +122,11 @@ export function ScrapePanel() {
             loading={refreshing}
             aria-label="Tải lại lịch sử quét"
           >
-            <RefreshCw className="size-4" />
+            <ArrowsClockwise className="size-4.5" />
             Tải lại
           </Button>
           <Button size="sm" onClick={() => void runNow()} loading={starting}>
-            <Play className="size-4" />
+            <Play className="size-4.5" />
             Quét ngay
           </Button>
         </div>
@@ -155,7 +155,7 @@ export function ScrapePanel() {
         <Skeleton className="h-40 animate-pulse" />
       ) : runs.length === 0 ? (
         <EmptyState
-          icon={Radar}
+          icon={Broadcast}
           title="Chưa có lượt quét nào"
           description="Bấm Quét ngay để chạy lượt đầu tiên, hoặc đợi cron 23:00 theo giờ Việt Nam."
         />

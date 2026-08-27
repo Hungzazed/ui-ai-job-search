@@ -1,4 +1,4 @@
-import { Check, Loader2 } from "lucide-react";
+import { Check, CircleNotch } from "@phosphor-icons/react/ssr";
 import { SectionCard } from "@/components/ui/section-card";
 
 export interface PartialLetter {
@@ -35,9 +35,9 @@ export function LetterLiveProgress({
           return (
             <li key={label} className="flex items-center gap-2 text-sm">
               {done ? (
-                <Check className="size-4 shrink-0 text-emerald-600" />
+                <Check className="size-4.5 shrink-0 text-emerald-600" />
               ) : (
-                <Loader2 className="size-4 shrink-0 animate-spin text-slate-300" />
+                <CircleNotch className="size-4.5 shrink-0 animate-spin text-slate-300" />
               )}
               <span className={done ? "text-slate-800" : "text-slate-400"}>
                 {label}

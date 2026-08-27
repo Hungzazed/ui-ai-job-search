@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { RotateCcw } from "lucide-react";
+import { ArrowCounterClockwise } from "@phosphor-icons/react/ssr";
 import { agentService, type AgentRunInput } from "@/services";
 import { useAgentRun } from "@/hooks/use-agent-run";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -110,7 +110,7 @@ export function ApplyView() {
           title="Chờ quá lâu"
           actions={
             <Button variant="outline" size="sm" onClick={refresh}>
-              <RotateCcw className="size-3.5" />
+              <ArrowCounterClockwise className="size-4" />
               Đọc lại trạng thái
             </Button>
           }
@@ -133,7 +133,7 @@ export function ApplyView() {
           title="Lượt chạy thất bại"
           actions={
             <Button variant="outline" size="sm" loading={sending} onClick={retry}>
-              <RotateCcw className="size-3.5" />
+              <ArrowCounterClockwise className="size-4" />
               Chạy tiếp từ chỗ dừng
             </Button>
           }

@@ -1,15 +1,15 @@
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { CheckCircle, Warning } from "@phosphor-icons/react/ssr";
 import { SectionCard } from "@/components/ui/section-card";
 import { cn } from "@/utils";
 
 const TONES = {
   positive: {
-    icon: CheckCircle2,
+    icon: CheckCircle,
     iconClassName: "text-emerald-500",
     item: "bg-emerald-50/60",
   },
   caution: {
-    icon: AlertTriangle,
+    icon: Warning,
     iconClassName: "text-amber-500",
     item: "bg-amber-50/60",
   },
@@ -54,7 +54,7 @@ export function InsightList({
             )}
           >
             <Icon
-              className={cn("mt-0.5 size-4.5 shrink-0", style.iconClassName)}
+              className={cn("mt-0.5 size-5 shrink-0", style.iconClassName)}
             />
             {item}
           </li>

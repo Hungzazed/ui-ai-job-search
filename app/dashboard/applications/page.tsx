@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText } from "lucide-react";
+import { FileText } from "@phosphor-icons/react/ssr";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import type {
   Application,
@@ -253,7 +253,7 @@ export default function ApplicationsPage() {
                             }}
                             className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-primary-600 hover:underline"
                           >
-                            <FileText className="size-3 shrink-0" />
+                            <FileText className="size-3.5 shrink-0" />
                             Chưa chọn CV
                           </button>
                         );
@@ -267,7 +267,7 @@ export default function ApplicationsPage() {
                           className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 hover:underline disabled:opacity-50"
                           title={cvs.map((c) => c.title).join(", ")}
                         >
-                          <FileText className="size-3 shrink-0" />
+                          <FileText className="size-3.5 shrink-0" />
                           {pdfLoadingId === cv.id
                             ? "Đang tải…"
                             : cv.title}

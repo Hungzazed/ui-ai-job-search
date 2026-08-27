@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Briefcase, Sparkles, Zap } from "lucide-react";
+import { Briefcase, Lightning, Sparkle } from "@phosphor-icons/react/ssr";
 import type { DashboardOverview } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,11 @@ export function DashboardHero({
         <div className="max-w-2xl space-y-2">
           <div className="flex items-center gap-2.5">
             <Badge className="bg-primary-500/20 text-primary-300 ring-primary-400/30 font-mono text-2xs">
-              <Zap className="text-primary-400 mr-1 size-3" />
+              <Lightning className="text-primary-400 mr-1 size-3.5" />
               AI Career Agent Dashboard
             </Badge>
           </div>
-          <h1 className="text-slab-ink text-xl font-bold tracking-tight sm:text-2xl">
+          <h1 className="text-slab-ink text-xl font-semibold tracking-tight sm:text-2xl">
             Xin chào, {firstName} 👋
           </h1>
           <p className="text-slab-muted text-xs leading-relaxed sm:text-sm">
@@ -55,7 +55,7 @@ export function DashboardHero({
               variant="outline"
               className="border-slab-3 bg-slab-2 text-slab-muted hover:bg-slab-3 hover:text-slab-ink"
             >
-              <Briefcase className="size-4" />
+              <Briefcase className="size-4.5" />
               Xem {matchingJobs.total} việc làm
             </Button>
           </Link>
@@ -64,7 +64,7 @@ export function DashboardHero({
               variant="primary"
               className="bg-primary-600 hover:bg-primary-500 text-white"
             >
-              <Sparkles className="size-4" />
+              <Sparkle className="size-4.5" />
               Tối ưu CV với AI
             </Button>
           </Link>

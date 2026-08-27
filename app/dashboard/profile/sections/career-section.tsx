@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass } from "lucide-react";
+import { Compass } from "@phosphor-icons/react/ssr";
 import { ListField } from "@/components/ui/field";
 import { SectionCard } from "@/components/ui/section-card";
 import type { DraftFieldSpec, ProfileSectionProps } from "../profile-draft";

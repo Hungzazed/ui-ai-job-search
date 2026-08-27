@@ -3,7 +3,7 @@
 import { CvLiveProgress } from "./cv-live-progress";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkle } from "@phosphor-icons/react/ssr";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { keys } from "@/lib/query-keys";
 import {
@@ -122,7 +122,7 @@ export function CvOptimizerView() {
         emptyOptionLabel="CV tổng quát (không nhắm vị trí nào)"
         action={
           <Button onClick={handleGenerate} loading={isGenerating}>
-            <Sparkles className="size-4" />
+            <Sparkle className="size-4.5" />
             {isGenerating ? "Đang tạo…" : "Tạo CV bằng AI"}
           </Button>
         }

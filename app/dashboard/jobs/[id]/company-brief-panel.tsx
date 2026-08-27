@@ -4,7 +4,7 @@ import { BriefLiveProgress, type PartialBrief } from "./brief-live-progress";
 import { streamModel } from "@/lib/model-stream";
 import { BriefBody, Signals } from "./company-brief-body";
 import { useState } from "react";
-import { Building2, RefreshCw } from "lucide-react";
+import { ArrowsClockwise, Buildings } from "@phosphor-icons/react/ssr";
 import { companiesService } from "@/services";
 
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -90,7 +90,7 @@ export function CompanyBriefPanel({ jobId }: CompanyBriefPanelProps) {
     <SectionCard
       title="Về công ty này"
       description={data.company}
-      icon={Building2}
+      icon={Buildings}
       compact
       actions={brief ? <Signals brief={brief} /> : null}
     >
@@ -124,7 +124,7 @@ export function CompanyBriefPanel({ jobId }: CompanyBriefPanelProps) {
             disabled={waiting}
             onClick={() => void research(true)}
           >
-            <RefreshCw className="size-3.5" />
+            <ArrowsClockwise className="size-4" />
             {waiting ? "Đang tra..." : "Làm mới"}
           </Button>
         </div>

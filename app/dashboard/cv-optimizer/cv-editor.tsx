@@ -2,7 +2,7 @@
 
 import { SECTION_LABELS, swap } from "./cv-fields";
 import { SectionFields } from "./section-fields";
-import { ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
+import { CaretDown, CaretUp, Eye, EyeSlash } from "@phosphor-icons/react/ssr";
 import type {
   CvContentInput,
   CvLayout,
@@ -55,9 +55,9 @@ export function CvEditor({
                 className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
               >
                 {hidden ? (
-                  <EyeOff className="size-4" />
+                  <EyeSlash className="size-4.5" />
                 ) : (
-                  <Eye className="size-4" />
+                  <Eye className="size-4.5" />
                 )}
               </button>
               <button
@@ -67,7 +67,7 @@ export function CvEditor({
                 onClick={() => move(index, -1)}
                 className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30 disabled:hover:bg-transparent"
               >
-                <ChevronUp className="size-4" />
+                <CaretUp className="size-4.5" />
               </button>
               <button
                 type="button"
@@ -76,7 +76,7 @@ export function CvEditor({
                 onClick={() => move(index, 1)}
                 className="rounded p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30 disabled:hover:bg-transparent"
               >
-                <ChevronDown className="size-4" />
+                <CaretDown className="size-4.5" />
               </button>
             </header>
 

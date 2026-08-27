@@ -1,7 +1,14 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { Minus, Monitor, MonitorSmartphone, Moon, Plus, Sun } from "lucide-react";
+import {
+  Devices,
+  Minus,
+  Monitor,
+  Moon,
+  Plus,
+  Sun,
+} from "@phosphor-icons/react/ssr";
 import { SectionCard } from "@/components/ui/section-card";
 import { cn } from "@/utils";
 import {
@@ -52,7 +59,7 @@ export function DisplayCard() {
 
   return (
     <SectionCard
-      icon={MonitorSmartphone}
+      icon={Devices}
       title="Giao diện & hiển thị"
       description="Áp cho toàn bộ giao diện, lưu trên trình duyệt này"
       compact
@@ -81,7 +88,7 @@ export function DisplayCard() {
                   : "text-slate-500 hover:text-slate-700",
               )}
             >
-              <Icon className="size-4" />
+              <Icon className="size-4.5" />
               {option.label}
             </button>
           );
@@ -97,7 +104,7 @@ export function DisplayCard() {
             disabled={atMin}
             onClick={() => applyFontScale(percent - STEP_PERCENT)}
           >
-            <Minus className="size-4" />
+            <Minus className="size-4.5" />
           </StepButton>
 
           <output
@@ -112,7 +119,7 @@ export function DisplayCard() {
             disabled={atMax}
             onClick={() => applyFontScale(percent + STEP_PERCENT)}
           >
-            <Plus className="size-4" />
+            <Plus className="size-4.5" />
           </StepButton>
         </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { IdCard } from "lucide-react";
+import { IdentificationCard } from "@phosphor-icons/react/ssr";
 import { AreaField, ListField, TextField } from "@/components/ui/field";
 import { SectionCard } from "@/components/ui/section-card";
 import type { ProfileSectionProps } from "../profile-draft";
@@ -45,7 +45,7 @@ const TEXT_FIELDS = [
 export function IdentitySection({ draft, update }: ProfileSectionProps) {
   return (
     <SectionCard
-      icon={IdCard}
+      icon={IdentificationCard}
       title="Định danh & điều kiện ứng tuyển"
       description="Quốc tịch và giấy phép lao động quyết định một tin tuyển dụng có được coi là đủ điều kiện ứng tuyển hay không"
     >

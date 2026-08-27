@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Mic } from "lucide-react";
+import { CaretRight, Microphone } from "@phosphor-icons/react/ssr";
 import { agentService } from "@/services";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { keys } from "@/lib/query-keys";
@@ -34,7 +34,7 @@ export function MockSessions() {
 
   return (
     <SectionCard
-      icon={Mic}
+      icon={Microphone}
       title="Buổi phỏng vấn thử đã có"
       description="Mở lại để đọc nhận xét, hoặc luyện tiếp từ chỗ đang dở"
       className="mb-4"
@@ -72,7 +72,7 @@ export function MockSessions() {
                 </div>
                 <AgentStatusBadge status={session.status} />
                 {session.jobId && (
-                  <ChevronRight className="size-4 shrink-0 text-slate-300" />
+                  <CaretRight className="size-4.5 shrink-0 text-slate-300" />
                 )}
               </div>
             );

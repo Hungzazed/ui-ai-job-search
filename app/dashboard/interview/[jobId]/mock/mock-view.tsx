@@ -3,7 +3,12 @@
 import { isClosed, useMockInterview } from "./use-mock-interview";
 
 import Link from "next/link";
-import { ArrowLeft, Mic, RotateCcw, Sparkles } from "lucide-react";
+import {
+  ArrowCounterClockwise,
+  ArrowLeft,
+  Microphone,
+  Sparkle,
+} from "@phosphor-icons/react/ssr";
 
 import { buildTranscript, pendingTurn } from "@/lib/interview-transcript";
 
@@ -59,7 +64,7 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
         actions={
           <Link href="/dashboard/interview">
             <Button variant="outline" size="sm">
-              <ArrowLeft className="size-3.5" />
+              <ArrowLeft className="size-4" />
               Bộ câu hỏi
             </Button>
           </Link>
@@ -81,7 +86,7 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
           title="Chờ quá lâu"
           actions={
             <Button variant="outline" size="sm" onClick={refresh}>
-              <RotateCcw className="size-3.5" />
+              <ArrowCounterClockwise className="size-4" />
               Đọc lại trạng thái
             </Button>
           }
@@ -92,17 +97,17 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
 
       {!run ? (
         <SectionCard
-          icon={Mic}
+          icon={Microphone}
           title="Bắt đầu một buổi luyện"
           description="Một người phỏng vấn ảo sẽ hỏi bạn từng câu một, nghe bạn trả lời, rồi nhận xét ngay trước khi hỏi tiếp."
         >
           <EmptyState
-            icon={Mic}
+            icon={Microphone}
             title="Chưa có buổi luyện nào cho vị trí này"
             description="Buổi luyện bám theo đúng tin tuyển dụng, hồ sơ và bộ đề chuẩn bị bạn đã có, nên câu hỏi sẽ đào vào những chỗ nhà tuyển dụng nhiều khả năng đào."
             action={
               <Button onClick={start} disabled={busy}>
-                <Sparkles className="size-3.5" />
+                <Sparkle className="size-4" />
                 {busy ? "Đang chuẩn bị" : "Bắt đầu phỏng vấn thử"}
               </Button>
             }
@@ -110,7 +115,7 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
         </SectionCard>
       ) : (
         <SectionCard
-          icon={Mic}
+          icon={Microphone}
           title="Biên bản buổi luyện"
           description={
             transcript?.turns.length
@@ -169,7 +174,7 @@ export function MockInterviewView({ jobId }: { jobId: string }) {
 
           {isClosed(run.status) && (
             <Button variant="outline" onClick={start} disabled={busy}>
-              <RotateCcw className="size-3.5" />
+              <ArrowCounterClockwise className="size-4" />
               Luyện lại từ đầu
             </Button>
           )}

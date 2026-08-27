@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPinned } from "lucide-react";
+import { MapPinArea } from "@phosphor-icons/react/ssr";
 import { TextField } from "@/components/ui/field";
 import { SectionCard } from "@/components/ui/section-card";
 import type { ProfileSectionProps } from "../profile-draft";
@@ -8,7 +8,7 @@ import type { ProfileSectionProps } from "../profile-draft";
 export function ConditionsSection({ draft, update }: ProfileSectionProps) {
   return (
     <SectionCard
-      icon={MapPinned}
+      icon={MapPinArea}
       title="Điều kiện làm việc"
       description="Dùng cho chiều Địa điểm — chiều này cho kết quả đạt hoặc không đạt, không có điểm trung gian"
     >

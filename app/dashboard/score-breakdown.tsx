@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Percent } from "lucide-react";
+import { FileText, Percent } from "@phosphor-icons/react/ssr";
 import type { DashboardOverview } from "@/types";
 import { AIMatchProgress } from "@/components/dashboard/ai-match-progress";
 import { ScoreLine } from "@/components/dashboard/score-row";
@@ -48,7 +48,7 @@ export function ScoreBreakdown({
       <CardHeader className="border-b border-slate-100 pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
           <span className="bg-primary-50 text-primary-700 flex size-6 items-center justify-center rounded-md">
-            <Percent className="size-3.5" />
+            <Percent className="size-4" />
           </span>
           Điểm phù hợp gần đây
         </CardTitle>
@@ -104,7 +104,7 @@ export function ScoreBreakdown({
             */}
             <Link href="/dashboard/cv-optimizer" className="mt-1 w-full">
               <Button variant="secondary" className="w-full">
-                <FileText className="size-4" />
+                <FileText className="size-4.5" />
                 Mở CV Optimizer
               </Button>
             </Link>

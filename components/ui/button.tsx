@@ -1,5 +1,5 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
-import { Loader2 } from "lucide-react";
+import { CircleNotch } from "@phosphor-icons/react/ssr";
 import { cn } from "@/utils";
 
 type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger";
@@ -44,7 +44,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       )}
       {...props}
     >
-      {loading && <Loader2 className="size-4 animate-spin shrink-0" />}
+      {loading && <CircleNotch className="size-4.5 animate-spin shrink-0" />}
       {children}
     </button>
   ),

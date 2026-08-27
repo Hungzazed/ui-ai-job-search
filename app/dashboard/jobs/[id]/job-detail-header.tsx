@@ -2,11 +2,11 @@
 
 import {
   Bookmark,
-  Building2,
+  Buildings,
   MapPin,
-  Sparkles,
+  Sparkle,
   Wallet,
-} from "lucide-react";
+} from "@phosphor-icons/react/ssr";
 import type { Job } from "@/types";
 import type { JobMatchDetail, JobRecord } from "@/services";
 import { cn, formatJobSalary } from "@/utils";
@@ -51,7 +51,7 @@ export function JobDetailHeader({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1 text-sm font-medium text-slate-500">
-              <Building2 className="size-4" />
+              <Buildings className="size-4.5" />
               {card.company}
             </span>
             {match?.overallScore !== null && match?.overallScore !== undefined && (
@@ -61,16 +61,16 @@ export function JobDetailHeader({
             )}
             {verdict && <Badge variant={verdict.variant}>{verdict.label}</Badge>}
           </div>
-          <h1 className="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+          <h1 className="mt-1 text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
             {card.title}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-slate-500">
             <span className="inline-flex items-center gap-1.5 font-semibold text-slate-700">
-              <Wallet className="size-4" />
+              <Wallet className="size-4.5" />
               {formatJobSalary(card)}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <MapPin className="size-4" />
+              <MapPin className="size-4.5" />
               {card.location}
             </span>
             {job.workMode && (
@@ -96,7 +96,7 @@ export function JobDetailHeader({
             loading={applying}
             disabled={applied}
           >
-            <Sparkles className="size-4" />
+            <Sparkle className="size-4.5" />
             {applied ? "Đã tạo đơn" : "Ứng tuyển ngay"}
           </Button>
           <Button
@@ -106,7 +106,7 @@ export function JobDetailHeader({
           >
             <Bookmark
               className={cn(
-                "size-4",
+                "size-4.5",
                 saved && "fill-primary-600 text-primary-600",
               )}
             />

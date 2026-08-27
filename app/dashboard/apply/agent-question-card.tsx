@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageCircleQuestion, Send } from "lucide-react";
+import { ChatCircleDots, PaperPlaneTilt } from "@phosphor-icons/react/ssr";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/form";
 import { Markdown } from "@/components/ui/markdown";
@@ -44,7 +44,7 @@ export function AgentQuestionCard({
   return (
     <SectionCard
       compact
-      icon={MessageCircleQuestion}
+      icon={ChatCircleDots}
       iconClassName="size-4 text-amber-600"
       title="Agent đang hỏi bạn"
       description="Lượt chạy dừng ở đây cho tới khi bạn trả lời."
@@ -84,7 +84,7 @@ export function AgentQuestionCard({
           loading={sending}
           disabled={!text.trim()}
         >
-          <Send className="size-4" />
+          <PaperPlaneTilt className="size-4.5" />
           Gửi câu trả lời
         </Button>
       </div>

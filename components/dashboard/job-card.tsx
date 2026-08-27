@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Bookmark, MapPin, Sparkles } from "lucide-react";
+import { Bookmark, MapPin, Sparkle } from "@phosphor-icons/react/ssr";
 import { LocationText } from "@/components/dashboard/location-text";
 import type { Job } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,7 @@ export function MatchBadge({ score }: { score: number | null }) {
         tone.text,
       )}
     >
-      <Sparkles className="size-3 mr-0.5" />
+      <Sparkle className="size-3.5 mr-0.5" />
       {score}% Match
     </Badge>
   );
@@ -133,7 +133,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
             <div className="mt-2.5 flex flex-wrap items-center gap-x-3.5 gap-y-1 text-xs text-slate-500">
               <span className="font-mono font-semibold text-slate-800">{formatJobSalary(job)}</span>
               <span className="inline-flex items-center gap-1">
-                <MapPin className="size-3.5 text-slate-400" />
+                <MapPin className="size-4 text-slate-400" />
                 <LocationText location={job.location} />
               </span>
               <JobTime time={job.postedAt} />
@@ -149,7 +149,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
 
             <div className="mt-auto flex items-center justify-between border-t border-slate-100/90 pt-3">
               <Button size="sm" variant="outline" onClick={toggleSave} aria-label="Lưu việc làm">
-                <Bookmark className={cn("size-3.5", saved && "fill-primary-600 text-primary-600")} />
+                <Bookmark className={cn("size-4", saved && "fill-primary-600 text-primary-600")} />
                 {saved ? "Đã lưu" : "Lưu"}
               </Button>
               <Link href={`/dashboard/jobs/${job.id}`}>

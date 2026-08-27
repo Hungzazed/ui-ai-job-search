@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Shield, UserCog } from "lucide-react";
+import { Shield, SignOut, UserGear } from "@phosphor-icons/react/ssr";
 import { useSession } from "@/components/dashboard/session";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export default function SettingsPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <SectionCard
-          icon={UserCog}
+          icon={UserGear}
           title="Thông tin đăng nhập"
           description="Đọc từ phiên đang đăng nhập. Chưa đổi được từ giao diện — backend chưa có endpoint cập nhật tên hay email."
           className="h-fit lg:col-span-2"
@@ -120,7 +120,7 @@ export default function SettingsPage() {
               className="mt-3 w-full"
               onClick={() => void logout()}
             >
-              <LogOut className="size-4" />
+              <SignOut className="size-4.5" />
               Đăng xuất
             </Button>
           </Card>

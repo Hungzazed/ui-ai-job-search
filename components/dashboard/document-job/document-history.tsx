@@ -1,4 +1,4 @@
-import { FileText } from "lucide-react";
+import { FileText } from "@phosphor-icons/react/ssr";
 import type { DocumentRecord } from "@/services";
 import {
   Card,
@@ -35,7 +35,7 @@ export function DocumentHistory({
     <Card className="border-slate-200/90">
       <CardHeader className="border-b border-slate-100 pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
-          <FileText className="size-4 text-slate-400" />
+          <FileText className="size-4.5 text-slate-400" />
           Tài liệu đã tạo
         </CardTitle>
         <CardDescription className="text-xs">

@@ -1,13 +1,13 @@
 import Link from "next/link";
 import {
+  ArrowClockwise,
   Check,
+  CircleNotch,
+  Envelope,
   FileText,
-  Loader2,
-  Mail,
-  Mic,
-  RotateCw,
-  Sparkles,
-} from "lucide-react";
+  Microphone,
+  Sparkle,
+} from "@phosphor-icons/react/ssr";
 import type { JobMatchDetail, ProfileRecord, SystemMatch } from "@/services";
 import { AIMatchProgress } from "@/components/dashboard/ai-match-progress";
 import { ScoreBar } from "@/components/dashboard/score-row";
@@ -180,9 +180,9 @@ function LiveScoringCard({ partial }: { partial: PartialEvaluation | null }) {
           return (
             <li key={label} className="flex items-center gap-2 text-sm">
               {done ? (
-                <Check className="size-4 shrink-0 text-emerald-600" />
+                <Check className="size-4.5 shrink-0 text-emerald-600" />
               ) : (
-                <Loader2 className="size-4 shrink-0 animate-spin text-slate-300" />
+                <CircleNotch className="size-4.5 shrink-0 animate-spin text-slate-300" />
               )}
               <span className={done ? "text-slate-800" : "text-slate-400"}>
                 {label}
@@ -234,7 +234,7 @@ export function MatchPanel({
               loading={scoring}
               onClick={() => onScore(true)}
             >
-              {!scoring && <RotateCw className="size-3.5" />}
+              {!scoring && <ArrowClockwise className="size-4" />}
               Chấm lại theo hồ sơ hiện tại
             </Button>
           </div>
@@ -256,7 +256,7 @@ export function MatchPanel({
   ) : (
     <Card>
       <CardContent className="flex items-start gap-2.5 text-sm text-slate-600">
-        <Sparkles className="mt-0.5 size-4 shrink-0 text-slate-400" />
+        <Sparkle className="mt-0.5 size-4.5 shrink-0 text-slate-400" />
         <div>
           <p className="font-semibold text-slate-800">
             Chưa chấm điểm phù hợp cho công việc này
@@ -272,7 +272,7 @@ export function MatchPanel({
             loading={scoring}
             onClick={() => onScore(false)}
           >
-            {!scoring && <Sparkles className="size-3.5" />}
+            {!scoring && <Sparkle className="size-4" />}
             Chấm điểm tin này
           </Button>
         </div>
@@ -306,20 +306,20 @@ export function MatchPanel({
       <div className="flex flex-wrap gap-2">
         <Link href={`/dashboard/cv-optimizer?jobId=${jobId}`} className="flex-1">
           <Button variant="secondary" className="w-full">
-            <FileText className="size-4" />
+            <FileText className="size-4.5" />
             Tối ưu CV
           </Button>
         </Link>
         <Link href={`/dashboard/cover-letter?jobId=${jobId}`} className="flex-1">
           <Button variant="outline" className="w-full">
-            <Mail className="size-4" />
+            <Envelope className="size-4.5" />
             Thư xin việc
           </Button>
         </Link>
 
         <Link href={`/dashboard/interview/${jobId}/mock`} className="flex-1">
           <Button variant="outline" className="w-full">
-            <Mic className="size-4" />
+            <Microphone className="size-4.5" />
             Luyện phỏng vấn
           </Button>
         </Link>

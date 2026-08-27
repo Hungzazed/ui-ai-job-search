@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ShieldWarning } from "@phosphor-icons/react/ssr";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton, SkeletonGrid, SkeletonPage } from "@/components/ui/skeleton";
@@ -16,7 +16,7 @@ export function AccessDenied() {
       <Card className="max-w-md">
         <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
           <span className="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
-            <ShieldAlert className="size-5" />
+            <ShieldWarning className="size-5.5" />
           </span>
           <p className="text-base font-semibold text-slate-900">
             Bạn không có quyền truy cập trang này
@@ -27,7 +27,7 @@ export function AccessDenied() {
           </p>
           <Link href="/dashboard" className="mt-1">
             <Button variant="outline">
-              <ArrowLeft className="size-4" />
+              <ArrowLeft className="size-4.5" />
               Về trang chính
             </Button>
           </Link>

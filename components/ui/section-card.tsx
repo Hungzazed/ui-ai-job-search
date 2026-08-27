@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
   Card,
   CardContent,
@@ -12,7 +12,7 @@ import { cn } from "@/utils";
 interface SectionCardProps {
   title: ReactNode;
   description?: ReactNode;
-  icon?: LucideIcon;
+  icon?: PhosphorIcon;
   /** Mặc định là màu thương hiệu; đổi khi biểu tượng mang nghĩa cảnh báo. */
   iconClassName?: string;
   /** Nội dung căn phải trên cùng hàng với tiêu đề (nút, huy hiệu trạng thái). */
@@ -63,7 +63,7 @@ export function SectionCard({
           >
             {Icon && (
               <Icon
-                className={cn("text-primary-600 size-4.5", iconClassName)}
+                className={cn("text-primary-600 size-5", iconClassName)}
               />
             )}
             {title}

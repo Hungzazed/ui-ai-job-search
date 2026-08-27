@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import {
-  AlertCircle,
-  CheckCircle2,
+  CheckCircle,
   Info,
-  TriangleAlert,
-  type LucideIcon,
-} from "lucide-react";
+  Warning,
+  WarningCircle,
+} from "@phosphor-icons/react/ssr";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import { cn } from "@/utils";
 
 /**
@@ -21,19 +21,19 @@ export type AlertTone = "danger" | "warning" | "info" | "success";
 interface ToneStyle {
   box: string;
   body: string;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
 }
 
 const TONE_STYLES: Record<AlertTone, ToneStyle> = {
   danger: {
     box: "border-red-200 bg-red-50 text-red-800",
     body: "text-red-700",
-    icon: AlertCircle,
+    icon: WarningCircle,
   },
   warning: {
     box: "border-amber-200 bg-amber-50 text-amber-900",
     body: "text-amber-800",
-    icon: TriangleAlert,
+    icon: Warning,
   },
   info: {
     box: "border-sky-200 bg-sky-50 text-sky-900",
@@ -43,7 +43,7 @@ const TONE_STYLES: Record<AlertTone, ToneStyle> = {
   success: {
     box: "border-emerald-200 bg-emerald-50 text-emerald-800",
     body: "text-emerald-700",
-    icon: CheckCircle2,
+    icon: CheckCircle,
   },
 };
 
@@ -52,7 +52,7 @@ interface AlertProps {
   /** Bỏ trống thì nội dung nằm một dòng ngang hàng với biểu tượng. */
   title?: ReactNode;
   /** Ghi đè biểu tượng mặc định của sắc thái. */
-  icon?: LucideIcon;
+  icon?: PhosphorIcon;
   /** Nút hoặc liên kết đặt dưới phần nội dung. */
   actions?: ReactNode;
   className?: string;
@@ -78,7 +78,7 @@ export function Alert({
         className,
       )}
     >
-      <Icon className="mt-0.5 size-4 shrink-0" />
+      <Icon className="mt-0.5 size-4.5 shrink-0" />
       {title === undefined ? (
         <div className="min-w-0">
           {children}

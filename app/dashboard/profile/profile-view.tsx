@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQueryClient } from "@tanstack/react-query";
-import { Save, Upload } from "lucide-react";
+import { FloppyDisk, Upload } from "@phosphor-icons/react/ssr";
 import { apiErrorMessage } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { invalidateAfter, keys } from "@/lib/query-keys";
@@ -169,7 +169,7 @@ export function ProfileView() {
                 hồ sơ: gõ tay, hoặc để AI đọc CV rồi tự chọn nhận phần nào. */}
             <Link href="/dashboard/profile/upload">
               <Button variant="outline">
-                <Upload className="size-4" />
+                <Upload className="size-4.5" />
                 Đọc từ CV
               </Button>
             </Link>
@@ -178,7 +178,7 @@ export function ProfileView() {
               disabled={!dirty}
               onClick={() => void handleSave()}
             >
-              <Save className="size-4" />
+              <FloppyDisk className="size-4.5" />
               Lưu thay đổi
             </Button>
           </>

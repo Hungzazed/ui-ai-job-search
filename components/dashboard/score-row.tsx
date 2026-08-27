@@ -1,4 +1,4 @@
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle } from "@phosphor-icons/react/ssr";
 import { Progress } from "@/components/ui/progress";
 import { scoreBarClass, successRateTone } from "@/utils";
 
@@ -42,7 +42,7 @@ export function ScoreLine({ label, weight, value }: ScoreBarProps) {
   return (
     <div className="flex items-center justify-between text-xs">
       <span className="flex items-center gap-1.5 text-slate-600">
-        <CheckCircle2 className="size-3.5 text-emerald-600" />
+        <CheckCircle className="size-4 text-emerald-600" />
         {label}
         <span className="font-mono text-3xs text-slate-400">{weight}</span>
       </span>

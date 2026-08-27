@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "@phosphor-icons/react/ssr";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export function UploadCvView() {
         actions={
           <Link href="/dashboard/profile">
             <Button variant="outline">
-              <ArrowLeft className="size-4" />
+              <ArrowLeft className="size-4.5" />
               Về hồ sơ
             </Button>
           </Link>

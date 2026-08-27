@@ -1,37 +1,63 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "SVN-Gilroy";
+  src:
+    url("/fonts/SVN-Gilroy-SemiBold.woff2") format("woff2"),
+    url("/fonts/SVN-Gilroy-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
 /*
   Hallmark Design System · AI Career Agent
   - Genre: modern-minimal
-  - Theme: OKLCH Slate & AI Violet
+  - Theme: Royal Blue · Bright White · Dark Gray
   - Macrostructure: Workbench
 */
 @theme {
-  --color-paper: oklch(0.985 0.005 250);
-  --color-paper-2: oklch(0.965 0.008 250);
-  --color-paper-card: #ffffff;
-  --color-ink: oklch(0.14 0.02 260);
-  --color-ink-muted: oklch(0.42 0.02 260);
-  --color-rule: oklch(0.91 0.01 250);
-  --color-accent: oklch(0.58 0.24 280);
-  --color-accent-hover: oklch(0.52 0.24 280);
-  --color-accent-light: oklch(0.96 0.03 280);
-  --color-accent-ink: #ffffff;
-  --color-focus: oklch(0.58 0.24 280);
+  --brand-blue: oklch(0.5487 0.2501 272.4);
+  --brand-ink: oklch(0.2401 0.0038 286.1);
+  --brand-white: #ffffff;
+
+  --color-paper: oklch(0.985 0.001 286.1);
+  --color-paper-2: oklch(0.965 0.002 286.1);
+  --color-paper-card: var(--brand-white);
+  --color-ink: var(--brand-ink);
+  --color-ink-muted: oklch(0.420 0.004 286.1);
+  --color-rule: oklch(0.910 0.004 286.1);
+  --color-accent: var(--brand-blue);
+  --color-accent-hover: oklch(0.49 0.25 272.4);
+  --color-accent-light: oklch(0.97 0.02 272.4);
+  --color-accent-ink: var(--brand-white);
+  --color-focus: var(--brand-blue);
   --color-success: oklch(0.65 0.19 150);
   --color-success-light: oklch(0.96 0.04 150);
 
+  --color-slate-50: oklch(0.984 0.004 286.1);
+  --color-slate-100: oklch(0.968 0.004 286.1);
+  --color-slate-200: oklch(0.929 0.004 286.1);
+  --color-slate-300: oklch(0.870 0.004 286.1);
+  --color-slate-400: oklch(0.705 0.004 286.1);
+  --color-slate-500: oklch(0.554 0.004 286.1);
+  --color-slate-600: oklch(0.446 0.004 286.1);
+  --color-slate-700: oklch(0.372 0.004 286.1);
+  --color-slate-800: oklch(0.279 0.004 286.1);
+  --color-slate-900: oklch(0.207 0.004 286.1);
+  --color-slate-950: oklch(0.127 0.004 286.1);
+
   /* Primary color mapping for backwards compatibility */
-  --color-primary-50: oklch(0.97 0.02 280);
-  --color-primary-100: oklch(0.93 0.04 280);
-  --color-primary-200: oklch(0.85 0.08 280);
-  --color-primary-300: oklch(0.75 0.14 280);
-  --color-primary-400: oklch(0.66 0.20 280);
-  --color-primary-500: oklch(0.58 0.24 280);
-  --color-primary-600: oklch(0.52 0.25 280);
-  --color-primary-700: oklch(0.44 0.24 280);
-  --color-primary-800: oklch(0.36 0.21 280);
-  --color-primary-900: oklch(0.28 0.17 280);
+  --color-primary-50: oklch(0.97 0.02 272.4);
+  --color-primary-100: oklch(0.93 0.05 272.4);
+  --color-primary-200: oklch(0.86 0.10 272.4);
+  --color-primary-300: oklch(0.76 0.16 272.4);
+  --color-primary-400: oklch(0.65 0.22 272.4);
+  --color-primary-500: var(--brand-blue);
+  --color-primary-600: oklch(0.49 0.25 272.4);
+  --color-primary-700: oklch(0.42 0.22 272.4);
+  --color-primary-800: oklch(0.35 0.18 272.4);
+  --color-primary-900: oklch(0.28 0.14 272.4);
 
   /*
     Nhóm "slab" là nền TỐI CỐ ĐỊNH - khối .dark bên dưới không ghi đè chúng.
@@ -40,46 +66,47 @@
     sáng (dải chào mừng, ô code, lớp phủ mờ sau hộp thoại) sẽ lật thành trắng
     lóa. Những chỗ đó dùng token ở đây thay vì slate.
   */
-  --color-slab: oklch(0.21 0.04 265);
-  --color-slab-2: oklch(0.28 0.04 265);
-  --color-slab-3: oklch(0.37 0.04 265);
-  --color-slab-ink: oklch(0.98 0.005 250);
-  --color-slab-muted: oklch(0.87 0.015 250);
+  --color-slab: var(--brand-ink);
+  --color-slab-2: oklch(0.279 0.004 286.1);
+  --color-slab-3: oklch(0.372 0.004 286.1);
+  --color-slab-ink: var(--brand-white);
+  --color-slab-muted: oklch(0.87 0.003 286.1);
 
-  --color-surface: oklch(0.985 0.005 250);
-  --color-surface-card: #ffffff;
+  --color-surface: oklch(0.985 0.001 286.1);
+  --color-surface-card: var(--brand-white);
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
   --text-3xs: 0.625rem;
   --text-3xs--line-height: 0.875rem;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-google-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: "SVN-Gilroy", var(--font-google-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Hallmark responsive non-negotiable gate 34: no horizontal scroll */
 html, body {
   overflow-x: clip;
-  background-color: var(--color-surface, #f8fafc);
-  color: var(--color-ink, #0f172a);
+  background-color: var(--color-surface, #fafafb);
+  color: var(--color-ink, #1f1f21);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background-color: oklch(0.92 0.06 280);
-  color: oklch(0.28 0.17 280);
+  background-color: oklch(0.93 0.05 272.4);
+  color: oklch(0.28 0.14 272.4);
 }
 
 /* Hairline border utility */
 .border-hairline {
   border-width: 1px;
-  border-color: var(--color-rule, oklch(0.91 0.01 250));
+  border-color: var(--color-rule, oklch(0.925 0.003 286.1));
 }
 
 /* Hallmark 8-state interactive helper classes */
 .btn-hallmark:focus-visible {
-  outline: 2px solid var(--color-focus, oklch(0.58 0.24 280));
+  outline: 2px solid var(--color-focus, oklch(0.5487 0.2501 272.4));
   outline-offset: 2px;
 }
 .btn-hallmark:active {
@@ -89,7 +116,7 @@ html, body {
 /* Thin scrollbar for sidebar / overflow areas */
 .scrollbar-thin {
   scrollbar-width: thin;
-  scrollbar-color: oklch(0.85 0.01 250) transparent;
+  scrollbar-color: oklch(0.85 0.003 286.1) transparent;
   /* Cuộn hết danh sách thì DỪNG, không đẩy tiếp sang trang đứng sau nó. */
   overscroll-behavior: contain;
 }
@@ -111,14 +138,14 @@ html, body {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 9999px;
-  background-color: oklch(0.85 0.01 250);
+  background-color: oklch(0.85 0.003 286.1);
   /* Viền trong suốt cộng `content-box` tạo khoảng thở hai bên con trượt; thiếu
      nó thì nó dán sát mép và trông như một vệt kẻ. */
   background-clip: content-box;
 }
 
 .scrollbar-thin:hover::-webkit-scrollbar-thumb {
-  background-color: oklch(0.75 0.02 250);
+  background-color: oklch(0.75 0.004 286.1);
 }
 
 /* Hai nút mũi tên đầu/cuối là thứ làm thanh cuộn trông cũ nhất. */
@@ -126,59 +153,35 @@ html, body {
   display: none;
 }
 
-/*
-  ─────────────────────────────────────────────────────────────────────────────
-  Chế độ tối
-  ─────────────────────────────────────────────────────────────────────────────
-
-  ĐẢO BẢNG MÀU, không thêm `dark:` vào từng chỗ.
-
-  Đã đếm: 764 lượt dùng màu Tailwind cứng (`bg-white`, `text-slate-700`,
-  `bg-slate-100`…) rải trong 158 file. Thêm biến thể `dark:` cho từng chỗ là
-  764 lần cơ hội bỏ sót, và mỗi chỗ bỏ sót là một mảng chữ trắng trên nền trắng.
-
-  Đường tắt nằm ở cách Tailwind v4 sinh CSS - nó KHÔNG ghi giá trị màu vào
-  utility mà trỏ vào biến:
-
-      .bg-white       { background-color: var(--color-white); }
-      .text-slate-700 { color: var(--color-slate-700); }
-
-  Nên gán lại chính những biến đó trong phạm vi `.dark` là toàn bộ 764 chỗ đổi
-  theo, không sửa một file component nào.
-
-  Thang `slate` được ĐẢO ĐẦU ĐUÔI: 50 ↔ 950, 100 ↔ 900, 200 ↔ 800… Trong bản
-  sáng, số nhỏ là nền và số lớn là chữ; đảo lại thì nền hoá tối và chữ hoá sáng
-  mà giữ nguyên tương quan đậm nhạt giữa các lớp.
-*/
 @custom-variant dark (&:where(.dark, .dark *));
 
 .dark {
   /* Nền và chữ cơ bản */
-  --color-white: oklch(0.205 0.012 260);
-  --color-black: oklch(0.98 0.005 250);
+  --color-white: var(--brand-ink);
+  --color-black: oklch(0.98 0.002 286.1);
 
   /* Thang xám, đảo đầu đuôi */
-  --color-slate-50: oklch(0.235 0.014 260);
-  --color-slate-100: oklch(0.27 0.016 260);
-  --color-slate-200: oklch(0.32 0.018 260);
-  --color-slate-300: oklch(0.40 0.02 260);
-  --color-slate-400: oklch(0.55 0.02 260);
-  --color-slate-500: oklch(0.66 0.02 260);
-  --color-slate-600: oklch(0.75 0.018 258);
-  --color-slate-700: oklch(0.84 0.014 256);
-  --color-slate-800: oklch(0.90 0.010 254);
-  --color-slate-900: oklch(0.95 0.008 252);
-  --color-slate-950: oklch(0.98 0.005 250);
+  --color-slate-50: oklch(0.265 0.004 286.1);
+  --color-slate-100: oklch(0.30 0.004 286.1);
+  --color-slate-200: oklch(0.35 0.004 286.1);
+  --color-slate-300: oklch(0.42 0.004 286.1);
+  --color-slate-400: oklch(0.571 0.004 286.1);
+  --color-slate-500: oklch(0.682 0.004 286.1);
+  --color-slate-600: oklch(0.774 0.004 286.1);
+  --color-slate-700: oklch(0.866 0.004 286.1);
+  --color-slate-800: oklch(0.928 0.004 286.1);
+  --color-slate-900: oklch(0.979 0.004 286.1);
+  --color-slate-950: oklch(0.995 0.004 286.1);
 
   /* Token ngữ nghĩa của design system */
-  --color-paper: oklch(0.17 0.012 260);
-  --color-paper-2: oklch(0.205 0.012 260);
-  --color-paper-card: oklch(0.225 0.014 260);
-  --color-ink: oklch(0.96 0.006 250);
-  --color-ink-muted: oklch(0.72 0.016 258);
-  --color-rule: oklch(0.33 0.018 260);
-  --color-surface: oklch(0.17 0.012 260);
-  --color-surface-card: oklch(0.225 0.014 260);
+  --color-paper: oklch(0.20 0.003 286.1);
+  --color-paper-2: oklch(0.265 0.004 286.1);
+  --color-paper-card: var(--brand-ink);
+  --color-ink: oklch(0.979 0.004 286.1);
+  --color-ink-muted: oklch(0.774 0.004 286.1);
+  --color-rule: oklch(0.35 0.004 286.1);
+  --color-surface: oklch(0.20 0.003 286.1);
+  --color-surface-card: var(--brand-ink);
 
   /*
     Nhấn và màu trạng thái phải SÁNG HƠN bản ngày, không tối hơn.
@@ -186,22 +189,22 @@ html, body {
     Nền tối thì màu bão hoà cao đọc như đang rung; kéo độ sáng lên và giảm sắc
     độ một chút cho chữ trên nền tối vẫn đủ tương phản.
   */
-  --color-accent: oklch(0.72 0.17 285);
-  --color-accent-hover: oklch(0.78 0.15 285);
-  --color-accent-light: oklch(0.30 0.08 285);
-  --color-accent-ink: oklch(0.16 0.02 270);
-  --color-focus: oklch(0.72 0.17 285);
+  --color-accent: oklch(0.68 0.20 272.4);
+  --color-accent-hover: oklch(0.74 0.18 272.4);
+  --color-accent-light: oklch(0.30 0.09 272.4);
+  --color-accent-ink: var(--brand-ink);
+  --color-focus: oklch(0.68 0.20 272.4);
 
-  --color-primary-50: oklch(0.26 0.05 280);
-  --color-primary-100: oklch(0.31 0.08 280);
-  --color-primary-200: oklch(0.38 0.12 280);
-  --color-primary-300: oklch(0.48 0.17 280);
-  --color-primary-400: oklch(0.60 0.20 280);
-  --color-primary-500: oklch(0.72 0.17 285);
-  --color-primary-600: oklch(0.78 0.15 285);
-  --color-primary-700: oklch(0.84 0.12 285);
-  --color-primary-800: oklch(0.90 0.08 285);
-  --color-primary-900: oklch(0.95 0.04 285);
+  --color-primary-50: oklch(0.27 0.05 272.4);
+  --color-primary-100: oklch(0.32 0.08 272.4);
+  --color-primary-200: oklch(0.39 0.12 272.4);
+  --color-primary-300: oklch(0.48 0.17 272.4);
+  --color-primary-400: oklch(0.58 0.22 272.4);
+  --color-primary-500: oklch(0.65 0.22 272.4);
+  --color-primary-600: oklch(0.68 0.20 272.4);
+  --color-primary-700: oklch(0.76 0.16 272.4);
+  --color-primary-800: oklch(0.86 0.10 272.4);
+  --color-primary-900: oklch(0.93 0.05 272.4);
 
   --color-success: oklch(0.75 0.16 150);
   --color-success-light: oklch(0.30 0.06 150);
@@ -241,27 +244,25 @@ html, body {
 }
 
 .dark ::selection {
-  background-color: oklch(0.38 0.12 285);
-  color: oklch(0.97 0.01 280);
+  background-color: oklch(0.38 0.14 272.4);
+  color: oklch(0.97 0.01 272.4);
 }
 
 .dark .scrollbar-thin {
-  scrollbar-color: oklch(0.40 0.02 260) transparent;
+  scrollbar-color: oklch(0.42 0.004 286.1) transparent;
 }
 .dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: oklch(0.40 0.02 260);
+  background-color: oklch(0.42 0.004 286.1);
 }
 .dark .scrollbar-thin:hover::-webkit-scrollbar-thumb {
-  background-color: oklch(0.50 0.02 260);
+  background-color: oklch(0.52 0.004 286.1);
 }
 
-/*
-  Tailwind v4 bỏ `cursor: pointer` mặc định của nút, trả về `cursor: default`
-  theo đúng chuẩn CSS. Đặt lại ở đây một lần thay vì thêm `cursor-pointer` vào
-  từng nút: đặt ở lớp base thì nút nào viết sau này cũng có, kể cả nút của thư
-  viện ngoài. Nút đã `disabled` thì KHÔNG - con trỏ phải nói được là bấm vô ích.
-*/
 @layer base {
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   summary,

@@ -1,4 +1,4 @@
-import { Activity, Bot, Gauge, Timer } from "lucide-react";
+import { Gauge, Pulse, Robot, Timer } from "@phosphor-icons/react/ssr";
 import type { AiHealth } from "@/services";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { formatCount, formatDuration, successRateTone } from "@/utils";
@@ -12,13 +12,13 @@ export function HealthStats({ health }: { health: AiHealth }) {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           title="Tổng lời gọi"
-          icon={Bot}
+          icon={Robot}
           value={formatCount(health.total)}
           subtitle={`${formatCount(health.ok)} thành công · ${formatCount(failed)} hỏng`}
         />
         <StatCard
           title="Tỷ lệ thành công"
-          icon={Activity}
+          icon={Pulse}
           // Backend đã làm tròn 1 chữ số thập phân: 97.3% và 97% là hai thông
           // điệp khác nhau khi đang cân nhắc đổi nhà cung cấp. Giữ nguyên.
           value={`${health.successRate}%`}

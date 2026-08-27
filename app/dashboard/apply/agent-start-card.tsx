@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Link2, Sparkles } from "lucide-react";
+import { LinkSimple, Robot, Sparkle } from "@phosphor-icons/react/ssr";
 import type { AgentRunInput } from "@/services";
 import { useDraftState } from "@/hooks/use-draft-state";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ export function AgentStartCard({
   return (
     <SectionCard
       compact
-      icon={Bot}
+      icon={Robot}
       iconClassName="size-4"
       title="Chạy quy trình ứng tuyển"
       description="AI sẽ tự đánh giá độ phù hợp, hỏi ý bạn, soạn CV và thư, rồi nhờ một chuyên gia phản biện đọc lại trước khi kết luận."
@@ -94,7 +94,7 @@ export function AgentStartCard({
             placeholder="https://…"
           />
           <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500">
-            <Link2 className="size-3.5" />
+            <LinkSimple className="size-4" />
             AI sẽ tự tải trang này. Nếu portal chặn máy tự động thì hãy dán chữ
             ở tab bên cạnh.
           </p>
@@ -117,7 +117,7 @@ export function AgentStartCard({
           Một lượt chạy mất khoảng 3-5 phút và tốn nhiều lượt gọi model.
         </p>
         <Button onClick={handleStart} loading={disabled} disabled={!ready}>
-          <Sparkles className="size-4" />
+          <Sparkle className="size-4.5" />
           {disabled ? "Đang chạy…" : "Bắt đầu"}
         </Button>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CaretLeft, CaretRight } from "@phosphor-icons/react/ssr";
 import { Button } from "@/components/ui/button";
 import { formatCount } from "@/utils";
 
@@ -54,7 +54,7 @@ export function Pagination({
           disabled={disabled || offset === 0}
           onClick={() => onOffsetChange(Math.max(0, offset - limit))}
         >
-          <ChevronLeft className="size-3.5" />
+          <CaretLeft className="size-4" />
           Trước
         </Button>
         <span className="font-mono text-xs text-slate-500">
@@ -67,7 +67,7 @@ export function Pagination({
           onClick={() => onOffsetChange(offset + limit)}
         >
           Sau
-          <ChevronRight className="size-3.5" />
+          <CaretRight className="size-4" />
         </Button>
       </div>
     </div>

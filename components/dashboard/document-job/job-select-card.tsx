@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Wand2 } from "lucide-react";
+import { MagicWand } from "@phosphor-icons/react/ssr";
 import type { JobMatchWithJob } from "@/types";
 import { Label, Select } from "@/components/ui/form";
 import { SectionCard } from "@/components/ui/section-card";
@@ -84,7 +84,7 @@ export function JobSelectCard({
   return (
     <SectionCard
       compact
-      icon={Wand2}
+      icon={MagicWand}
       iconClassName="size-4"
       title={title}
       description={description}

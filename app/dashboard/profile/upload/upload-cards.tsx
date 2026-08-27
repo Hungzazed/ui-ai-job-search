@@ -1,6 +1,13 @@
 "use client";
 
-import { Check, FileText, Info, Loader2, RotateCcw, Upload } from "lucide-react";
+import {
+  ArrowCounterClockwise,
+  Check,
+  CircleNotch,
+  FileText,
+  Info,
+  Upload,
+} from "@phosphor-icons/react/ssr";
 import type { PartialProposal } from "@/lib/profile-partial";
 import { failureMessage, isWorthRetrying } from "@/lib/failure-message";
 import type { ProfileDraftRecord } from "@/services";
@@ -75,7 +82,7 @@ export function UploadCard({
           disabled={!file || uploading || disabled}
           className="shrink-0"
         >
-          <FileText className="size-4" />
+          <FileText className="size-4.5" />
           {uploading ? "Đang nộp…" : "Đọc CV này"}
         </Button>
       </div>
@@ -123,9 +130,9 @@ export function RunningCard({
             return (
               <li key={label} className="flex items-center gap-2 text-sm">
                 {done ? (
-                  <Check className="size-4 shrink-0 text-emerald-600" />
+                  <Check className="size-4.5 shrink-0 text-emerald-600" />
                 ) : (
-                  <Loader2 className="size-4 shrink-0 animate-spin text-slate-300" />
+                  <CircleNotch className="size-4.5 shrink-0 animate-spin text-slate-300" />
                 )}
                 <span className={done ? "text-slate-800" : "text-slate-400"}>
                   {label}
@@ -191,7 +198,7 @@ export function FailedCard({
             disabled={retrying}
             className="mt-3"
           >
-            <RotateCcw className="size-4" />
+            <ArrowCounterClockwise className="size-4.5" />
             {retrying ? "Đang xếp lại…" : "Thử lại"}
           </Button>
         </>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Bot } from "lucide-react";
+import { ArrowLeft, Robot } from "@phosphor-icons/react/ssr";
 import type { AuthUser } from "@/types";
 import type { AiFailureRecord, AiHealth } from "@/services";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -76,7 +76,7 @@ export function AdminView() {
         actions={
           <Link href="/dashboard">
             <Button variant="outline">
-              <ArrowLeft className="size-4" />
+              <ArrowLeft className="size-4.5" />
               Về trang chính
             </Button>
           </Link>
@@ -105,7 +105,7 @@ export function AdminView() {
         <Card>
           <CardContent>
             <EmptyState
-              icon={Bot}
+              icon={Robot}
               title="Chưa có lần gọi model nào trong khoảng thời gian này"
               description="Chưa có gì để đo, nên trang này chưa nói được gì về sức khoẻ gateway. Hãy chọn khoảng thời gian rộng hơn hoặc chờ hệ thống chạy thêm."
             />

@@ -1,11 +1,15 @@
 "use client";
 
-import { AlertCircle, Check, Loader2 } from "lucide-react";
+import {
+  Check,
+  CircleNotch,
+  Pulse,
+  WarningCircle,
+} from "@phosphor-icons/react/ssr";
 import type { AgentRunRecord } from "@/services";
 import { summarizeStep } from "@/lib/agent-steps";
 import { SectionCard } from "@/components/ui/section-card";
 import { cn } from "@/utils";
-import { Activity } from "lucide-react";
 
 /**
  * Từng bước agent đã đi, theo thứ tự.
@@ -22,7 +26,7 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
   return (
     <SectionCard
       compact
-      icon={Activity}
+      icon={Pulse}
       iconClassName="size-4 text-slate-400"
       title="Agent đã làm gì"
       description={`${steps.length} bước${run.modelId ? ` · ${run.modelId}` : ""}`}
@@ -45,7 +49,7 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
                   : "bg-slate-100 text-slate-500",
               )}
             >
-              {step.failed ? <AlertCircle className="size-3.5" /> : step.index + 1}
+              {step.failed ? <WarningCircle className="size-4" /> : step.index + 1}
             </span>
 
             <div className="min-w-0 flex-1 border-b border-slate-100 pb-3 last:border-0">
@@ -100,7 +104,7 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
         {active && (
           <li className="flex items-center gap-3 text-xs text-slate-500">
             <span className="bg-primary-50 flex size-6 shrink-0 items-center justify-center rounded-full">
-              <Loader2 className="text-primary-600 size-3.5 animate-spin" />
+              <CircleNotch className="text-primary-600 size-4 animate-spin" />
             </span>
             Đang chạy bước tiếp theo…
           </li>
@@ -109,7 +113,7 @@ export function AgentTimeline({ run }: { run: AgentRunRecord }) {
         {run.status === "DONE" && (
           <li className="flex items-center gap-3 text-xs text-emerald-700">
             <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-50">
-              <Check className="size-3.5" />
+              <Check className="size-4" />
             </span>
             Đã chạy xong
           </li>

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Layers, Target } from "lucide-react";
+import { BookOpen, Stack, Target } from "@phosphor-icons/react/ssr";
 import { type UpskillReportRecord } from "@/services";
 import { GAP_CATEGORY_LABELS, isUpskillReportEmpty, parseHardGaps, parseLearningPlan, parseSynthesisedGaps } from "@/lib/upskill-content";
 import { Alert } from "@/components/ui/alert";
@@ -77,7 +77,7 @@ export function ReportBody({ report }: { report: UpskillReportRecord }) {
 
       {synthesised.length > 0 && (
         <SectionCard
-          icon={Layers}
+          icon={Stack}
           title="Khoảng trống không lộ ra qua danh sách kỹ năng"
           description="Kiến thức ngành, cách làm việc, công cụ hoặc chứng chỉ."
         >

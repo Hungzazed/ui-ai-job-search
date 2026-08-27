@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { GraduationCap, RefreshCw } from "lucide-react";
+import { ArrowsClockwise, GraduationCap } from "@phosphor-icons/react/ssr";
 import { failureMessage } from "@/lib/failure-message";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -169,7 +169,7 @@ export function UpskillView() {
 
   const actions = (
     <Button onClick={() => void generate()} loading={generating}>
-      <RefreshCw className="size-4" />
+      <ArrowsClockwise className="size-4.5" />
       {report ? "Tạo lại" : "Tạo báo cáo"}
     </Button>
   );

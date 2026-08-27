@@ -1,4 +1,9 @@
-import { Briefcase, History, Percent, User } from "lucide-react";
+import {
+  Briefcase,
+  ClockCounterClockwise,
+  Percent,
+  User,
+} from "@phosphor-icons/react/ssr";
 import type { DashboardOverview } from "@/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 
@@ -30,7 +35,7 @@ export function DashboardStats({ data }: { data: DashboardOverview }) {
       />
       <StatCard
         title="Đơn ứng tuyển"
-        icon={History}
+        icon={ClockCounterClockwise}
         value={applications.total.toString()}
         subtitle={
           applications.active > 0

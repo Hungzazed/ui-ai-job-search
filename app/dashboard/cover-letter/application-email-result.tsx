@@ -1,6 +1,11 @@
 "use client";
 
-import { Check, Copy, Mail, Send } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Envelope,
+  PaperPlaneTilt,
+} from "@phosphor-icons/react/ssr";
 import type { DocumentRecord } from "@/services";
 import {
   applicationEmailPlainText,
@@ -30,7 +35,7 @@ export function ApplicationEmailResult({ record }: { record: DocumentRecord }) {
     return (
       <SectionCard
         compact
-        icon={Mail}
+        icon={Envelope}
         iconClassName="size-4 text-slate-400"
         title={record.title}
         description={documentSubtitle(record)}
@@ -45,7 +50,7 @@ export function ApplicationEmailResult({ record }: { record: DocumentRecord }) {
   return (
     <SectionCard
       compact
-      icon={Mail}
+      icon={Envelope}
       iconClassName="size-4 text-slate-400"
       title={record.title}
       description={documentSubtitle(record)}
@@ -59,16 +64,16 @@ export function ApplicationEmailResult({ record }: { record: DocumentRecord }) {
             onClick={() => copy("body", body)}
           >
             {copied === "body" ? (
-              <Check className="size-3.5" />
+              <Check className="size-4" />
             ) : (
-              <Copy className="size-3.5" />
+              <Copy className="size-4" />
             )}
             {copied === "body" ? "Đã sao chép" : "Sao chép nội dung"}
           </Button>
           {compose && (
             <a href={compose} target="_blank" rel="noopener noreferrer">
               <Button variant="secondary" size="sm">
-                <Send className="size-3.5" />
+                <PaperPlaneTilt className="size-4" />
                 Soạn trong Gmail
               </Button>
             </a>
@@ -95,9 +100,9 @@ export function ApplicationEmailResult({ record }: { record: DocumentRecord }) {
             disabled={!email.subject}
           >
             {copied === "subject" ? (
-              <Check className="size-3.5" />
+              <Check className="size-4" />
             ) : (
-              <Copy className="size-3.5" />
+              <Copy className="size-4" />
             )}
             {copied === "subject" ? "Đã sao chép" : "Sao chép"}
           </Button>

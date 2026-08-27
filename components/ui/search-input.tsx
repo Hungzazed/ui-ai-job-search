@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { MagnifyingGlass, X } from "@phosphor-icons/react/ssr";
 import { cn } from "@/utils";
 
 interface SearchInputProps {
@@ -19,7 +19,7 @@ export function SearchInput({
 }: SearchInputProps) {
   return (
     <div className={cn("relative min-w-56 flex-1", className)}>
-      <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
+      <MagnifyingGlass className="pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-slate-400" />
       <input
         type="search"
         value={value}
@@ -34,7 +34,7 @@ export function SearchInput({
           aria-label="Xoá tìm kiếm"
           className="absolute top-1/2 right-2.5 flex size-5 -translate-y-1/2 cursor-pointer items-center justify-center rounded text-slate-400 transition-colors hover:text-slate-700"
         >
-          <X className="size-3.5" />
+          <X className="size-4" />
         </button>
       )}
     </div>

@@ -1,12 +1,12 @@
 "use client";
 
 import {
-  Award,
-  BriefcaseBusiness,
-  FolderGit2,
+  Briefcase,
+  GitBranch,
   GraduationCap,
-  Sparkles,
-} from "lucide-react";
+  Medal,
+  Sparkle,
+} from "@phosphor-icons/react/ssr";
 import { JsonField } from "@/components/ui/field";
 import { SectionCard } from "@/components/ui/section-card";
 import type { ProfileSectionProps } from "../profile-draft";
@@ -54,7 +54,7 @@ const TRAITS_PLACEHOLDER = `{
 export function RecordsSection({ draft, update }: ProfileSectionProps) {
   return (
     <SectionCard
-      icon={BriefcaseBusiness}
+      icon={Briefcase}
       title="Kinh nghiệm, dự án & học vấn"
       description="Các khối này được lưu nguyên dạng JSON và đưa thẳng vào phần chấm điểm cùng mọi tài liệu AI viết ra, nên cấu trúc do bạn tự đặt miễn là JSON hợp lệ"
     >
@@ -64,7 +64,7 @@ export function RecordsSection({ draft, update }: ProfileSectionProps) {
       <JsonField
         id="p-experiences"
         label="Kinh nghiệm làm việc"
-        icon={<BriefcaseBusiness className="size-3.5" />}
+        icon={<Briefcase className="size-3.5" />}
         placeholder={EXPERIENCE_PLACEHOLDER}
         value={draft.experiences}
         onChange={(value) => update("experiences", value)}
@@ -76,7 +76,7 @@ export function RecordsSection({ draft, update }: ProfileSectionProps) {
       <JsonField
         id="p-projects"
         label="Dự án"
-        icon={<FolderGit2 className="size-3.5" />}
+        icon={<GitBranch className="size-3.5" />}
         placeholder={PROJECT_PLACEHOLDER}
         value={draft.projects}
         onChange={(value) => update("projects", value)}
@@ -93,7 +93,7 @@ export function RecordsSection({ draft, update }: ProfileSectionProps) {
       <JsonField
         id="p-certificates"
         label="Chứng chỉ"
-        icon={<Award className="size-3.5" />}
+        icon={<Medal className="size-3.5" />}
         placeholder={CERTIFICATE_PLACEHOLDER}
         value={draft.certificates}
         onChange={(value) => update("certificates", value)}
@@ -101,7 +101,7 @@ export function RecordsSection({ draft, update }: ProfileSectionProps) {
       <JsonField
         id="p-behavioralTraits"
         label="Đặc điểm hành vi"
-        icon={<Sparkles className="size-3.5" />}
+        icon={<Sparkle className="size-3.5" />}
         placeholder={TRAITS_PLACEHOLDER}
         value={draft.behavioralTraits}
         onChange={(value) => update("behavioralTraits", value)}

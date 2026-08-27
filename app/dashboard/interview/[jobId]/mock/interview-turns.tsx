@@ -1,4 +1,4 @@
-import { Lightbulb } from "lucide-react";
+import { Lightbulb } from "@phosphor-icons/react/ssr";
 import { Markdown } from "@/components/ui/markdown";
 import { cn } from "@/utils";
 import type { InterviewTurn } from "@/lib/interview-transcript";
@@ -74,7 +74,7 @@ export function InterviewTurnBlock({
         */}
         {turn.feedback && (
           <div className="border-primary-300 flex gap-2.5 border-l-2 py-0.5 pl-3">
-            <Lightbulb className="text-primary-600 mt-0.5 size-4 shrink-0" />
+            <Lightbulb className="text-primary-600 mt-0.5 size-4.5 shrink-0" />
             <Markdown text={turn.feedback} className="min-w-0 text-slate-600" />
           </div>
         )}

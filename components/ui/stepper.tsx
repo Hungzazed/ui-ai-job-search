@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check } from "@phosphor-icons/react/ssr";
 import { cn } from "@/utils";
 
 export interface Step {
@@ -35,7 +35,7 @@ export function Stepper({ steps, current, onStepClick, className }: StepperProps
                   onStepClick && index <= current && "cursor-pointer",
                 )}
               >
-                {state === "done" ? <Check className="size-4" /> : index + 1}
+                {state === "done" ? <Check className="size-4.5" /> : index + 1}
               </button>
               <span
                 className={cn(

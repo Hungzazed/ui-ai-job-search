@@ -1,4 +1,4 @@
-import { Check, Loader2 } from "lucide-react";
+import { Check, CircleNotch } from "@phosphor-icons/react/ssr";
 import { Alert } from "@/components/ui/alert";
 import type { UpskillReportRecord } from "@/services";
 
@@ -13,9 +13,9 @@ function StepRow({ done, label }: { done: boolean; label: string }) {
   return (
     <span className="flex items-center gap-2">
       {done ? (
-        <Check className="size-4 shrink-0 text-emerald-600" />
+        <Check className="size-4.5 shrink-0 text-emerald-600" />
       ) : (
-        <Loader2 className="size-4 shrink-0 animate-spin text-slate-400" />
+        <CircleNotch className="size-4.5 shrink-0 animate-spin text-slate-400" />
       )}
       <span className={done ? "text-slate-800" : "text-slate-500"}>{label}</span>
     </span>

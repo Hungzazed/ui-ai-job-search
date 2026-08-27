@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CornerDownLeft, Send } from "lucide-react";
+import { ArrowElbowDownLeft, PaperPlaneTilt } from "@phosphor-icons/react/ssr";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/form";
 
@@ -57,7 +57,7 @@ export function AnswerBox({
           </kbd>
           <span>+</span>
           <kbd className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 font-mono text-[0.6875rem]">
-            <CornerDownLeft className="size-3" />
+            <ArrowElbowDownLeft className="size-3.5" />
           </kbd>
           <span>để gửi</span>
         </p>
@@ -67,7 +67,7 @@ export function AnswerBox({
           disabled={sending || !text.trim()}
           className="ml-auto"
         >
-          <Send className="size-3.5" />
+          <PaperPlaneTilt className="size-4" />
           {sending ? "Đang gửi" : "Gửi câu trả lời"}
         </Button>
       </div>

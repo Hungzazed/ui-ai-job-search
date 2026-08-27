@@ -1,4 +1,4 @@
-import { TriangleAlert } from "lucide-react";
+import { Warning } from "@phosphor-icons/react/ssr";
 import type { AiFailureKind, AiHealth } from "@/services";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,7 +15,7 @@ export function FailureKindsCard({ health }: { health: AiHealth }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <TriangleAlert className="size-4.5 text-amber-500" />
+          <Warning className="size-5 text-amber-500" />
           Nguyên nhân hỏng
         </CardTitle>
         <CardDescription>

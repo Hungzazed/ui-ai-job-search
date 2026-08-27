@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Mail } from "lucide-react";
+import { Check, Copy, Envelope } from "@phosphor-icons/react/ssr";
 import type { DocumentRecord } from "@/services";
 import { useCopy } from "@/hooks/use-copy";
 import {
@@ -41,7 +41,7 @@ export function CoverLetterResult({
     <div className="space-y-4">
       <SectionCard
         compact
-        icon={Mail}
+        icon={Envelope}
         iconClassName="size-4 text-slate-400"
         title={record.title}
         description={documentSubtitle(record)}
@@ -51,9 +51,9 @@ export function CoverLetterResult({
             <DocumentStatusBadge status={record.status} />
             <Button variant="outline" size="sm" onClick={handleCopy}>
               {copied ? (
-                <Check className="size-3.5" />
+                <Check className="size-4" />
               ) : (
-                <Copy className="size-3.5" />
+                <Copy className="size-4" />
               )}
               {copied ? "Đã sao chép" : "Sao chép"}
             </Button>

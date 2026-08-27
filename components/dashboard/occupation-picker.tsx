@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, Search, X } from "lucide-react";
+import { Check, MagnifyingGlass, X } from "@phosphor-icons/react/ssr";
 import type { OccupationOption } from "@/services";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils";
@@ -106,13 +106,13 @@ export function OccupationPicker({
             aria-label="Đóng"
             className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100"
           >
-            <X className="size-4" />
+            <X className="size-4.5" />
           </button>
         </div>
 
         <div className="border-b border-slate-100 px-5 py-3">
           <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
+            <MagnifyingGlass className="pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-slate-400" />
             <input
               value={needle}
               onChange={(event) => setNeedle(event.target.value)}
@@ -162,7 +162,7 @@ export function OccupationPicker({
                   )}
                 >
                   {draftGroups.includes(group.code) && (
-                    <Check className="size-3" />
+                    <Check className="size-3.5" />
                   )}
                 </span>
                 <span className="min-w-0 flex-1 truncate">{group.name}</span>
@@ -193,7 +193,7 @@ export function OccupationPicker({
                     )}
                   >
                     {draftSubs.includes(sub.code) && (
-                      <Check className="size-3" />
+                      <Check className="size-3.5" />
                     )}
                   </span>
                   <span className="min-w-0 flex-1 truncate">{sub.name}</span>
@@ -229,7 +229,7 @@ export function OccupationPicker({
             size="sm"
             onClick={() => onApply({ groups: draftGroups, subs: draftSubs })}
           >
-            <Check className="size-4" />
+            <Check className="size-4.5" />
             Áp dụng
           </Button>
         </div>

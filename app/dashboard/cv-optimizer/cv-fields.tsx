@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { X } from "@phosphor-icons/react/ssr";
 import type { CvSectionKey } from "@/services";
 import { Input, Textarea } from "@/components/ui/form";
 
@@ -119,7 +119,7 @@ export function EntryBox({
         aria-label="Xoá mục này"
         className="absolute right-2 top-2 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
       >
-        <X className="size-3.5" />
+        <X className="size-4" />
       </button>
       {children}
     </div>

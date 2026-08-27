@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Code2, FileDown } from "lucide-react";
+import { Code, FileArrowDown } from "@phosphor-icons/react/ssr";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { useAsyncData } from "@/hooks/use-async-data";
 import { documentsService } from "@/services";
@@ -81,7 +81,7 @@ export function DocumentSource({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <Button size="sm" disabled={pdfLoading} onClick={() => void openPdf()}>
-          <FileDown className="size-3.5" />
+          <FileArrowDown className="size-4" />
           {pdfLoading ? "Đang tạo PDF…" : "Xem PDF"}
         </Button>
 
@@ -90,7 +90,7 @@ export function DocumentSource({
           size="sm"
           onClick={() => setOpen((current) => !current)}
         >
-          <Code2 className="size-3.5" />
+          <Code className="size-4" />
           {open ? "Ẩn mã .tex" : "Xem mã .tex"}
         </Button>
       </div>

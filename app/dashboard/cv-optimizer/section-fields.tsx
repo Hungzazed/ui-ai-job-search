@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus } from "@phosphor-icons/react/ssr";
 import type { CvContentInput, CvSectionKey } from "@/services";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/form";
@@ -307,7 +307,7 @@ export function AddButton({
 }) {
   return (
     <Button size="sm" variant="outline" onClick={onClick} className="w-full">
-      <Plus className="size-4" />
+      <Plus className="size-4.5" />
       {label}
     </Button>
   );

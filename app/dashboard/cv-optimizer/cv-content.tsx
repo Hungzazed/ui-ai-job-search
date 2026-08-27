@@ -1,10 +1,10 @@
 import {
-  FolderKanban,
   GraduationCap,
-  Layers,
-  Sparkles,
+  Kanban,
+  Sparkle,
+  Stack,
   Target,
-} from "lucide-react";
+} from "@phosphor-icons/react/ssr";
 import type { CvContent } from "@/lib/document-content";
 import { Badge } from "@/components/ui/badge";
 import { SectionTitle } from "@/components/ui/section-title";
@@ -38,7 +38,7 @@ export function CvContentView({ cv }: { cv: CvContent }) {
       {cv.coreCompetencies.length > 0 && (
         <section>
           <SectionTitle
-            icon={<Sparkles className="size-3.5" />}
+            icon={<Sparkle className="size-3.5" />}
             label="Năng lực cốt lõi"
           />
           <ul className="space-y-1.5">
@@ -55,7 +55,7 @@ export function CvContentView({ cv }: { cv: CvContent }) {
       {cv.experiences.length > 0 && (
         <section>
           <SectionTitle
-            icon={<Layers className="size-3.5" />}
+            icon={<Stack className="size-3.5" />}
             label="Kinh nghiệm làm việc"
           />
           <div className="space-y-4">
@@ -96,7 +96,7 @@ export function CvContentView({ cv }: { cv: CvContent }) {
       {cv.projects.length > 0 && (
         <section>
           <SectionTitle
-            icon={<FolderKanban className="size-3.5" />}
+            icon={<Kanban className="size-3.5" />}
             label="Dự án"
           />
           <div className="space-y-4">
@@ -176,7 +176,7 @@ export function CvContentView({ cv }: { cv: CvContent }) {
       {cv.skillGroups.length > 0 && (
         <section>
           <SectionTitle
-            icon={<Layers className="size-3.5" />}
+            icon={<Stack className="size-3.5" />}
             label="Kỹ năng"
           />
           <div className="space-y-2.5">

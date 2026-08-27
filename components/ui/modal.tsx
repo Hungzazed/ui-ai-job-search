@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { X } from "@phosphor-icons/react/ssr";
 import { cn } from "@/utils";
 
 interface ModalProps {
@@ -52,7 +52,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
             onClick={onClose}
             className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           >
-            <X className="size-5" />
+            <X className="size-5.5" />
           </button>
         </div>
         {children}

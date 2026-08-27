@@ -2,7 +2,7 @@
 
 import { LetterLiveProgress, type PartialLetter } from "./letter-live-progress";
 import { useMemo, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkle } from "@phosphor-icons/react/ssr";
 import type { JobMatchWithJob } from "@/types";
 import { documentsService, type DocumentRecord } from "@/services";
 import {
@@ -105,7 +105,7 @@ export function CoverLetterPanel({
             loading={isGenerating}
             disabled={!jobId}
           >
-            <Sparkles className="size-4" />
+            <Sparkle className="size-4.5" />
             {isGenerating ? "Đang tạo…" : "Tạo thư xin việc"}
           </Button>
         }

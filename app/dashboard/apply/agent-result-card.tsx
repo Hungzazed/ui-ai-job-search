@@ -1,6 +1,11 @@
 "use client";
 
-import { Check, ClipboardCheck, Copy, FileCode2 } from "lucide-react";
+import {
+  Check,
+  ClipboardText,
+  Copy,
+  FileCode,
+} from "@phosphor-icons/react/ssr";
 import type { AgentRunRecord } from "@/services";
 import { useCopy } from "@/hooks/use-copy";
 import { Alert } from "@/components/ui/alert";
@@ -26,7 +31,7 @@ export function AgentResultCard({ run }: { run: AgentRunRecord }) {
   return (
     <SectionCard
       compact
-      icon={ClipboardCheck}
+      icon={ClipboardText}
       iconClassName="size-4 text-emerald-600"
       title="Kết quả"
       description={
@@ -37,9 +42,9 @@ export function AgentResultCard({ run }: { run: AgentRunRecord }) {
         text ? (
           <Button variant="outline" size="sm" onClick={() => copy("result", text)}>
             {copied === "result" ? (
-              <Check className="size-3.5" />
+              <Check className="size-4" />
             ) : (
-              <Copy className="size-3.5" />
+              <Copy className="size-4" />
             )}
             {copied === "result" ? "Đã sao chép" : "Sao chép"}
           </Button>
@@ -64,7 +69,7 @@ export function AgentResultCard({ run }: { run: AgentRunRecord }) {
               key={file.key}
               className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs"
             >
-              <FileCode2 className="size-4 shrink-0 text-slate-400" />
+              <FileCode className="size-4.5 shrink-0 text-slate-400" />
               <span className="min-w-0 flex-1 truncate font-mono text-slate-700">
                 {file.name}
               </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu } from "lucide-react";
+import { List } from "@phosphor-icons/react/ssr";
 import { useSession } from "@/components/dashboard/session";
 import { personInitials } from "@/utils";
 
@@ -19,7 +19,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 lg:hidden"
         aria-label="Mở menu"
       >
-        <Menu className="size-5" />
+        <List className="size-5.5" />
       </button>
 
       {/*

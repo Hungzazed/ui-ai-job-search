@@ -6,16 +6,20 @@ export const SIDEBAR_KEY = "aijob:sidebar";
 export const isSidebarState = (value: unknown): value is SidebarState =>
   value === "expanded" || value === "collapsed";
 
-export function readSidebar(): SidebarState {
-  if (typeof document === "undefined") return DEFAULT_SIDEBAR;
-  const painted = document.documentElement.dataset.sidebar;
-  if (isSidebarState(painted)) return painted;
+export function savedSidebar(): SidebarState {
   try {
     const saved = window.localStorage.getItem(SIDEBAR_KEY);
     return isSidebarState(saved) ? saved : DEFAULT_SIDEBAR;
   } catch {
     return DEFAULT_SIDEBAR;
   }
+}
+
+export function readSidebar(): SidebarState {
+  if (typeof document === "undefined") return DEFAULT_SIDEBAR;
+  const painted = document.documentElement.dataset.sidebar;
+  if (isSidebarState(painted)) return painted;
+  return savedSidebar();
 }
 
 const listeners = new Set<() => void>();
@@ -42,6 +46,28 @@ export function applySidebar(state: SidebarState): void {
 
 export function toggleSidebar(): void {
   applySidebar(readSidebar() === "collapsed" ? "expanded" : "collapsed");
+}
+
+export const SPLIT_ROOMY_WIDTH = 1440;
+
+export function squeezeSidebar(): () => void {
+  if (typeof window === "undefined") return () => {};
+
+  const fit = () => {
+    paintSidebar(
+      window.innerWidth < SPLIT_ROOMY_WIDTH ? "collapsed" : savedSidebar(),
+    );
+    for (const listener of listeners) listener();
+  };
+
+  fit();
+  window.addEventListener("resize", fit);
+
+  return () => {
+    window.removeEventListener("resize", fit);
+    paintSidebar(savedSidebar());
+    for (const listener of listeners) listener();
+  };
 }
 
 export const serverSidebar = (): SidebarState => DEFAULT_SIDEBAR;

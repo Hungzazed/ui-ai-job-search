@@ -48,6 +48,8 @@ export const keys = {
   matches: () => ["matches"] as const,
   /** Thư đã viết và CV đã tạo hỏi CÙNG một danh sách này - cùng khoá, một request. */
   matchList: (limit: number) => ["matches", "list", limit] as const,
+  matchPage: (limit: number, offset: number) =>
+    ["matches", "page", limit, offset] as const,
 
   applications: () => ["applications"] as const,
   applicationList: (filter: string, offset: number) =>

@@ -42,7 +42,7 @@ export function MatchBadge({ score }: { score: number | null }) {
       )}
     >
       <Sparkle className="size-3.5 mr-0.5" />
-      {score}% phù hợp
+      AI {score}%
     </Badge>
   );
 }
@@ -103,12 +103,7 @@ export function JobCard({ job, onSavedChange }: JobCardProps) {
                         : `Tin chưa được rút trích yêu cầu; đang đếm kỹ năng của bạn xuất hiện trong tin`
                     }
                   >
-                    khớp {job.systemMatch.met}/{job.systemMatch.total}
-                    {job.systemMatch.kind === "REQUIREMENTS" && (
-                      <span className="ml-1 text-teal-600">
-                        · {job.systemMatch.percent}%
-                      </span>
-                    )}
+                    đủ {job.systemMatch.met}/{job.systemMatch.total}
                   </span>
                 )}
                 {job.hasAiScore && job.aiMatch === null && (

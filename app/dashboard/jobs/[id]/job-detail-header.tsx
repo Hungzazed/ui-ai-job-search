@@ -56,7 +56,7 @@ export function JobDetailHeader({
             </span>
             {match?.overallScore !== null && match?.overallScore !== undefined && (
               <Badge variant="success" className="font-mono">
-                {match.overallScore}% phù hợp
+                AI chấm {match.overallScore}%
               </Badge>
             )}
             {verdict && <Badge variant={verdict.variant}>{verdict.label}</Badge>}
@@ -88,31 +88,32 @@ export function JobDetailHeader({
             </div>
           )}
         </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto">
-          <Button
-            size="lg"
-            className="w-full sm:w-auto"
-            onClick={onApply}
-            loading={applying}
-            disabled={applied}
-          >
-            <Sparkle className="size-4.5" />
-            {applied ? "Đã tạo đơn" : "Ứng tuyển ngay"}
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto"
-            onClick={onToggleSave}
-          >
-            <Bookmark
-              className={cn(
-                "size-4.5",
-                saved && "fill-primary-600 text-primary-600",
-              )}
-            />
-            {saved ? "Đã lưu" : "Lưu việc làm"}
-          </Button>
-        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+        <Button
+          variant="outline"
+          className="flex-1 sm:flex-none"
+          onClick={onApply}
+          loading={applying}
+          disabled={applied}
+        >
+          <Sparkle className="size-4.5" />
+          {applied ? "Đã tạo đơn" : "Ứng tuyển ngay"}
+        </Button>
+        <Button
+          variant="outline"
+          className="flex-1 sm:flex-none"
+          onClick={onToggleSave}
+        >
+          <Bookmark
+            className={cn(
+              "size-4.5",
+              saved && "fill-primary-600 text-primary-600",
+            )}
+          />
+          {saved ? "Đã lưu" : "Lưu việc làm"}
+        </Button>
       </div>
     </div>
   );

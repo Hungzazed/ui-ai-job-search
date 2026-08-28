@@ -7,6 +7,7 @@ import {
   CalendarDots,
   CaretDown,
   Check,
+  Funnel,
   MapPin,
   Money,
   PaperPlaneRight,
@@ -110,6 +111,16 @@ export function JobFilterBar({
 
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  const secondary =
+    value.occupation.length +
+    value.subOccupation.length +
+    (value.salaryMin ? 1 : 0) +
+    (value.postedWithin ? 1 : 0) +
+    (value.saved ? 1 : 0) +
+    (value.applied ? 1 : 0);
+
+  const [moreOpen, setMoreOpen] = useState(secondary > 0);
+
   return (
     <div className="mb-4 space-y-2.5">
       <OccupationPicker
@@ -146,8 +157,28 @@ export function JobFilterBar({
           onClear={() => set("province", [])}
           searchPlaceholder="Nhập Tỉnh/Thành phố"
         />
+
+        <TriggerButton
+          icon={Funnel}
+          label="Bộ lọc"
+          active={secondary > 0}
+          open={moreOpen}
+          onClick={() => setMoreOpen(!moreOpen)}
+        >
+          {secondary > 0 && (
+            <span className="bg-primary-100 text-primary-700 rounded-full px-1.5 text-xs font-semibold">
+              {secondary}
+            </span>
+          )}
+        </TriggerButton>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+
+      <div
+        className={cn(
+          "flex-wrap items-center gap-2",
+          moreOpen ? "flex" : "hidden",
+        )}
+      >
         <Toggle
           label="Đã lưu"
           icon={Bookmark}

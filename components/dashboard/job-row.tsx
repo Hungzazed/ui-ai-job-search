@@ -102,7 +102,7 @@ export function JobRow({
                   className="rounded bg-teal-50 px-1.5 py-0.5 font-mono font-semibold text-teal-700"
                   title={`Hồ sơ đáp ứng ${job.systemMatch.met}/${job.systemMatch.total} yêu cầu tin nêu ra`}
                 >
-                  khớp {job.systemMatch.percent}%
+                  Khớp {job.systemMatch.met}/{job.systemMatch.total}
                 </span>
               )}
           </div>

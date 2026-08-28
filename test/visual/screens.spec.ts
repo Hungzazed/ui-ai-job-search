@@ -56,6 +56,7 @@ const SCREENS = [
   { path: "/dashboard", name: "01-dashboard" },
   { path: "/dashboard/jobs", name: "01b-jobs-matched" },
   { path: "/dashboard/jobs/all", name: "01c-jobs-all" },
+  { path: "/dashboard/matches", name: "01d-matches-ai" },
   { path: "/dashboard/applications", name: "02-applications" },
   { path: "/dashboard/interview", name: "03-interview" },
   { path: "/dashboard/upskill", name: "04-upskill" },

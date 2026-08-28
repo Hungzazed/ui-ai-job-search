@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { FileText } from "@phosphor-icons/react/ssr";
 import type { JobMatchDetail, JobRecord, ProfileRecord } from "@/services";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 import { useApiQuery } from "@/hooks/use-api-query";
@@ -16,10 +15,10 @@ import {
 } from "@/services";
 import { toJobCard } from "@/lib/adapters";
 import { Alert } from "@/components/ui/alert";
-import { SectionCard } from "@/components/ui/section-card";
 import { Skeleton, SkeletonPage } from "@/components/ui/skeleton";
 import { Toast } from "@/components/ui/toast";
 import { CompanyBriefPanel } from "./company-brief-panel";
+import { JobDescriptionCard } from "./job-description-card";
 import { JobDetailHeader } from "./job-detail-header";
 import { InsightList } from "./match-insights";
 import { MatchPanel } from "./match-panel";
@@ -210,36 +209,18 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
         onApply={handleApply}
       />
 
-      <div
-        className={
-          embedded ? "space-y-6" : "grid gap-6 lg:grid-cols-3"
-        }
-      >
-        
-        {embedded && (
-          <MatchPanel
-            jobId={jobId}
-            match={match}
-            partial={partial}
-            profile={profile}
-            system={job.systemMatch}
-            onScore={handleScore}
-            scoring={scoring}
-          />
-        )}
+      <MatchPanel
+        jobId={jobId}
+        match={match}
+        partial={partial}
+        profile={profile}
+        system={job.systemMatch}
+        onScore={handleScore}
+        scoring={scoring}
+      />
 
+      <div className={embedded ? "space-y-6" : "grid gap-6 lg:grid-cols-3"}>
         <div className={embedded ? "space-y-6" : "space-y-6 lg:col-span-2"}>
-          <SectionCard
-            icon={FileText}
-            title="Mô tả công việc"
-            description="Nội dung nguyên văn từ tin tuyển dụng gốc"
-          >
-            
-            <p className="text-sm leading-relaxed whitespace-pre-line text-slate-600">
-              {job.description}
-            </p>
-          </SectionCard>
-
           {match && match.strengths.length > 0 && (
             <InsightList
               tone="positive"
@@ -257,20 +238,15 @@ export function JobDetailView({ jobId, embedded }: JobDetailViewProps) {
               items={match.gaps}
             />
           )}
+
+          <JobDescriptionCard
+            description={job.description}
+            defaultOpen={!match || match.strengths.length + match.gaps.length === 0}
+          />
         </div>
+
         <div className="space-y-6">
           <CompanyBriefPanel jobId={jobId} />
-          {!embedded && (
-            <MatchPanel
-              jobId={jobId}
-              match={match}
-            partial={partial}
-              profile={profile}
-              system={job.systemMatch}
-              onScore={handleScore}
-              scoring={scoring}
-            />
-          )}
         </div>
       </div>
     </div>

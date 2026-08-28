@@ -8,6 +8,7 @@ import { jobsService } from "@/services";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { invalidateAfter, keys } from "@/lib/query-keys";
 import { toJobCardFromRecord } from "@/lib/adapters";
+import { squeezeSidebar } from "@/lib/sidebar";
 import {
   JobFilterBar,
   SortSelect,
@@ -108,6 +109,8 @@ export function JobsView() {
     );
     return () => clearTimeout(timer);
   }, [draftQuery, filter, push]);
+
+  useEffect(() => squeezeSidebar(), []);
   const filters = useApiQuery(keys.jobFilters(), jobsService.filters, {
     errorMessage: "Không tải được danh mục bộ lọc",
     staleTime: Infinity,
@@ -217,7 +220,7 @@ export function JobsView() {
               {page.data.total} tin
               {scored && (
                 <span className="text-primary-600 ml-1 font-medium">
-                  · khớp ≥50%
+                  · AI ≥50%
                 </span>
               )}
             </span>

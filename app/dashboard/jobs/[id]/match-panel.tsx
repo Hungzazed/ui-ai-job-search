@@ -84,13 +84,12 @@ function SystemMatchCard({
       {scorable ? (
         <>
           <p className="text-sm font-semibold text-slate-800">
-            Khớp {system.score}% yêu cầu chuyên môn
+            Đủ {must.met}/{must.total} yêu cầu bắt buộc
           </p>
 
           <p className="mt-1 mb-3 text-xs text-slate-500">
-            Đủ{" "}
             <span className="font-semibold text-slate-700">
-              {must.met}/{must.total} bắt buộc
+              {system.score}% có trọng số
             </span>
             {nice.total > 0 && (
               <>
@@ -282,6 +281,30 @@ export function MatchPanel({
 
   const paired = Boolean(system && system.total > 0) && scoreCard !== null;
 
+  const actions = (
+    <div className="flex flex-wrap gap-2">
+      <Link href={`/dashboard/cv-optimizer?jobId=${jobId}`} className="flex-1">
+        <Button variant="secondary" className="w-full">
+          <FileText className="size-4.5" />
+          Tối ưu CV cho tin này
+        </Button>
+      </Link>
+      <Link href={`/dashboard/cover-letter?jobId=${jobId}`} className="flex-1">
+        <Button variant="outline" className="w-full">
+          <Envelope className="size-4.5" />
+          Thư xin việc
+        </Button>
+      </Link>
+
+      <Link href={`/dashboard/interview/${jobId}/mock`} className="flex-1">
+        <Button variant="outline" className="w-full">
+          <Microphone className="size-4.5" />
+          Luyện phỏng vấn
+        </Button>
+      </Link>
+    </div>
+  );
+
   return (
     <div className="@container space-y-6">
       {paired ? (
@@ -293,37 +316,19 @@ export function MatchPanel({
               {scoreCard}
             </div>
           </div>
+          {actions}
           {detailCard}
         </>
       ) : (
         <>
           {scoring && <LiveScoringCard partial={partial} />}
           {scoreCard}
+          {scoreCard && actions}
           {detailCard}
+          {!scoreCard && actions}
           <SystemMatchCard system={system} profile={profile} />
         </>
       )}
-      <div className="flex flex-wrap gap-2">
-        <Link href={`/dashboard/cv-optimizer?jobId=${jobId}`} className="flex-1">
-          <Button variant="secondary" className="w-full">
-            <FileText className="size-4.5" />
-            Tối ưu CV
-          </Button>
-        </Link>
-        <Link href={`/dashboard/cover-letter?jobId=${jobId}`} className="flex-1">
-          <Button variant="outline" className="w-full">
-            <Envelope className="size-4.5" />
-            Thư xin việc
-          </Button>
-        </Link>
-
-        <Link href={`/dashboard/interview/${jobId}/mock`} className="flex-1">
-          <Button variant="outline" className="w-full">
-            <Microphone className="size-4.5" />
-            Luyện phỏng vấn
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }

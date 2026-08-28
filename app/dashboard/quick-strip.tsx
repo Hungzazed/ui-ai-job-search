@@ -71,14 +71,14 @@ export function QuickStrip({ data }: { data: DashboardOverview }) {
 
   if (data.matchingJobs.newThisWeek > 0) {
     pills.push({
-      href: "/dashboard/jobs?scored=1",
+      href: "/dashboard/matches",
       tone: "calm",
       text: (
         <>
           <b className="font-semibold">
-            {data.matchingJobs.newThisWeek} tin mới
+            {data.matchingJobs.newThisWeek} tin
           </b>{" "}
-          được chấm tuần này
+          bạn đã chấm bằng AI tuần này
         </>
       ),
     });

@@ -64,81 +64,102 @@ export function DisplayCard() {
       description="Áp cho toàn bộ giao diện, lưu trên trình duyệt này"
       compact
     >
-      <p className="mb-2 text-sm font-medium text-slate-700">Giao diện</p>
-
-      <div
-        role="radiogroup"
-        aria-label="Giao diện"
-        className="mb-5 flex rounded-full bg-slate-100 p-1"
+      <SettingRow
+        label="Giao diện"
+        hint="Theo lựa chọn của bạn, hoặc chạy theo cài đặt của máy."
       >
-        {THEMES.map((option) => {
-          const Icon = THEME_ICON[option.id];
-          const active = option.id === theme;
-          return (
-            <button
-              key={option.id}
-              type="button"
-              role="radio"
-              aria-checked={active}
-              onClick={() => applyTheme(option.id)}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-2 rounded-full px-3 py-2 text-sm transition",
-                active
-                  ? "bg-white font-semibold text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700",
-              )}
-            >
-              <Icon className="size-4.5" />
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-
-      <p className="mb-2 text-sm font-medium text-slate-700">Cỡ chữ</p>
-
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1">
-          <StepButton
-            label="Giảm cỡ chữ"
-            disabled={atMin}
-            onClick={() => applyFontScale(percent - STEP_PERCENT)}
-          >
-            <Minus className="size-4.5" />
-          </StepButton>
-
-          <output
-            aria-live="polite"
-            className="min-w-[4.5rem] text-center text-sm font-semibold text-slate-700 tabular-nums"
-          >
-            {percent}%
-          </output>
-
-          <StepButton
-            label="Tăng cỡ chữ"
-            disabled={atMax}
-            onClick={() => applyFontScale(percent + STEP_PERCENT)}
-          >
-            <Plus className="size-4.5" />
-          </StepButton>
+        <div
+          role="radiogroup"
+          aria-label="Giao diện"
+          className="flex w-full rounded-full bg-slate-100 p-1"
+        >
+          {THEMES.map((option) => {
+            const Icon = THEME_ICON[option.id];
+            const active = option.id === theme;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => applyTheme(option.id)}
+                className={cn(
+                  "flex min-w-0 flex-1 items-center justify-center gap-2 rounded-full px-2 py-2 text-sm transition",
+                  active
+                    ? "bg-white font-semibold text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700",
+                )}
+              >
+                <Icon className="size-4.5 shrink-0" />
+                <span className="truncate">{option.label}</span>
+              </button>
+            );
+          })}
         </div>
+      </SettingRow>
 
-        {percent !== DEFAULT_PERCENT && (
-          <button
-            type="button"
-            onClick={() => applyFontScale(DEFAULT_PERCENT)}
-            className="text-xs text-slate-500 underline underline-offset-2 hover:text-slate-700"
-          >
-            Về mặc định
-          </button>
-        )}
-      </div>
+      <SettingRow
+        label="Cỡ chữ"
+        hint="Áp ngay cho mọi trang. Lưu riêng cho trình duyệt này — máy khác cần chỉnh lại."
+      >
+        <div className="flex w-full flex-wrap items-center justify-end gap-3">
+          {percent !== DEFAULT_PERCENT && (
+            <button
+              type="button"
+              onClick={() => applyFontScale(DEFAULT_PERCENT)}
+              className="text-xs text-slate-500 underline underline-offset-2 hover:text-slate-700"
+            >
+              Về mặc định
+            </button>
+          )}
 
-      <p className="mt-3 text-xs text-slate-500">
-        Đổi cỡ chữ áp ngay cho mọi trang. Lựa chọn lưu riêng cho trình duyệt này
-        — máy khác cần chỉnh lại.
-      </p>
+          <div className="flex items-center gap-1 rounded-full bg-slate-100 p-1">
+            <StepButton
+              label="Giảm cỡ chữ"
+              disabled={atMin}
+              onClick={() => applyFontScale(percent - STEP_PERCENT)}
+            >
+              <Minus className="size-4.5" />
+            </StepButton>
+
+            <output
+              aria-live="polite"
+              className="min-w-[4.5rem] text-center text-sm font-semibold text-slate-700 tabular-nums"
+            >
+              {percent}%
+            </output>
+
+            <StepButton
+              label="Tăng cỡ chữ"
+              disabled={atMax}
+              onClick={() => applyFontScale(percent + STEP_PERCENT)}
+            >
+              <Plus className="size-4.5" />
+            </StepButton>
+          </div>
+        </div>
+      </SettingRow>
     </SectionCard>
+  );
+}
+
+function SettingRow({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-3 border-t border-slate-100 py-4 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_minmax(17rem,23rem)] sm:items-center sm:gap-8">
+      <div>
+        <p className="text-sm font-medium text-slate-700">{label}</p>
+        <p className="mt-0.5 text-xs text-slate-500">{hint}</p>
+      </div>
+      {children}
+    </div>
   );
 }
 

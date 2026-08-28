@@ -14,7 +14,7 @@ const googleSans = Google_Sans_Flex({
 });
 
 export const metadata: Metadata = {
-  title: "Careelot — Hệ thống hỗ trợ tìm việc & tối ưu CV bằng AI",
+  title: "Careelot",
   description:
     "Dashboard ứng dụng Careelot: phân tích AI match, tối ưu CV, cover letter và theo dõi quy trình ứng tuyển.",
 };

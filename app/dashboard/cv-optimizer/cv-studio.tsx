@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Check, Download, Layout } from "@phosphor-icons/react/ssr";
 import {
   documentsService,
@@ -16,6 +16,8 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { SectionCard } from "@/components/ui/section-card";
 import { Tabs } from "@/components/ui/tabs";
+import { openBlobInNewTab } from "@/utils";
+import { useDebounce } from "@/hooks/use-debounce";
 import { CvEditor } from "./cv-editor";
 import { CvLayoutPanel } from "./cv-layout-panel";
 import { CvPreview } from "./cv-preview";
@@ -124,24 +126,14 @@ export function CvStudio({
   const previewKey = `${record.id}|${JSON.stringify(draft)}`;
 
   /*
-   * Hoãn 400ms rồi mới đổi KHOÁ, thay vì hoãn lời gọi.
+   * Hoãn rồi mới đổi KHOÁ, thay vì hoãn lời gọi.
    *
    * Người dùng gõ liên tục nên phải có nhịp hoãn; nhưng hoãn ở tầng khoá thì
    * phần còn lại là việc của cache: một bản nháp đã dựng rồi hiện lại tức thì,
    * không tốn request. Đó là chuyện xảy ra thật mỗi lần bấm thử qua lại giữa
    * hai mẫu, hoặc gõ nhầm rồi xoá đi.
-   *
-   * `setState` nằm trong callback của timer, không nằm thẳng trong thân effect
-   * — đây là hẹn giờ thật, không phải một vòng đồng bộ state thừa.
    */
-  const [debouncedKey, setDebouncedKey] = useState(previewKey);
-  useEffect(() => {
-    const timer = setTimeout(
-      () => setDebouncedKey(previewKey),
-      PREVIEW_DEBOUNCE_MS,
-    );
-    return () => clearTimeout(timer);
-  }, [previewKey]);
+  const debouncedKey = useDebounce(previewKey, PREVIEW_DEBOUNCE_MS);
 
   /*
    * `keepPrevious`: giữ bản vẽ trước trên màn trong lúc bản mới đang dựng. Bản
@@ -183,11 +175,7 @@ export function CvStudio({
   const handleDownload = useCallback(async () => {
     setSaveError(null);
     try {
-      const blob = await documentsService.pdf(record.id, "html");
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener");
-      // Thu hồi ngay thì tab vừa mở chưa kịp đọc xong blob.
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      openBlobInNewTab(await documentsService.pdf(record.id, "html"));
     } catch (cause: unknown) {
       setSaveError(apiErrorMessage(cause, "Không tạo được PDF"));
     }

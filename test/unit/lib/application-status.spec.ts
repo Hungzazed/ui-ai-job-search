@@ -11,30 +11,19 @@ const ALL_STATUSES = Object.keys(
 ) as ApplicationStatus[];
 
 /**
- * Sao lại từ `FINAL_STATUSES` của backend (`modules/applications/transitions.ts`).
+ * Sao lại từ `FINAL_STATUSES` và `OPEN_STATUSES` của backend
+ * (`modules/applications/transitions.ts`).
  *
  * Chép lại chứ không import được vì hai repo tách rời. Nếu backend đổi danh sách
- * này thì test dưới đây không tự biết — nhưng nó vẫn có giá trị: nó khoá lại lời
+ * này thì test dưới đây không tự biết - nhưng nó vẫn có giá trị: nó khoá lại lời
  * hứa "đơn đã đóng luôn có đường quay lại", thứ mà bảng gợi ý dễ vô tình đánh mất.
  */
-const FINAL_STATUSES: ApplicationStatus[] = [
-  "HIRED",
-  "REJECTED",
-  "NO_RESPONSE",
-  "OFFER_DECLINED",
-  "WITHDRAWN",
-  "EXPIRED",
-];
+const FINAL_STATUSES: ApplicationStatus[] = ["WITHDRAWN"];
 
-const OPEN_STATUSES: ApplicationStatus[] = [
-  "RANKED",
-  "APPLIED",
-  "INTERVIEW",
-  "OFFER",
-];
+const OPEN_STATUSES: ApplicationStatus[] = ["VIEWED", "APPLIED"];
 
 describe("NEXT_STATUSES", () => {
-  test("phủ đủ mười trạng thái, không thiếu cái nào", () => {
+  test("phủ đủ ba trạng thái, không thiếu cái nào", () => {
     expect(Object.keys(NEXT_STATUSES).sort()).toEqual([...ALL_STATUSES].sort());
   });
 

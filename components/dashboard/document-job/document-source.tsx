@@ -9,6 +9,7 @@ import { documentsService } from "@/services";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { openBlobInNewTab } from "@/utils";
 
 /**
  * Mã `.tex` thô. Chỉ tải khi người dùng bấm mở — phần lớn người dùng không bao
@@ -62,10 +63,7 @@ export function DocumentSource({
     setPdfLoading(true);
     setPdfError(null);
     try {
-      const blob = await documentsService.pdf(documentId);
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener");
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      openBlobInNewTab(await documentsService.pdf(documentId));
     } catch (err) {
       if (apiErrorStatus(err) === 401) {
         router.replace(`/login?next=${loginNext}`);

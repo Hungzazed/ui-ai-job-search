@@ -14,10 +14,15 @@ export const applicationsService = {
   list: (
     group?: ApplicationGroup,
     page?: { limit?: number; offset?: number },
+    status?: ApplicationStatus,
   ) =>
     api
       .get<ApplicationList>("/applications", {
-        params: { ...(group ? { group } : {}), ...page },
+        params: {
+          ...(group ? { group } : {}),
+          ...(status ? { status } : {}),
+          ...page,
+        },
       })
       .then((r) => r.data),
 

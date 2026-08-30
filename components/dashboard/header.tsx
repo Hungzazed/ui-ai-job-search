@@ -3,13 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  List,
-  MagnifyingGlass,
-  SidebarSimple,
-  Sparkle,
-} from "@phosphor-icons/react/ssr";
-import { toggleSidebar } from "@/lib/sidebar";
+import { List, MagnifyingGlass, Sparkle } from "@phosphor-icons/react/ssr";
 import { useSession } from "@/components/dashboard/session";
 import { pageTitle } from "@/components/dashboard/nav-items";
 import { Button } from "@/components/ui/button";
@@ -26,6 +20,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const [term, setTerm] = useState("");
 
   const title = pageTitle(pathname);
+  const isOverview = pathname === "/dashboard";
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -35,33 +30,39 @@ export function Header({ onMenuClick }: HeaderProps) {
     );
   };
 
+  const menuButton = (
+    <button
+      type="button"
+      onClick={onMenuClick}
+      className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 lg:hidden"
+      aria-label="Mở menu"
+    >
+      <List className="size-5.5" />
+    </button>
+  );
+
+  if (!isOverview) {
+    return (
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md lg:hidden">
+        {menuButton}
+        {title && (
+          <h1 className="truncate text-sm font-bold tracking-tight text-slate-900">
+            {title}
+          </h1>
+        )}
+      </header>
+    );
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md sm:gap-4 sm:px-6">
-      <button
-        type="button"
-        onClick={onMenuClick}
-        className="flex size-9 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 lg:hidden"
-        aria-label="Mở menu"
-      >
-        <List className="size-5.5" />
-      </button>
-
-      <button
-        type="button"
-        onClick={toggleSidebar}
-        className="hidden size-9 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:flex"
-        aria-label="Thu gọn hoặc mở rộng thanh bên"
-        title="Thu gọn / mở rộng thanh bên"
-      >
-        <SidebarSimple className="size-5.5" />
-      </button>
+      {menuButton}
 
       {title && (
         <h1 className="shrink-0 text-sm font-bold tracking-tight text-slate-900">
           {title}
         </h1>
       )}
-
       <form onSubmit={submit} className="relative min-w-0 flex-1 sm:max-w-md">
         <MagnifyingGlass className="pointer-events-none absolute top-1/2 left-3 size-4.5 -translate-y-1/2 text-slate-400" />
         <Input
@@ -80,15 +81,13 @@ export function Header({ onMenuClick }: HeaderProps) {
           </span>
         )}
 
-        {pathname === "/dashboard" && (
-          <Link href="/dashboard/cv-optimizer">
-            <Button size="sm">
-              <Sparkle className="size-4.5" />
-              <span className="hidden sm:inline">Tối ưu CV với AI</span>
-              <span className="sm:hidden">Tối ưu CV</span>
-            </Button>
-          </Link>
-        )}
+        <Link href="/dashboard/cv-optimizer">
+          <Button size="sm">
+            <Sparkle className="size-4.5" />
+            <span className="hidden sm:inline">Tối ưu CV với AI</span>
+            <span className="sm:hidden">Tối ưu CV</span>
+          </Button>
+        </Link>
       </div>
     </header>
   );

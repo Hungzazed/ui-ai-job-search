@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import type { JobListItem, JobSort } from "@/services";
+import type { JobListItem } from "@/services";
 import { jobsService } from "@/services";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { useDebounce } from "@/hooks/use-debounce";
+import { readFilter, writeFilter } from "./job-filter-url";
 import { invalidateAfter, keys } from "@/lib/query-keys";
 import { toJobCardFromRecord } from "@/lib/adapters";
 import { squeezeSidebar } from "@/lib/sidebar";
@@ -23,48 +25,6 @@ import { JobDetailView } from "./[id]/job-detail-view";
 import { JobList } from "./job-list";
 const PAGE_SIZE = 20;
 const SEARCH_DEBOUNCE_MS = 500;
-
-const SORTS: JobSort[] = ["newest", "salary", "match"];
-const defaultSort = (scored: boolean): JobSort =>
-  scored ? "match" : "newest";
-function readFilter(params: URLSearchParams, scored: boolean): JobFilterValue {
-  const sort = params.get("sort");
-  return {
-    q: params.get("q") ?? "",
-    province: params.getAll("province"),
-    occupation: params.getAll("occupation"),
-    salaryMin: Number(params.get("salaryMin") ?? 0) || 0,
-    postedWithin: Number(params.get("postedWithin") ?? 0) || 0,
-    sort: SORTS.includes(sort as JobSort)
-      ? (sort as JobSort)
-      : defaultSort(scored),
-    saved: params.get("saved") === "1",
-    applied: params.get("applied") === "1",
-    subOccupation: params.getAll("subOccupation"),
-  };
-}
-function writeFilter(
-  filter: JobFilterValue,
-  offset: number,
-  scored: boolean,
-  selected?: string | null,
-): string {
-  const params = new URLSearchParams();
-  if (scored) params.set("scored", "1");
-  if (selected) params.set("job", selected);
-  if (filter.q) params.set("q", filter.q);
-  for (const code of filter.province) params.append("province", code);
-  for (const code of filter.occupation) params.append("occupation", code);
-  for (const code of filter.subOccupation) params.append("subOccupation", code);
-  if (filter.salaryMin) params.set("salaryMin", String(filter.salaryMin));
-  if (filter.postedWithin)
-    params.set("postedWithin", String(filter.postedWithin));
-  if (filter.saved) params.set("saved", "1");
-  if (filter.applied) params.set("applied", "1");
-  if (filter.sort !== defaultSort(scored)) params.set("sort", filter.sort);
-  if (offset) params.set("offset", String(offset));
-  return params.toString();
-}
 
 export function JobsView() {
   const router = useRouter();
@@ -101,14 +61,12 @@ export function JobsView() {
     [push],
   );
 
+  const debouncedQuery = useDebounce(draftQuery, SEARCH_DEBOUNCE_MS);
   useEffect(() => {
-    if (draftQuery === filter.q) return;
-    const timer = setTimeout(
-      () => push({ ...filter, q: draftQuery }, 0),
-      SEARCH_DEBOUNCE_MS,
-    );
-    return () => clearTimeout(timer);
-  }, [draftQuery, filter, push]);
+    if (debouncedQuery !== draftQuery) return;
+    if (debouncedQuery === filter.q) return;
+    push({ ...filter, q: debouncedQuery }, 0);
+  }, [debouncedQuery, draftQuery, filter, push]);
 
   useEffect(() => squeezeSidebar(), []);
   const filters = useApiQuery(keys.jobFilters(), jobsService.filters, {
@@ -197,13 +155,7 @@ export function JobsView() {
 
   return (
     
-    <div className="flex flex-col xl:h-[calc(100dvh-7rem)]">
-      {/*
-        KHÔNG có tiêu đề trang ở đây.
-        Nó lặp lại đúng mục đang sáng trong sidebar, còn số tin thì header của
-        khung danh sách đã hiện — trong khi trang này không cuộn nên 85px đó bị
-        trừ thẳng vào vùng đọc, ở mọi phiên, mãi mãi.
-      */}
+    <div className="flex flex-col xl:h-[calc(100dvh-2.5rem)]">
       <JobFilterBar
         value={{ ...filter, q: draftQuery }}
         filters={filters.data}

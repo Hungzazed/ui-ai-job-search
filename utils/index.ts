@@ -6,6 +6,7 @@
  * một loại dữ liệu phải đọc giống hệt nhau, và cách rẻ nhất để giữ được điều đó
  * là chỉ có một chỗ viết ra nó.
  */
+export { openBlobInNewTab } from "./blob";
 export { cn } from "./cn";
 export { companyColor, companyInitials, personInitials } from "./company";
 export { formatDate, formatDateTime, relativeDay, relativeTime } from "./date";
@@ -15,7 +16,7 @@ export {
   LOCATION_UNKNOWN,
   type DisplayLocation,
 } from "./location";
-export { formatJobSalary, formatSalary } from "./salary";
+export { formatJobSalary, formatMonthlyVnd, formatSalary } from "./salary";
 export {
   matchTone,
   matchToneClasses,

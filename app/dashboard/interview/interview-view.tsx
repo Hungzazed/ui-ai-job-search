@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Microphone, Sparkle } from "@phosphor-icons/react/ssr";
 import { useApiQuery } from "@/hooks/use-api-query";
+import { useDebounce } from "@/hooks/use-debounce";
 import { apiErrorMessage, apiErrorStatus } from "@/lib/axios";
 
 import { interviewService, type InterviewPrepRecord } from "@/services";
@@ -22,11 +23,17 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MockSessions } from "./mock-sessions";
+import { PrepLauncher } from "./prep-launcher";
 
 const LOGIN_NEXT = "/login?next=/dashboard/interview";
 
 /** Số vị trí hiện một lúc ở cột trái. Phần còn lại lật bằng thanh phân trang. */
 const PAGE_SIZE = 15;
+
+const POLL_MS = 2500;
+const SLOW_AFTER_MS = 3 * 60 * 1000;
+
+const isBusy = (status: string) => status === "PENDING" || status === "RUNNING";
 
 /** Bốn trạng thái của một lượt soạn, mỗi cái cần một câu khác nhau. */
 export function InterviewView() {
@@ -43,10 +50,18 @@ export function InterviewView() {
     {
       errorMessage: "Không tải được bộ câu hỏi phỏng vấn",
       keepPrevious: true,
+      refetchInterval: (data) =>
+        data?.items.some((prep) => isBusy(prep.status)) ? POLL_MS : false,
     },
   );
 
   const preps: InterviewPrepRecord[] | null = page.data?.items ?? null;
+  const runToken =
+    preps
+      ?.filter((prep) => isBusy(prep.status))
+      .map((prep) => prep.id)
+      .join() ?? "";
+  const slow = useDebounce(runToken, SLOW_AFTER_MS) === runToken && runToken !== "";
   const total = page.data?.total ?? 0;
   const error = retryError ?? page.error;
 
@@ -103,7 +118,17 @@ export function InterviewView() {
         khi chưa có bộ đề nào, mà buổi luyện thì không cần bộ đề - nhét vào trong
         là lặp lại đúng lỗi đã làm một lần, khoá lối vào sau một điều kiện thừa.
       */}
+      <PrepLauncher onQueued={() => page.reload()} />
+
       <MockSessions />
+
+      {slow && (
+        <Alert tone="warning" title="Lâu hơn thường lệ">
+          Một bộ câu hỏi đã chạy quá ba phút. Thường chỉ mất khoảng một phút — có
+          thể hàng đợi model đang bận. Bạn cứ để đó, hoặc mở bộ đề ra bấm soạn
+          lại nếu nó chuyển sang hỏng.
+        </Alert>
+      )}
 
       {error ? (
         <Alert tone="danger">{error}</Alert>
@@ -116,16 +141,11 @@ export function InterviewView() {
             title="Chưa có bộ câu hỏi nào"
             description={
               <>
-                Bộ câu hỏi được soạn tự động khi bạn chuyển một đơn ứng tuyển
-                sang trạng thái <strong>Phỏng vấn</strong>. Hệ thống không soạn
-                sớm hơn vì phần lớn đơn không đi tới vòng này, mà mỗi lượt soạn
-                đều tốn một lần gọi model.
+                Chọn một tin ở ô phía trên rồi bấm{" "}
+                <strong>Soạn bộ câu hỏi</strong>. Hệ thống không soạn sẵn cho mọi
+                tin vì mỗi lượt soạn đều tốn một lần gọi model, và phần lớn tin
+                thì bạn không đi tới vòng phỏng vấn.
               </>
-            }
-            action={
-              <Link href="/dashboard/applications">
-                <Button>Mở Lịch sử ứng tuyển</Button>
-              </Link>
             }
           />
         </Card>
@@ -150,6 +170,7 @@ export function InterviewView() {
                       <CompanyLogo
                         initials={companyInitials(prep.job.company)}
                         color={companyColor(prep.job.company)}
+                        src={prep.job.companyLogo}
                         size="sm"
                       />
                       <div className="min-w-0 flex-1">

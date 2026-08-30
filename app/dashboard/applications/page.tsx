@@ -25,7 +25,7 @@ import {
   NEXT_STATUSES,
 } from "@/lib/application-status";
 import { Select } from "@/components/ui/form";
-import { companyColor, companyInitials, formatDate } from "@/utils";
+import { companyColor, companyInitials, formatDate, openBlobInNewTab } from "@/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { CompanyLogo } from "@/components/dashboard/company-logo";
 import { LocationText } from "@/components/dashboard/location-text";
@@ -135,10 +135,7 @@ export default function ApplicationsPage() {
   const openCvPdf = async (documentId: string) => {
     setPdfLoadingId(documentId);
     try {
-      const blob = await documentsService.pdf(documentId);
-      const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener");
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      openBlobInNewTab(await documentsService.pdf(documentId));
     } catch (err) {
       if (apiErrorStatus(err) === 401) {
         router.replace("/login");
@@ -277,7 +274,6 @@ export default function ApplicationsPage() {
                     })()}
                   </TableCell>
                   <TableCell className="hidden whitespace-nowrap text-slate-500 md:table-cell">
-                    {/* Đơn ở trạng thái RANKED thì chưa nộp, nên chưa có ngày. */}
                     {application.appliedAt
                       ? formatDate(application.appliedAt)
                       : "Chưa nộp"}

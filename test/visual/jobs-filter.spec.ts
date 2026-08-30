@@ -83,3 +83,25 @@ test("thanh lọc, phân trang và trạng thái trên URL", async ({ page }) =>
 
   expect(failures).toEqual([]);
 });
+
+/**
+ * Bấm nút xoá ở ô tìm kiếm thì từ khoá phải biến mất HẲN.
+ *
+ * Đã hỏng thật: giá trị trễ của debounce còn giữ từ khoá cũ thêm một nhịp, và
+ * effect chạy vì `filter` vừa đổi đã ghi từ khoá đó trở lại URL — ô vừa trống đã
+ * hiện lại chữ cũ. Chờ lâu hơn nhịp debounce rồi mới kiểm, đúng chỗ lỗi nằm.
+ */
+test("xoá ô tìm kiếm thì từ khoá không quay lại", async ({ page }) => {
+  await login(page);
+  await page.goto("/dashboard/jobs");
+
+  const search = page.getByPlaceholder("Vị trí tuyển dụng, tên công ty");
+  await search.pressSequentially("Front", { delay: 120 });
+  await page.waitForURL(/[?&]q=Front/);
+
+  await page.getByRole("button", { name: "Xoá tìm kiếm" }).click();
+  await page.waitForTimeout(1500);
+
+  await expect(search).toHaveValue("");
+  expect(page.url()).not.toContain("q=");
+});

@@ -39,7 +39,7 @@ const LATEST_KEY = ["upskill", "latest"];
 const POLL_INTERVAL_MS = 2000;
 const MAX_POLLS = 80;
 
-export function UpskillView() {
+export function  UpskillView() {
   const router = useRouter();
   const queryClient = useQueryClient();
   /** Lỗi phát sinh SAU khi tải xong: lượt tạo báo cáo hỏng, hoặc hỏi lại hỏng. */

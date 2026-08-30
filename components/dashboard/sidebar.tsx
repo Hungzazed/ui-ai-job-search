@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Lightning, SignOut } from "@phosphor-icons/react/ssr";
+import { Lightning, SidebarSimple, SignOut } from "@phosphor-icons/react/ssr";
+import { toggleSidebar } from "@/lib/sidebar";
 import { cn, personInitials } from "@/utils";
 import { useSession } from "@/components/dashboard/session";
 import { navItems } from "@/components/dashboard/nav-items";
@@ -41,9 +42,17 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-(--sidebar-width) shrink-0 flex-col overflow-hidden border-r border-slate-200/80 bg-white transition-[width] duration-200 ease-out">
-      {/* Brand */}
-      <div className="flex h-[65px] w-64 shrink-0 items-center border-b border-slate-100 pl-6">
-        <BrandLogo className="h-[30.52px] w-[106.58px] shrink-0" />
+      <div className="flex h-[65px] shrink-0 items-center border-b border-slate-100 pr-3 pl-6 collapsed:justify-center collapsed:px-0">
+        <BrandLogo className="h-[30.52px] w-[106.58px] shrink-0 collapsed:hidden" />
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="ml-auto hidden size-9 cursor-pointer items-center justify-center rounded-lg text-slate-500 transition-colors collapsed:ml-0 hover:bg-slate-100 hover:text-slate-900 lg:flex"
+          aria-label="Thu gọn hoặc mở rộng thanh bên"
+          title="Thu gọn / mở rộng thanh bên"
+        >
+          <SidebarSimple className="size-5.5" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -62,7 +71,12 @@ export function Sidebar() {
                   : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
               )}
             >
-              <Icon className={cn("size-4.5 shrink-0", active ? "text-primary-600" : "text-slate-400")} />
+              <Icon
+                className={cn(
+                  "size-4.5 shrink-0",
+                  active ? "text-primary-600" : "text-slate-400",
+                )}
+              />
               {/* Trước đây có một Badge "24" viết cứng cạnh "Việc làm phù hợp",
                   hiện đúng con số đó cho mọi tài khoản bất kể thực tế có bao
                   nhiêu. Số thật đã có ở màn Tổng quan, lấy từ backend. */}

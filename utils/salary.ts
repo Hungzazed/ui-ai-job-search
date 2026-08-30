@@ -19,3 +19,11 @@ export function formatSalary(salary: SalaryRange): string {
   }
   return `${format(salary.min)} – ${format(salary.max)}${unit}${period}`;
 }
+
+/** Một mức lương tháng đơn lẻ, đơn vị VND: 27300000 -> "27,3 triệu". */
+export function formatMonthlyVnd(value: number): string {
+  const amount = (value / 1_000_000).toLocaleString("vi-VN", {
+    maximumFractionDigits: 1,
+  });
+  return `${amount} triệu`;
+}
